@@ -42,6 +42,23 @@ import handFanA      from '@assets/hand_fan_a_1780609250616.jpg'
 import handFanB      from '@assets/hand_fan_b_1780611760298.jpg'
 import handFanC      from '@assets/hand_fan_c_1780611760299.jpg'
 import idCardA       from '@assets/I_D_card_a_1780611760300.jpg'
+import paperBagA     from '@assets/paper_bag_a_1780612370852.jpg'
+import paperBagB     from '@assets/paper_bag_b_1780612370853.jpg'
+import paperBagC     from '@assets/paper_bag_c_1780612370854.jpg'
+import penA          from '@assets/pen_a_1780612370854.jpg'
+import penB          from '@assets/pen_b_1780612370855.jpg'
+import penC          from '@assets/pen_c_1780612370856.jpg'
+import posterA       from '@assets/poster_a_1780612370857.jpg'
+import posterB       from '@assets/poster_b_1780612370857.jpg'
+import posterC       from '@assets/poster_c_1780612370858.jpg'
+import posterE       from '@assets/poster_e_1780612370859.jpg'
+import rollUpA       from '@assets/roll_up_stand_a_1780612370861.jpg'
+import rollUpB       from '@assets/roll_up_stand_b_1780612370861.jpg'
+import rollUpC       from '@assets/roll_up_stand_c_1780612370862.jpg'
+import signageA      from '@assets/signage_a_1780612370863.jpg'
+import signageB      from '@assets/signage_b_1780612370863.jpg'
+import signageC      from '@assets/signage_c_1780612370864.jpg'
+import tableCalA     from '@assets/table_calender_a_1780612370864.jpg'
 import idCardB       from '@assets/I_D_card_b_1780611760300.jpg'
 import idCardC       from '@assets/I_D_card_c_1780611760301.jpg'
 import jotterA       from '@assets/jotter_a_1780611760301.jpg'
@@ -63,19 +80,18 @@ import nylonBagC     from '@assets/nylon_bag_c_1780611760310.jpg'
 export const PRODUCT_IMAGES = {
   'flex-banner':      [bannerA, bannerB, bannerC],
   'billboard':        [billboardA, billboardB, billboardC, billboardD],
-  'signage':          [billboardA, billboardC, billboardD],
   'sav-printing':     [brandingC],
-  'rollup-stand':     [brandingA, brandingB],
+  'rollup-stand':     [rollUpA, rollUpB, rollUpC],
   't-shirts':         [poloA, poloB, poloC],
   't-shirt-cap':      [poloB, poloC, poloD],
   'cap':              [capA, capB, capC],
   'vehicle-branding': [carBrandB, carBrandC, carBrandD, carBrandE],
   'brochure':         [brochureE, brochureB],
   'burial-brochure':  [brochureA, brochureC, brochureD, brochureF],
-  'flyers-posters':   [brochureE, brochureD, flyerC, flyerD],
+  'flyers-posters':   [posterA, posterB, posterC, posterE],
   'flyer':            [flyerA, flyerB, flyerC, flyerD, flyerE],
   'business-card':    [compCardA, compCardB, compCardC],
-  'table-calendar':   [calendarA, calendarB, calendarC],
+  'table-calendar':   [tableCalA, calendarA, calendarB, calendarC],
   'wall-calendar':    [calendarA, calendarB, calendarC],
   'hand-fan':         [handFanA, handFanB, handFanC],
   'id-cards':         [idCardA, idCardB, idCardC],
@@ -84,4 +100,7 @@ export const PRODUCT_IMAGES = {
   'logo-branding':    [logoBrandA, logoBrandB, logoBrandC],
   'mugs':             [mugA, mugB],
   'nylon-bag':        [nylonBagA, nylonBagB, nylonBagC],
+  'paper-bag':        [paperBagA, paperBagB, paperBagC],
+  'pen':              [penA, penB, penC],
+  'signage':          [signageA, signageB, signageC],
 }
