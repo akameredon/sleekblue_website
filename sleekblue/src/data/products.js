@@ -265,7 +265,7 @@ export const ALL_PRODUCTS = [
   { id: 5, name: 'Reflective Flex', category: 'Flex Printing/Large Format', slug: 'reflective-flex', price: 9000, priceTable: [{qty:1,unitPrice:9000},{qty:5,unitPrice:8000}], sizes: ['3x6ft','4x6ft','4x8ft','Custom'] },
   { id: 31, name: 'Rollup Stand', category: 'Flex Printing/Large Format', slug: 'rollup-stand', price: 25000, priceTable: [{qty:1,unitPrice:25000},{qty:3,unitPrice:23000},{qty:5,unitPrice:21000}], sizes: ['85cm Standard','100cm Wide'] },
   { id: 33, name: 'Signage & Billboard', category: 'Flex Printing/Large Format', slug: 'signage', price: 35000, priceTable: [{qty:1,unitPrice:35000},{qty:3,unitPrice:30000}], sizes: ['Custom'] },
-  { id: 6, name: 'Die Cut Stickers', category: 'Label Stickers', slug: 'die-cut-stickers', price: 5000, priceTable: [], sizes: Object.keys(STICKER_SIZE_PRICES), isDieCut: true },
+  { id: 6, name: 'Die Cut Stickers', category: 'Label Stickers', slug: 'die-cut-stickers', price: 5000, priceTable: [], sizes: [...Object.keys(STICKER_SIZE_PRICES), 'Custom'], isDieCut: true },
   { id: 7, name: 'Product Labels', category: 'Label Stickers', slug: 'product-labels', price: 4000, priceTable: [{qty:100,unitPrice:40},{qty:500,unitPrice:35},{qty:1000,unitPrice:30}], sizes: ['3x3"','4x4"','3x4"','Round 3"','Custom'] },
   { id: 8, name: 'Letterhead', category: 'Corporate Branding', slug: 'letterhead', price: 15000, priceTable: [{qty:100,unitPrice:150},{qty:500,unitPrice:130},{qty:1000,unitPrice:110}], sizes: ['A4','A5'] },
   { id: 9, name: 'Business Card', category: 'Corporate Branding', slug: 'business-card', price: 5000, priceTable: [{qty:100,unitPrice:50},{qty:500,unitPrice:40},{qty:1000,unitPrice:35}], sizes: ['Standard 3.5x2"','Square 2x2"','Slim'] },

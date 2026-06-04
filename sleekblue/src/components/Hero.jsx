@@ -29,68 +29,66 @@ export default function Hero() {
             style={{ width: '100%', display: 'block', objectFit: 'cover', maxHeight: '520px' }}
           />
 
-          {/* Slide 0: invisible click-capture areas placed over the baked-in image buttons */}
+          {/* Slide 0: transparent click-capture areas over baked-in image buttons */}
           {i === 0 && (
             <>
-              {/* Transparent overlay over "Print Sticker" button in image */}
               <div
                 onClick={() => navigate('/store/die-cut-stickers')}
                 title="Print Sticker"
-                style={{
-                  position: 'absolute',
-                  left: '5%',
-                  bottom: '27%',
-                  width: '17%',
-                  height: '9%',
-                  cursor: 'pointer',
-                  background: 'transparent',
-                  zIndex: 10,
-                }}
+                style={{ position: 'absolute', left: '5%', bottom: '27%', width: '17%', height: '9%', cursor: 'pointer', background: 'transparent', zIndex: 10 }}
               />
-              {/* Transparent overlay over "Print Flex" button in image */}
               <div
                 onClick={() => navigate('/store/flex-banner')}
                 title="Print Flex"
-                style={{
-                  position: 'absolute',
-                  left: '23%',
-                  bottom: '27%',
-                  width: '16%',
-                  height: '9%',
-                  cursor: 'pointer',
-                  background: 'transparent',
-                  zIndex: 10,
-                }}
+                style={{ position: 'absolute', left: '23%', bottom: '27%', width: '16%', height: '9%', cursor: 'pointer', background: 'transparent', zIndex: 10 }}
               />
             </>
+          )}
+
+          {/* Slides 1–3: visible "Shop Now" overlay button */}
+          {i > 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '14%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 10,
+              }}
+            >
+              <button
+                onClick={() => navigate('/store')}
+                style={{
+                  background: '#7B2FBE',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '28px',
+                  padding: '12px 32px',
+                  fontSize: '14px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  fontFamily: "'HubotSans', sans-serif",
+                  boxShadow: '0 4px 18px rgba(0,0,0,0.28)',
+                  letterSpacing: '0.3px',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#6A28A0' }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#7B2FBE' }}
+              >
+                Shop Now →
+              </button>
+            </div>
           )}
         </div>
       ))}
 
       {/* Dot indicators */}
-      <div style={{
-        position: 'absolute',
-        bottom: '12px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        display: 'flex',
-        gap: '8px',
-        zIndex: 10,
-      }}>
+      <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 10 }}>
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            style={{
-              width: current === i ? '24px' : '8px',
-              height: '8px',
-              borderRadius: '4px',
-              border: 'none',
-              background: current === i ? '#fff' : 'rgba(255,255,255,0.5)',
-              cursor: 'pointer',
-              padding: 0,
-              transition: 'width 0.3s',
-            }}
+            style={{ width: current === i ? '24px' : '8px', height: '8px', borderRadius: '4px', border: 'none', background: current === i ? '#fff' : 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: 0, transition: 'width 0.3s' }}
           />
         ))}
       </div>

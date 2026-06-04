@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { BEST_SELLING } from '../data/products'
+import { PRODUCT_IMAGES } from '../data/productImages'
 
 export default function BestSelling() {
   const navigate = useNavigate()
@@ -12,31 +13,45 @@ export default function BestSelling() {
           <p style={{ fontSize: '13px', fontStyle: 'italic', color: '#777', fontFamily: "'HubotSans', sans-serif", fontWeight: 400 }}>our most popular and trusted products</p>
         </div>
         <div className="best-selling-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '14px' }}>
-          {BEST_SELLING.map((product, idx) => (
-            <div key={idx}
-              style={{ background: '#fff', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', border: idx === 0 ? '2px solid #F5C518' : '1px solid #eee', boxShadow: idx === 0 ? '0 2px 12px rgba(245,197,24,0.18)' : '0 1px 4px rgba(0,0,0,0.05)', cursor: 'pointer', transition: 'box-shadow 0.2s' }}
-              onClick={() => navigate(`/store/${product.slug}`)}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 18px rgba(123,47,190,0.15)'}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = idx === 0 ? '0 2px 12px rgba(245,197,24,0.18)' : '0 1px 4px rgba(0,0,0,0.05)'}
-            >
-              <div style={{ width: '100%', aspectRatio: '3/4', background: idx % 2 === 0 ? '#C8C8C8' : '#B8B8B8', borderRadius: '8px', position: 'relative', overflow: 'hidden' }}>
-                {idx === 0 && (
-                  <div style={{ position: 'absolute', top: '8px', left: '8px', background: '#F5C518', color: '#1a1a1a', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 700 }}>Most Popular</div>
-                )}
-              </div>
-              <div style={{ textAlign: 'center', width: '100%' }}>
-                <p style={{ fontSize: '12.5px', fontWeight: 700, color: '#1a1a1a', lineHeight: 1.3, fontFamily: "'HubotSans', sans-serif", marginBottom: '3px' }}>{product.name}</p>
-                <p style={{ fontSize: '12px', fontWeight: 700, color: '#7B2FBE', fontFamily: "'HubotSans', sans-serif", margin: 0 }}>{product.price}</p>
-                <p style={{ fontSize: '10.5px', color: '#888', margin: 0 }}>{product.unit}</p>
-              </div>
-              <button
-                style={{ background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '20px', padding: '7px 0', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer', width: '85%', fontFamily: "'HubotSans', sans-serif" }}
-                onClick={e => { e.stopPropagation(); navigate(`/store/${product.slug}`) }}
+          {BEST_SELLING.map((product, idx) => {
+            const imgs = PRODUCT_IMAGES[product.slug] || []
+            return (
+              <div key={idx}
+                style={{ background: '#fff', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', border: idx === 0 ? '2px solid #F5C518' : '1px solid #eee', boxShadow: idx === 0 ? '0 2px 12px rgba(245,197,24,0.18)' : '0 1px 4px rgba(0,0,0,0.05)', cursor: 'pointer', transition: 'box-shadow 0.2s' }}
+                onClick={() => navigate(`/store/${product.slug}`)}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 18px rgba(123,47,190,0.15)'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = idx === 0 ? '0 2px 12px rgba(245,197,24,0.18)' : '0 1px 4px rgba(0,0,0,0.05)'}
               >
-                Shop Now
-              </button>
-            </div>
-          ))}
+                <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: '8px', overflow: 'hidden', background: idx % 2 === 0 ? '#C8C8C8' : '#B8B8B8', position: 'relative' }}>
+                  {imgs[0] ? (
+                    <img
+                      src={imgs[0]}
+                      alt={product.name}
+                      loading="lazy"
+                      decoding="async"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', background: idx % 2 === 0 ? '#C8C8C8' : '#B8B8B8' }} />
+                  )}
+                  {idx === 0 && (
+                    <div style={{ position: 'absolute', top: '8px', left: '8px', background: '#F5C518', color: '#1a1a1a', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 700 }}>Most Popular</div>
+                  )}
+                </div>
+                <div style={{ textAlign: 'center', width: '100%' }}>
+                  <p style={{ fontSize: '12.5px', fontWeight: 700, color: '#1a1a1a', lineHeight: 1.3, fontFamily: "'HubotSans', sans-serif", marginBottom: '3px' }}>{product.name}</p>
+                  <p style={{ fontSize: '12px', fontWeight: 700, color: '#7B2FBE', fontFamily: "'HubotSans', sans-serif", margin: 0 }}>{product.price}</p>
+                  <p style={{ fontSize: '10.5px', color: '#888', margin: 0 }}>{product.unit}</p>
+                </div>
+                <button
+                  style={{ background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '20px', padding: '7px 0', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer', width: '85%', fontFamily: "'HubotSans', sans-serif" }}
+                  onClick={e => { e.stopPropagation(); navigate(`/store/${product.slug}`) }}
+                >
+                  Shop Now
+                </button>
+              </div>
+            )
+          })}
         </div>
       </div>
 
