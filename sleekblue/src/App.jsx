@@ -6,6 +6,7 @@ import SocialSidebar from './components/SocialSidebar'
 import ChatWidget from './components/ChatWidget'
 import WhatsAppFloat from './components/WhatsAppFloat'
 import TermsModal from './components/TermsModal'
+import Footer from './components/Footer'
 import './index.css'
 
 const HomePage     = lazy(() => import('./pages/HomePage'))
@@ -47,6 +48,7 @@ function MainSite() {
           </Routes>
         </Suspense>
       </main>
+      <Footer />
       <WhatsAppFloat />
       <ChatWidget />
     </CartProvider>
