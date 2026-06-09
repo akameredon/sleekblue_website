@@ -82,6 +82,14 @@ export default function Footer() {
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <span style={{ fontSize: '12px', color: '#555' }}>Built with ❤️ in Nigeria</span>
+            <Link
+              to="/sbm-control-2026"
+              style={{ fontSize: '11px', color: '#444', textDecoration: 'none', padding: '4px 10px', border: '1px solid #333', borderRadius: '4px', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.target.style.color = '#FF6B00'; e.target.style.borderColor = '#FF6B00' }}
+              onMouseLeave={e => { e.target.style.color = '#444'; e.target.style.borderColor = '#333' }}
+            >
+              Admin
+            </Link>
           </div>
         </div>
       </div>
