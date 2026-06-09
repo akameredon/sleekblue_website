@@ -1,9 +1,10 @@
 import express from 'express'
-import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+import { dirname, join, extname } from 'path'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import multer from 'multer'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -11,6 +12,27 @@ const __dirname = dirname(__filename)
 const LOG_FILE        = join(__dirname, 'acceptance-log.json')
 const SITE_DATA_FILE  = join(__dirname, 'site-data.json')
 const ADMIN_CFG_FILE  = join(__dirname, 'admin-config.json')
+const UPLOADS_DIR     = join(__dirname, 'uploads')
+
+// Ensure upload directories exist
+;['hero', 'products', 'site'].forEach(sub =>
+  mkdirSync(join(UPLOADS_DIR, sub), { recursive: true })
+)
+
+// Multer storage — files go to uploads/<folder>/
+function makeStorage(folder) {
+  return multer.diskStorage({
+    destination: (req, file, cb) => cb(null, join(UPLOADS_DIR, folder)),
+    filename: (req, file, cb) => {
+      const ts  = Date.now()
+      const ext = extname(file.originalname).toLowerCase() || '.jpg'
+      cb(null, `${ts}${ext}`)
+    },
+  })
+}
+const heroUpload    = multer({ storage: makeStorage('hero'),    limits: { fileSize: 10 * 1024 * 1024 } })
+const productUpload = multer({ storage: makeStorage('products'), limits: { fileSize: 10 * 1024 * 1024 } })
+const siteUpload    = multer({ storage: makeStorage('site'),    limits: { fileSize: 10 * 1024 * 1024 } })
 
 const JWT_SECRET = process.env.JWT_SECRET || 'sbm_admin_jwt_secret_2026'
 const PORT       = process.env.TERMS_PORT || 3001
@@ -43,6 +65,9 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(200)
   next()
 })
+
+// Serve uploaded files as static assets
+app.use('/uploads', express.static(UPLOADS_DIR))
 
 function requireAuth(req, res, next) {
   const auth = req.headers.authorization || ''
@@ -272,6 +297,105 @@ app.put('/api/admin/hero', requireAuth, (req, res) => {
   writeJSON(SITE_DATA_FILE, data)
   console.log('[Admin] Hero content updated')
   res.json({ ok: true })
+})
+
+// ── Admin: Image uploads ──────────────────────────────────────────────────────
+
+// Upload hero slide image
+app.post('/api/admin/upload/hero', requireAuth, heroUpload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+  const url = `/uploads/hero/${req.file.filename}`
+  // Add to hero slides list in site-data
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.hero = data.hero || {}
+  data.hero.customSlides = data.hero.customSlides || []
+  data.hero.customSlides.push(url)
+  writeJSON(SITE_DATA_FILE, data)
+  console.log('[Admin] Hero slide uploaded:', url)
+  res.json({ ok: true, url })
+})
+
+// Delete hero slide
+app.delete('/api/admin/upload/hero', requireAuth, (req, res) => {
+  const { url } = req.body
+  if (!url) return res.status(400).json({ error: 'No url provided' })
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.hero = data.hero || {}
+  data.hero.customSlides = (data.hero.customSlides || []).filter(u => u !== url)
+  writeJSON(SITE_DATA_FILE, data)
+  // Try to delete the actual file
+  try {
+    const filename = url.replace('/uploads/hero/', '')
+    unlinkSync(join(UPLOADS_DIR, 'hero', filename))
+  } catch {}
+  res.json({ ok: true })
+})
+
+// Reorder hero slides
+app.put('/api/admin/upload/hero/reorder', requireAuth, (req, res) => {
+  const { slides } = req.body
+  if (!Array.isArray(slides)) return res.status(400).json({ error: 'slides must be array' })
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.hero = data.hero || {}
+  data.hero.customSlides = slides
+  writeJSON(SITE_DATA_FILE, data)
+  res.json({ ok: true })
+})
+
+// Upload product image
+app.post('/api/admin/upload/product/:slug', requireAuth, productUpload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+  const { slug } = req.params
+  const url = `/uploads/products/${req.file.filename}`
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.productImages = data.productImages || {}
+  data.productImages[slug] = data.productImages[slug] || []
+  data.productImages[slug].push(url)
+  writeJSON(SITE_DATA_FILE, data)
+  console.log('[Admin] Product image uploaded:', slug, url)
+  res.json({ ok: true, url })
+})
+
+// Delete product image
+app.delete('/api/admin/upload/product/:slug', requireAuth, (req, res) => {
+  const { slug } = req.params
+  const { url } = req.body
+  if (!url) return res.status(400).json({ error: 'No url provided' })
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.productImages = data.productImages || {}
+  data.productImages[slug] = (data.productImages[slug] || []).filter(u => u !== url)
+  writeJSON(SITE_DATA_FILE, data)
+  try {
+    const filename = url.replace('/uploads/products/', '')
+    unlinkSync(join(UPLOADS_DIR, 'products', filename))
+  } catch {}
+  res.json({ ok: true })
+})
+
+// Get all product images (uploaded ones)
+app.get('/api/product-images', (req, res) => {
+  const data = readJSON(SITE_DATA_FILE, {})
+  res.json(data.productImages || {})
+})
+
+// Upload site image (logo, etc)
+app.post('/api/admin/upload/site', requireAuth, siteUpload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+  const { key } = req.body
+  if (!key) return res.status(400).json({ error: 'key is required' })
+  const url = `/uploads/site/${req.file.filename}`
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.siteImages = data.siteImages || {}
+  data.siteImages[key] = url
+  writeJSON(SITE_DATA_FILE, data)
+  console.log('[Admin] Site image uploaded:', key, url)
+  res.json({ ok: true, url })
+})
+
+// Get site images
+app.get('/api/site-images', (req, res) => {
+  const data = readJSON(SITE_DATA_FILE, {})
+  res.json(data.siteImages || {})
 })
 
 app.listen(PORT, () => console.log(`Sleekblue API server running on port ${PORT}`))

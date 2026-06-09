@@ -103,6 +103,197 @@ function LoginScreen({ onLogin }) {
   )
 }
 
+// ─── Image Manager ────────────────────────────────────────────────────────────
+function ImageManager({ token }) {
+  const [tab, setTab] = useState('hero')
+  const [heroSlides, setHeroSlides] = useState([])
+  const [heroUploading, setHeroUploading] = useState(false)
+  const [heroMsg, setHeroMsg] = useState('')
+  const [products, setProducts] = useState(ALL_PRODUCTS)
+  const [selectedSlug, setSelectedSlug] = useState(ALL_PRODUCTS[0]?.slug || '')
+  const [productImages, setProductImages] = useState({})
+  const [prodUploading, setProdUploading] = useState(false)
+  const [prodMsg, setProdMsg] = useState('')
+  const [dragIdx, setDragIdx] = useState(null)
+  const [dragOverIdx, setDragOverIdx] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/hero').then(r => r.ok ? r.json() : {}).then(d => setHeroSlides(d.customSlides || []))
+    fetch('/api/product-images').then(r => r.ok ? r.json() : {}).then(d => setProductImages(d))
+  }, [])
+
+  // ── Hero slide upload
+  async function uploadHeroSlide(e) {
+    const file = e.target.files[0]; if (!file) return
+    setHeroUploading(true); setHeroMsg('')
+    const fd = new FormData(); fd.append('image', file)
+    const res = await fetch('/api/admin/upload/hero', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd })
+    const data = await res.json()
+    if (data.ok) { setHeroSlides(s => [...s, data.url]); setHeroMsg('✓ Slide uploaded!') }
+    else setHeroMsg('✗ Upload failed: ' + (data.error || ''))
+    setHeroUploading(false); e.target.value = ''
+  }
+
+  async function deleteHeroSlide(url) {
+    if (!confirm('Delete this hero slide?')) return
+    await fetch('/api/admin/upload/hero', { method: 'DELETE', headers: authH(token), body: JSON.stringify({ url }) })
+    setHeroSlides(s => s.filter(u => u !== url))
+  }
+
+  async function saveHeroOrder(slides) {
+    setHeroSlides(slides)
+    await fetch('/api/admin/upload/hero/reorder', { method: 'PUT', headers: authH(token), body: JSON.stringify({ slides }) })
+  }
+
+  function onHeroDragStart(e, i) { setDragIdx(i); e.dataTransfer.effectAllowed = 'move' }
+  function onHeroDragOver(e, i) { e.preventDefault(); setDragOverIdx(i) }
+  function onHeroDrop(e, i) {
+    e.preventDefault()
+    if (dragIdx === null || dragIdx === i) { setDragIdx(null); setDragOverIdx(null); return }
+    const next = [...heroSlides]; const [m] = next.splice(dragIdx, 1); next.splice(i, 0, m)
+    saveHeroOrder(next); setDragIdx(null); setDragOverIdx(null)
+  }
+  function onHeroDragEnd() { setDragIdx(null); setDragOverIdx(null) }
+
+  function moveHero(i, dir) {
+    const next = [...heroSlides]; const j = i + dir
+    if (j < 0 || j >= next.length) return
+    ;[next[i], next[j]] = [next[j], next[i]]; saveHeroOrder(next)
+  }
+
+  // ── Product image upload
+  async function uploadProductImage(e) {
+    const file = e.target.files[0]; if (!file || !selectedSlug) return
+    setProdUploading(true); setProdMsg('')
+    const fd = new FormData(); fd.append('image', file)
+    const res = await fetch(`/api/admin/upload/product/${selectedSlug}`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd })
+    const data = await res.json()
+    if (data.ok) {
+      setProductImages(prev => ({ ...prev, [selectedSlug]: [...(prev[selectedSlug] || []), data.url] }))
+      setProdMsg('✓ Image uploaded!')
+    } else setProdMsg('✗ Upload failed: ' + (data.error || ''))
+    setProdUploading(false); e.target.value = ''
+  }
+
+  async function deleteProductImage(slug, url) {
+    if (!confirm('Delete this product image?')) return
+    await fetch(`/api/admin/upload/product/${slug}`, { method: 'DELETE', headers: authH(token), body: JSON.stringify({ url }) })
+    setProductImages(prev => ({ ...prev, [slug]: (prev[slug] || []).filter(u => u !== url) }))
+  }
+
+  const tabs = [
+    { id: 'hero',    label: '🖼️ Hero Slides' },
+    { id: 'product', label: '🛍️ Product Images' },
+  ]
+
+  return (
+    <div>
+      <div style={{ marginBottom: '20px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px', fontFamily: "'HubotSans',sans-serif" }}>Image Manager</h2>
+        <p style={{ color: '#888', fontSize: '13px', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>Upload, replace, reorder, and delete images across your website.</p>
+      </div>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            style={{ padding: '9px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: tab === t.id ? PRI : '#fff', color: tab === t.id ? '#fff' : '#555', fontWeight: tab === t.id ? 700 : 500, fontSize: '13px', boxShadow: '0 1px 4px rgba(0,0,0,0.10)', fontFamily: "'HubotSans',sans-serif", transition: 'all 0.15s' }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'hero' && (
+        <div>
+          <Card style={{ marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 700, color: PRI, marginBottom: '8px', fontFamily: "'HubotSans',sans-serif" }}>Hero Slideshow Images</h3>
+            <p style={{ fontSize: '12.5px', color: '#888', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>
+              Upload new hero slide images. They will replace the default slides on the homepage. Drag or use ▲▼ to reorder. Recommended: landscape images (1920×600px or similar).
+            </p>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: PRI, color: '#fff', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 700, fontFamily: "'HubotSans',sans-serif" }}>
+              {heroUploading ? '⏳ Uploading…' : '⬆️ Upload Slide Image'}
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={uploadHeroSlide} disabled={heroUploading} />
+            </label>
+            {heroMsg && <p style={{ fontSize: '12px', color: heroMsg.startsWith('✓') ? '#16a34a' : '#dc2626', margin: '8px 0 0', fontFamily: "'HubotSans',sans-serif" }}>{heroMsg}</p>}
+          </Card>
+
+          {heroSlides.length === 0
+            ? <Card><p style={{ color: '#aaa', fontSize: '13px', fontFamily: "'HubotSans',sans-serif", margin: 0 }}>No custom slides uploaded yet. The default built-in slides will be used.</p></Card>
+            : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
+                {heroSlides.map((url, i) => (
+                  <div key={url} draggable
+                    onDragStart={e => onHeroDragStart(e, i)}
+                    onDragOver={e => onHeroDragOver(e, i)}
+                    onDrop={e => onHeroDrop(e, i)}
+                    onDragEnd={onHeroDragEnd}
+                    style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: dragOverIdx === i ? `0 0 0 3px ${PRI}` : '0 1px 6px rgba(0,0,0,0.08)', border: `2px solid ${dragOverIdx === i ? PRI : '#eee'}`, opacity: dragIdx === i ? 0.5 : 1, cursor: 'grab', transition: 'all 0.15s' }}>
+                    <div style={{ position: 'relative' }}>
+                      <img src={url} alt={`Slide ${i+1}`} style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
+                      <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(0,0,0,0.6)', color: '#fff', borderRadius: '6px', padding: '2px 8px', fontSize: '11px', fontWeight: 700, fontFamily: "'HubotSans',sans-serif" }}>Slide {i+1}</div>
+                    </div>
+                    <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '11px', color: '#bbb', fontFamily: "'HubotSans',sans-serif", flex: 1 }}>⠿ drag to reorder</span>
+                      <button onClick={() => moveHero(i, -1)} disabled={i === 0} style={{ background: PRI_LIGHT, border: 'none', borderRadius: '5px', padding: '4px 8px', cursor: 'pointer', color: PRI, fontSize: '11px', opacity: i === 0 ? 0.4 : 1 }}>▲</button>
+                      <button onClick={() => moveHero(i, 1)} disabled={i === heroSlides.length-1} style={{ background: PRI_LIGHT, border: 'none', borderRadius: '5px', padding: '4px 8px', cursor: 'pointer', color: PRI, fontSize: '11px', opacity: i === heroSlides.length-1 ? 0.4 : 1 }}>▼</button>
+                      <button onClick={() => deleteHeroSlide(url)} style={{ background: '#fee2e2', border: 'none', borderRadius: '5px', padding: '4px 10px', cursor: 'pointer', color: '#dc2626', fontWeight: 700, fontSize: '13px' }}>🗑</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          }
+        </div>
+      )}
+
+      {tab === 'product' && (
+        <div>
+          <Card style={{ marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 700, color: PRI, marginBottom: '12px', fontFamily: "'HubotSans',sans-serif" }}>Product Images</h3>
+            <p style={{ fontSize: '12.5px', color: '#888', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>
+              Select a product, then upload images for it. Uploaded images appear first on the product page.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <select value={selectedSlug} onChange={e => { setSelectedSlug(e.target.value); setProdMsg('') }}
+                style={{ padding: '9px 12px', border: '1.5px solid #ddd', borderRadius: '8px', fontSize: '13px', fontFamily: "'HubotSans',sans-serif", outline: 'none', minWidth: '220px' }}>
+                {products.map(p => (
+                  <option key={p.slug} value={p.slug}>{p.name}</option>
+                ))}
+              </select>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: PRI, color: '#fff', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 700, fontFamily: "'HubotSans',sans-serif" }}>
+                {prodUploading ? '⏳ Uploading…' : '⬆️ Upload Image'}
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={uploadProductImage} disabled={prodUploading} />
+              </label>
+            </div>
+            {prodMsg && <p style={{ fontSize: '12px', color: prodMsg.startsWith('✓') ? '#16a34a' : '#dc2626', margin: '8px 0 0', fontFamily: "'HubotSans',sans-serif" }}>{prodMsg}</p>}
+          </Card>
+
+          {selectedSlug && (
+            <Card>
+              <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#1a1a1a', marginBottom: '12px', fontFamily: "'HubotSans',sans-serif" }}>
+                Uploaded images for: <span style={{ color: PRI }}>{products.find(p => p.slug === selectedSlug)?.name}</span>
+              </h4>
+              {!(productImages[selectedSlug]?.length)
+                ? <p style={{ color: '#aaa', fontSize: '13px', fontFamily: "'HubotSans',sans-serif", margin: 0 }}>No custom images uploaded for this product yet.</p>
+                : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
+                    {(productImages[selectedSlug] || []).map((url, i) => (
+                      <div key={url} style={{ borderRadius: '10px', overflow: 'hidden', border: '2px solid #eee', position: 'relative' }}>
+                        <img src={url} alt={`product ${i+1}`} style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', display: 'block' }} />
+                        <button onClick={() => deleteProductImage(selectedSlug, url)}
+                          style={{ position: 'absolute', top: '6px', right: '6px', background: '#dc2626', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', color: '#fff', fontWeight: 700, fontSize: '13px' }}>🗑</button>
+                        {i === 0 && <div style={{ position: 'absolute', bottom: '6px', left: '6px', background: '#16a34a', color: '#fff', borderRadius: '5px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, fontFamily: "'HubotSans',sans-serif" }}>Main</div>}
+                      </div>
+                    ))}
+                  </div>
+                )
+              }
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Page Editor ──────────────────────────────────────────────────────────────
 function PageEditorView({ token }) {
   const DEFAULT_LAYOUT = [
@@ -294,6 +485,7 @@ function Sidebar({ view, setView, counts, onLogout }) {
   const items = [
     { id: 'dashboard',      icon: '📊', label: 'Dashboard' },
     { id: 'page-editor',    icon: '🧩', label: 'Page Editor' },
+    { id: 'image-manager',  icon: '🖼️', label: 'Image Manager' },
     { id: 'products',       icon: '🛍️', label: 'Products',  badge: counts.products },
     { id: 'sticker-prices', icon: '🏷️', label: 'Sticker Prices' },
     { id: 'content',        icon: '🎨', label: 'Content CMS' },
@@ -562,15 +754,14 @@ function ProductEditor({ token, slug, baseProduct, override, onSaved, onCancel }
                 <h3 style={{ fontSize: '14px', fontWeight: 700, color: PRI, margin: '0 0 3px', fontFamily: "'HubotSans',sans-serif" }}>Per-Variant Pricing</h3>
                 <p style={{ fontSize: '12px', color: '#888', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>Set a different price table for each size/type variant</p>
               </div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: '#333', fontFamily: "'HubotSans',sans-serif" }}>
-                <div style={{ position: 'relative', width: '40px', height: '22px' }}>
-                  <input type="checkbox" checked={useVariantPricing} onChange={e => { setUseVariantPricing(e.target.checked); if (e.target.checked) syncVariantSizes(sizes) }} style={{ opacity: 0, width: 0, height: 0 }} />
-                  <div style={{ position: 'absolute', inset: 0, borderRadius: '11px', background: useVariantPricing ? PRI : '#ccc', cursor: 'pointer', transition: 'background 0.2s' }}
-                    onClick={() => { const v = !useVariantPricing; setUseVariantPricing(v); if (v) syncVariantSizes(sizes) }} />
-                  <div style={{ position: 'absolute', top: '3px', left: useVariantPricing ? '21px' : '3px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', pointerEvents: 'none' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: '#333', fontFamily: "'HubotSans',sans-serif" }}
+                onClick={() => { const v = !useVariantPricing; setUseVariantPricing(v); if (v) syncVariantSizes(sizes) }}>
+                <div style={{ position: 'relative', width: '40px', height: '22px', flexShrink: 0 }}>
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: '11px', background: useVariantPricing ? '#16a34a' : '#ccc', transition: 'background 0.2s' }} />
+                  <div style={{ position: 'absolute', top: '3px', left: useVariantPricing ? '21px' : '3px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                 </div>
-                {useVariantPricing ? 'Enabled' : 'Disabled'}
-              </label>
+                <span style={{ color: useVariantPricing ? '#16a34a' : '#aaa' }}>{useVariantPricing ? '✓ Enabled' : 'Disabled'}</span>
+              </div>
             </div>
             {!useVariantPricing && (
               <p style={{ fontSize: '12.5px', color: '#aaa', fontFamily: "'HubotSans',sans-serif", margin: 0 }}>Currently using the shared Price Table above for all sizes. Toggle on to set individual prices per size.</p>
@@ -1338,6 +1529,7 @@ export default function AdminPage() {
           <>
             {view === 'dashboard'      && <DashboardView siteData={siteData} />}
             {view === 'page-editor'    && <PageEditorView token={token} />}
+            {view === 'image-manager'  && <ImageManager token={token} />}
             {view === 'products'       && <ProductsView token={token} productOverrides={siteData.productOverrides} onDataChanged={fetchAll} />}
             {view === 'sticker-prices' && <StickerPricesView token={token} stickerPriceOverrides={siteData.stickerPriceOverrides} onDataChanged={fetchAll} />}
             {view === 'content'        && <ContentView token={token} content={siteData.content} onDataChanged={fetchAll} />}
