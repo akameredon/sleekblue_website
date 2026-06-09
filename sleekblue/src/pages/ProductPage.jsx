@@ -36,10 +36,15 @@ export default function ProductPage() {
 
   // Admin overrides — fetched from server, applied on top of static data
   const [adminOverride, setAdminOverride] = useState(null)
+  const [uploadedImages, setUploadedImages] = useState({})
   useEffect(() => {
     fetch(`/api/products/${baseProduct.slug}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setAdminOverride(data) })
+      .catch(() => {})
+    fetch('/api/product-images')
+      .then(r => r.ok ? r.json() : {})
+      .then(d => setUploadedImages(d || {}))
       .catch(() => {})
   }, [baseProduct.slug])
 
@@ -72,10 +77,11 @@ export default function ProductPage() {
     ? findNearestSize(customWidth, customHeight)
     : selectedSize
 
-  // Product images — for die-cut stickers use per-size gallery, else standard
+  // Product images — uploaded images take priority; fall back to static
+  const uploadedForSlug = uploadedImages[product.slug] || []
   const productImgs = isDieCut
     ? (STICKER_SIZE_IMAGES[effectiveSize] || [])
-    : (PRODUCT_IMAGES[product.slug] || [])
+    : (uploadedForSlug.length > 0 ? uploadedForSlug : (PRODUCT_IMAGES[product.slug] || []))
   const hasImages = productImgs.length > 0
   const displayImgs = hasImages ? productImgs : null
 

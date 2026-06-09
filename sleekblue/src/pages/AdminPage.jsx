@@ -46,9 +46,11 @@ function Badge({ children, color = PRI }) {
 function SaveBar({ onSave, onCancel, saving, saved }) {
   return (
     <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #eee' }}>
-      <Btn onClick={onSave} disabled={saving}>{saving ? 'Saving…' : '💾 Save Changes'}</Btn>
+      <Btn onClick={onSave} disabled={saving} style={{ background: saving ? '#aaa' : '#16a34a', minWidth: '200px' }}>
+        {saving ? 'Publishing…' : '🚀 Publish to Website'}
+      </Btn>
       {onCancel && <Btn variant="ghost" onClick={onCancel}>Cancel</Btn>}
-      {saved && <span style={{ color: '#16a34a', fontSize: '13px', fontWeight: 600 }}>✓ Saved successfully!</span>}
+      {saved && <span style={{ color: '#16a34a', fontSize: '13px', fontWeight: 600 }}>✓ Published! Changes are now live.</span>}
     </div>
   )
 }
@@ -1188,10 +1190,38 @@ function TrustBarEditor({ token, data, onDataChanged }) {
   const [d, setD] = useState({ ...def, ...(data || {}), partners: (data?.partners || def.partners) })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [uploading, setUploading] = useState(null)
+  const [newBrandName, setNewBrandName] = useState('')
 
   function togglePartner(i) { const p = [...d.partners]; p[i] = { ...p[i], visible: !p[i].visible }; setD({ ...d, partners: p }) }
   function updatePartnerName(i, v) { const p = [...d.partners]; p[i] = { ...p[i], name: v }; setD({ ...d, partners: p }) }
   function movePartner(i, dir) { const p = [...d.partners], j = i + dir; if (j < 0 || j >= p.length) return;[p[i], p[j]] = [p[j], p[i]]; setD({ ...d, partners: p }) }
+  function removePartner(i) { if (!confirm('Remove this brand logo?')) return; setD({ ...d, partners: d.partners.filter((_, idx) => idx !== i) }) }
+
+  async function uploadLogo(i, file) {
+    setUploading(i)
+    const fd = new FormData(); fd.append('image', file)
+    const res = await fetch('/api/admin/upload/brand-logo', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd })
+    const json = await res.json()
+    setUploading(null)
+    if (json.url) {
+      const p = [...d.partners]; p[i] = { ...p[i], url: json.url }; setD({ ...d, partners: p })
+    }
+  }
+
+  async function addNewBrand(file) {
+    if (!newBrandName.trim()) { alert('Enter a brand name first.'); return }
+    setUploading('new')
+    const fd = new FormData(); fd.append('image', file)
+    const res = await fetch('/api/admin/upload/brand-logo', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd })
+    const json = await res.json()
+    setUploading(null)
+    if (json.url) {
+      const key = 'CUSTOM_' + Date.now()
+      setD({ ...d, partners: [...d.partners, { key, name: newBrandName.trim(), url: json.url, visible: true }] })
+      setNewBrandName('')
+    }
+  }
 
   async function save() {
     setSaving(true)
@@ -1210,22 +1240,50 @@ function TrustBarEditor({ token, data, onDataChanged }) {
         </div>
       </Card>
       <Card style={{ marginBottom: '16px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 700, color: PRI, marginBottom: '6px', fontFamily: "'HubotSans',sans-serif" }}>Partner Logos</h3>
-        <p style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>Toggle visibility, edit display names, and reorder. Logo images are pre-loaded.</p>
+        <h3 style={{ fontSize: '14px', fontWeight: 700, color: PRI, marginBottom: '4px', fontFamily: "'HubotSans',sans-serif" }}>Partner Logos</h3>
+        <p style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>Upload your own logo images, toggle visibility, edit names, and reorder. Pre-loaded logos shown by default.</p>
         {d.partners.map((p, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', padding: '10px 12px', background: p.visible !== false ? '#f0fdf4' : '#f9f9f9', borderRadius: '8px', border: `1px solid ${p.visible !== false ? '#bbf7d0' : '#eee'}` }}>
-            <button onClick={() => togglePartner(i)} style={{ background: p.visible !== false ? '#16a34a' : '#ddd', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap', fontFamily: "'HubotSans',sans-serif", minWidth: '80px' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', padding: '10px 12px', background: p.visible !== false ? '#f0fdf4' : '#f9f9f9', borderRadius: '8px', border: `1px solid ${p.visible !== false ? '#bbf7d0' : '#eee'}`, flexWrap: 'wrap' }}>
+            {/* Logo preview */}
+            {p.url ? (
+              <img src={p.url} alt={p.name} style={{ width: '48px', height: '32px', objectFit: 'contain', borderRadius: '4px', background: '#fff', border: '1px solid #eee', flexShrink: 0 }} />
+            ) : (
+              <div style={{ width: '48px', height: '32px', background: '#e9e9e9', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#aaa', flexShrink: 0, fontFamily: "'HubotSans',sans-serif" }}>LOGO</div>
+            )}
+            {/* Upload button */}
+            <label style={{ cursor: 'pointer', flexShrink: 0 }}>
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files[0] && uploadLogo(i, e.target.files[0])} />
+              <span style={{ display: 'inline-block', background: uploading === i ? '#aaa' : PRI_LIGHT, color: PRI, border: `1px solid ${PRI}40`, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', fontWeight: 700, fontFamily: "'HubotSans',sans-serif", whiteSpace: 'nowrap' }}>
+                {uploading === i ? '⏳' : '⬆ Upload'}
+              </span>
+            </label>
+            <button onClick={() => togglePartner(i)} style={{ background: p.visible !== false ? '#16a34a' : '#ddd', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap', fontFamily: "'HubotSans',sans-serif", minWidth: '76px' }}>
               {p.visible !== false ? '✓ Visible' : '✗ Hidden'}
             </button>
-            <span style={{ fontSize: '11px', color: '#aaa', fontFamily: "'HubotSans',sans-serif", minWidth: '80px' }}>Key: {p.key}</span>
             <input value={p.name} onChange={e => updatePartnerName(i, e.target.value)}
-              style={{ flex: 1, padding: '7px 10px', border: '1.5px solid #ddd', borderRadius: '6px', fontSize: '13px', fontFamily: "'HubotSans',sans-serif", outline: 'none' }} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              style={{ flex: 1, minWidth: '80px', padding: '7px 10px', border: '1.5px solid #ddd', borderRadius: '6px', fontSize: '13px', fontFamily: "'HubotSans',sans-serif", outline: 'none' }} />
+            <div style={{ display: 'flex', gap: '3px', flexShrink: 0 }}>
               <button onClick={() => movePartner(i, -1)} disabled={i === 0} style={{ background: PRI_LIGHT, border: 'none', borderRadius: '4px', padding: '2px 8px', cursor: 'pointer', fontSize: '11px', color: PRI }}>▲</button>
               <button onClick={() => movePartner(i, 1)} disabled={i === d.partners.length - 1} style={{ background: PRI_LIGHT, border: 'none', borderRadius: '4px', padding: '2px 8px', cursor: 'pointer', fontSize: '11px', color: PRI }}>▼</button>
+              <button onClick={() => removePartner(i)} style={{ background: '#fee2e2', border: 'none', borderRadius: '4px', padding: '2px 8px', cursor: 'pointer', color: '#dc2626', fontWeight: 700, fontSize: '12px' }}>×</button>
             </div>
           </div>
         ))}
+        {/* Add New Brand */}
+        <div style={{ marginTop: '16px', padding: '14px', background: '#fafafa', borderRadius: '8px', border: '1.5px dashed #ddd' }}>
+          <p style={{ fontSize: '12px', fontWeight: 700, color: '#555', margin: '0 0 10px', fontFamily: "'HubotSans',sans-serif" }}>+ Add New Brand Logo</p>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <input value={newBrandName} onChange={e => setNewBrandName(e.target.value)} placeholder="Brand name (e.g. Dangote Group)"
+              style={{ flex: 1, minWidth: '160px', padding: '8px 12px', border: '1.5px solid #ddd', borderRadius: '8px', fontSize: '13px', fontFamily: "'HubotSans',sans-serif", outline: 'none' }} />
+            <label style={{ cursor: 'pointer' }}>
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files[0] && addNewBrand(e.target.files[0])} />
+              <span style={{ display: 'inline-block', background: uploading === 'new' ? '#aaa' : ACC, color: '#fff', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 700, fontFamily: "'HubotSans',sans-serif", cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                {uploading === 'new' ? 'Uploading…' : '⬆ Upload Logo & Add'}
+              </span>
+            </label>
+          </div>
+          <p style={{ fontSize: '11px', color: '#aaa', margin: '8px 0 0', fontFamily: "'HubotSans',sans-serif" }}>Enter brand name above, then click to select logo image (PNG, JPG, max 10MB). Click 🚀 Publish to go live.</p>
+        </div>
       </Card>
       <SaveBar onSave={save} saving={saving} saved={saved} />
     </div>
@@ -1439,9 +1497,51 @@ function FooterEditor({ token, data, onDataChanged }) {
   )
 }
 
-function ContentView({ token, content, onDataChanged }) {
-  const [tab, setTab] = useState('trustBar')
+function ContactInfoEditor({ token, settings, onDataChanged }) {
+  const [form, setForm] = useState({
+    phone: '', whatsapp: '', email: '', address: '', companyName: '',
+    ...(settings || {}),
+  })
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => { setForm(prev => ({ ...prev, ...(settings || {}) })) }, [settings])
+
+  async function save() {
+    setSaving(true)
+    await fetch('/api/admin/settings', { method: 'PUT', headers: authH(token), body: JSON.stringify(form) })
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 3000); onDataChanged()
+  }
+
+  return (
+    <div>
+      <Card style={{ marginBottom: '16px' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: 700, color: PRI, marginBottom: '16px', fontFamily: "'HubotSans',sans-serif" }}>Contact Information</h3>
+        <p style={{ fontSize: '12px', color: '#888', marginBottom: '16px', fontFamily: "'HubotSans',sans-serif", lineHeight: 1.5 }}>
+          These details appear in the footer, WhatsApp links, and contact sections across the entire website. Click 🚀 Publish to push changes live.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <Input label="Company Name" value={form.companyName || ''} onChange={e => setForm({ ...form, companyName: e.target.value })} placeholder="Sleekblue Media Houz" />
+          <Input label="Phone Number (with country code)" value={form.phone || ''} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+234 806 527 5264" />
+          <Input label="WhatsApp Number (digits only, no +)" value={form.whatsapp || ''} onChange={e => setForm({ ...form, whatsapp: e.target.value })} placeholder="2348065275264" />
+          <Input label="Email Address" value={form.email || ''} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="info@sleekbluemediahouz.com" />
+          <Input label="Address / Location" value={form.address || ''} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Lagos, Nigeria" />
+        </div>
+        <div style={{ marginTop: '16px', background: '#f8f8f8', borderRadius: '8px', padding: '12px 14px', fontSize: '12px', color: '#555', fontFamily: "'HubotSans',sans-serif", lineHeight: 1.7 }}>
+          <strong>Live preview:</strong><br/>
+          📞 {form.phone || '(not set)'} &nbsp;|&nbsp; 💬 wa.me/{form.whatsapp || '(not set)'} &nbsp;|&nbsp; 📍 {form.address || '(not set)'}
+          {form.email && <> &nbsp;|&nbsp; ✉️ {form.email}</>}
+        </div>
+      </Card>
+      <SaveBar onSave={save} saving={saving} saved={saved} />
+    </div>
+  )
+}
+
+function ContentView({ token, content, settings, onDataChanged }) {
+  const [tab, setTab] = useState('contact')
   const tabs = [
+    { id: 'contact', label: '📞 Contact Info' },
     { id: 'trustBar', label: '⭐ Trust Bar' },
     { id: 'bestSelling', label: '🛍️ Best Selling' },
     { id: 'testimonials', label: '💬 Testimonials' },
@@ -1451,7 +1551,7 @@ function ContentView({ token, content, onDataChanged }) {
     <div>
       <div style={{ marginBottom: '20px' }}>
         <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px', fontFamily: "'HubotSans',sans-serif" }}>Content Management</h2>
-        <p style={{ color: '#888', fontSize: '13px', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>Edit every text section and content block visible on the website.</p>
+        <p style={{ color: '#888', fontSize: '13px', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>Edit every text section and content block visible on the website. Click 🚀 Publish to push any section live.</p>
       </div>
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
         {tabs.map(t => (
@@ -1461,6 +1561,7 @@ function ContentView({ token, content, onDataChanged }) {
           </button>
         ))}
       </div>
+      {tab === 'contact'     && <ContactInfoEditor  token={token} settings={settings}        onDataChanged={onDataChanged} />}
       {tab === 'trustBar'    && <TrustBarEditor    token={token} data={content.trustBar}   onDataChanged={onDataChanged} />}
       {tab === 'bestSelling' && <BestSellingEditor  token={token} data={content}             onDataChanged={onDataChanged} />}
       {tab === 'testimonials'&& <TestimonialsEditor token={token} data={content.reviews}    onDataChanged={onDataChanged} />}
@@ -1532,7 +1633,7 @@ export default function AdminPage() {
             {view === 'image-manager'  && <ImageManager token={token} />}
             {view === 'products'       && <ProductsView token={token} productOverrides={siteData.productOverrides} onDataChanged={fetchAll} />}
             {view === 'sticker-prices' && <StickerPricesView token={token} stickerPriceOverrides={siteData.stickerPriceOverrides} onDataChanged={fetchAll} />}
-            {view === 'content'        && <ContentView token={token} content={siteData.content} onDataChanged={fetchAll} />}
+            {view === 'content'        && <ContentView token={token} content={siteData.content} settings={siteData.settings} onDataChanged={fetchAll} />}
             {view === 'settings'       && <SettingsView token={token} settings={siteData.settings} onDataChanged={fetchAll} />}
             {view === 'acceptances'    && <AcceptancesView acceptances={siteData.acceptances} />}
             {view === 'security'       && <SecurityView token={token} />}

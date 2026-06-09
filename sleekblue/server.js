@@ -378,6 +378,14 @@ app.get('/api/product-images', (req, res) => {
   res.json(data.productImages || {})
 })
 
+// Upload brand/partner logo (returns URL only — stored via content save)
+app.post('/api/admin/upload/brand-logo', requireAuth, siteUpload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+  const url = `/uploads/site/${req.file.filename}`
+  console.log('[Admin] Brand logo uploaded:', url)
+  res.json({ ok: true, url })
+})
+
 // Upload site image (logo, etc)
 app.post('/api/admin/upload/site', requireAuth, siteUpload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })

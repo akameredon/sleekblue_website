@@ -30,18 +30,25 @@ const DEFAULT_TRUST = {
   ],
 }
 
+function getLogoSrc(p) {
+  if (p.url) return p.url
+  return LOGO_MAP[p.key] || null
+}
+
 export default function TrustBar() {
   const [data, setData] = useState(DEFAULT_TRUST)
 
   useEffect(() => {
     fetch('/api/content')
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.trustBar) setData({ ...DEFAULT_TRUST, ...d.trustBar, partners: d.trustBar.partners || DEFAULT_TRUST.partners }) })
+      .then(d => {
+        if (d?.trustBar) setData({ ...DEFAULT_TRUST, ...d.trustBar, partners: d.trustBar.partners || DEFAULT_TRUST.partners })
+      })
       .catch(() => {})
   }, [])
 
   const visiblePartners = data.partners.filter(p => p.visible !== false)
-  const logos = visiblePartners.map(p => ({ src: LOGO_MAP[p.key], alt: p.name })).filter(l => l.src)
+  const logos = visiblePartners.map(p => ({ src: getLogoSrc(p), alt: p.name })).filter(l => l.src)
 
   return (
     <section style={{ background: '#fff', padding: '28px 0 24px', overflow: 'hidden' }}>

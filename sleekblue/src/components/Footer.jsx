@@ -7,18 +7,29 @@ const DEFAULT_SERVICES = ['Die Cut Stickers', 'Flex Banners', 'Business Cards', 
 
 export default function Footer() {
   const year = new Date().getFullYear()
-  const [tagline, setTagline] = useState(DEFAULT_TAGLINE)
+  const [tagline, setTagline]   = useState(DEFAULT_TAGLINE)
   const [services, setServices] = useState(DEFAULT_SERVICES)
+  const [settings, setSettings] = useState({})
 
   useEffect(() => {
     fetch('/api/content')
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        if (d?.footer?.tagline) setTagline(d.footer.tagline)
-        if (d?.footer?.services?.length) setServices(d.footer.services)
+        if (d?.footer?.tagline)           setTagline(d.footer.tagline)
+        if (d?.footer?.services?.length)  setServices(d.footer.services)
       })
       .catch(() => {})
+
+    fetch('/api/settings')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setSettings(d) })
+      .catch(() => {})
   }, [])
+
+  const phone    = settings.phone    || '+234 806 527 5264'
+  const whatsapp = settings.whatsapp || '2348065275264'
+  const email    = settings.email    || ''
+  const address  = settings.address  || 'Lagos, Nigeria'
 
   return (
     <footer style={{ background: '#1a0a2e', color: '#ccc', paddingTop: '48px', paddingBottom: '24px', fontFamily: "'HubotSans', sans-serif" }}>
@@ -32,7 +43,7 @@ export default function Footer() {
               {tagline}
             </p>
             <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
-              <a href="https://wa.me/2348065275264" target="_blank" rel="noopener noreferrer" style={{ background: '#25D366', color: '#fff', borderRadius: '50%', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: '16px' }}>💬</a>
+              <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer" style={{ background: '#25D366', color: '#fff', borderRadius: '50%', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: '16px' }}>💬</a>
               <a href="https://www.instagram.com/sleekbluemediahouz" target="_blank" rel="noopener noreferrer" style={{ background: 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)', color: '#fff', borderRadius: '50%', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: '16px' }}>📸</a>
               <a href="https://www.facebook.com/sleekbluemediahouz" target="_blank" rel="noopener noreferrer" style={{ background: '#1877F2', color: '#fff', borderRadius: '50%', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: '16px' }}>👍</a>
             </div>
@@ -66,9 +77,18 @@ export default function Footer() {
           {/* Contact */}
           <div>
             <h4 style={{ color: '#fff', fontSize: '14px', fontWeight: 700, marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Contact Us</h4>
-            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '10px', lineHeight: 1.5 }}>📞 <a href="tel:+2348065275264" style={{ color: '#aaa', textDecoration: 'none' }}>+234 806 527 5264</a></p>
-            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '10px' }}>💬 <a href="https://wa.me/2348065275264" target="_blank" rel="noopener noreferrer" style={{ color: '#aaa', textDecoration: 'none' }}>WhatsApp Us</a></p>
-            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '10px' }}>📍 Lagos, Nigeria</p>
+            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '10px', lineHeight: 1.5 }}>
+              📞 <a href={`tel:${phone}`} style={{ color: '#aaa', textDecoration: 'none' }}>{phone}</a>
+            </p>
+            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '10px' }}>
+              💬 <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer" style={{ color: '#aaa', textDecoration: 'none' }}>WhatsApp Us</a>
+            </p>
+            {email && (
+              <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '10px' }}>
+                ✉️ <a href={`mailto:${email}`} style={{ color: '#aaa', textDecoration: 'none' }}>{email}</a>
+              </p>
+            )}
+            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '10px' }}>📍 {address}</p>
             <Link to="/quote" style={{ display: 'inline-block', marginTop: '8px', background: '#FF6B00', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>
               Request a Quote
             </Link>
