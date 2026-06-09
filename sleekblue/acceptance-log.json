@@ -8,5 +8,15 @@
     "phone": "08037321545",
     "ipAddress": "105.127.15.65",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+  },
+  {
+    "acceptanceId": "SBM-1781033789014-TJICG",
+    "timestamp": "2026-06-09T19:36:29.014Z",
+    "termsVersion": "June 2026",
+    "customerName": "k",
+    "email": "k",
+    "phone": "0",
+    "ipAddress": "105.127.15.59",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
   }
 ]

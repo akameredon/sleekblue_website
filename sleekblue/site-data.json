@@ -37,6 +37,221 @@
       "sizes": [
         "Custom"
       ]
+    },
+    "flyer": {
+      "name": "Flyer",
+      "category": "Corporate Branding",
+      "badge": "Promo Ready",
+      "description": "Eye-catching promotional flyers for events, sales, and announcements. A4, A5, or custom sizes.",
+      "features": [
+        "130gsm art paper",
+        "A4, or A5, ",
+        "Single or double-sided",
+        "Vibrant full-colour",
+        "Quick 24hr production",
+        "Bulk rates available"
+      ],
+      "priceTable": [
+        {
+          "qty": 100,
+          "unitPrice": 95
+        },
+        {
+          "qty": 500,
+          "unitPrice": 65
+        },
+        {
+          "qty": 1000,
+          "unitPrice": 60
+        }
+      ],
+      "sizes": [
+        "A4",
+        "A5"
+      ]
+    },
+    "flex-banner": {
+      "name": "Flex Banner",
+      "category": "Flex Printing/Large Format",
+      "badge": "Best for Outdoors",
+      "description": "High-quality flex banners for outdoor advertising, events, exhibitions, and promotions. Weather-resistant and long-lasting.",
+      "features": [
+        "500gsm heavy-duty flex",
+        "UV resistant inks",
+        "Hemmed & eyeleted edges",
+        "Any custom size available",
+        "Vibrant colour output",
+        "Fast 24–48hr production"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 3240
+        },
+        {
+          "qty": 5,
+          "unitPrice": 3240
+        },
+        {
+          "qty": 10,
+          "unitPrice": 3240
+        }
+      ],
+      "sizes": [
+        "3x6ft",
+        "4x6ft",
+        "4x8ft",
+        "6x8ft",
+        "Custom"
+      ]
+    },
+    "billboard": {
+      "name": "Billboard",
+      "category": "Flex Printing/Large Format",
+      "badge": "High Impact",
+      "description": "Large-scale billboard printing for high-traffic outdoor advertising. Maximum visibility, premium print quality.",
+      "features": [
+        "Heavy-duty material",
+        "Weather and UV resistant",
+        "High-resolution print",
+        "Any custom size",
+        "Professional installation guide",
+        "Durable for 12+ months"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 36000
+        },
+        {
+          "qty": 3,
+          "unitPrice": 36000
+        }
+      ],
+      "sizes": [
+        "10x20ft",
+        "12x24ft",
+        "14x24ft",
+        "Custom"
+      ]
+    },
+    "sav-printing": {
+      "name": "SAV Printing",
+      "category": "Flex Printing/Large Format",
+      "badge": "Versatile",
+      "description": "Self-adhesive vinyl (SAV) printing for vehicle graphics, floor decals, walls, windows, and point-of-sale displays.",
+      "features": [
+        "Pressure-sensitive adhesive",
+        "Removable or permanent options",
+        "Indoor and outdoor use",
+        "Vibrant print quality",
+        "Easy application",
+        "Custom cut shapes"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 5000
+        },
+        {
+          "qty": 5,
+          "unitPrice": 5000
+        }
+      ],
+      "sizes": [
+        "4x5",
+        "5x6",
+        "5x10",
+        "4x20",
+        "5x60",
+        "Custom"
+      ]
+    },
+    "reflective-flex": {
+      "name": "Reflective Flex",
+      "category": "Flex Printing/Large Format",
+      "badge": "24hr Visibility",
+      "description": "Reflective flex banners for night-time visibility. Ideal for safety signage, road-facing ads, and 24-hour promotions.",
+      "features": [
+        "High-visibility at night",
+        "Grade 1 reflective material",
+        "Full-colour printing",
+        "Durable all-weather use",
+        "Eyelets for easy hanging",
+        "Custom sizes"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 16000
+        },
+        {
+          "qty": 5,
+          "unitPrice": 16000
+        }
+      ],
+      "sizes": [
+        "3x6ft",
+        "4x6ft",
+        "10x8ft",
+        "Custom"
+      ]
+    },
+    "window-graphics": {
+      "name": "Window Graphics",
+      "category": "Flex Printing/Large Format",
+      "badge": "Shop Front Ready",
+      "description": "Eye-catching window graphics for retail shops, offices, restaurants, and vehicles. Perforated or solid vinyl options.",
+      "features": [
+        "Perforated or frosted options",
+        "One-way vision available",
+        "UV resistant print",
+        "Easy to install & remove",
+        "Custom sizes & shapes",
+        "Interior & exterior use"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 24000
+        },
+        {
+          "qty": 5,
+          "unitPrice": 24000
+        }
+      ],
+      "sizes": [
+        "4x10",
+        "4x5",
+        "4x3",
+        "4x4"
+      ]
+    },
+    "graphic-design": {
+      "name": "Graphic Design",
+      "category": "Corporate Branding",
+      "badge": "Creative Studio",
+      "description": "Professional graphic design for all your branding needs — logos, social media, print materials, and more.",
+      "features": [
+        "Experienced brand designers",
+        "Fast 24–48hr turnaround",
+        "Unlimited revisions (3 rounds)",
+        "Print & digital formats",
+        "Source files included",
+        "Social media graphics"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 40000
+        }
+      ],
+      "sizes": [
+        "Flyer/Poster",
+        "Social Media",
+        "Logo",
+        "Full Branding"
+      ]
     }
   },
   "stickerPriceOverrides": {}
