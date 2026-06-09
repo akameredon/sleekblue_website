@@ -28,5 +28,25 @@
     "phone": "080375555666666",
     "ipAddress": "105.127.15.59",
     "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+  },
+  {
+    "acceptanceId": "SBM-1781045131146-DLOUQ",
+    "timestamp": "2026-06-09T22:45:31.146Z",
+    "termsVersion": "June 2026",
+    "customerName": "Hopefine Martins",
+    "email": "chinemeremonyema@gmail.com",
+    "phone": "08064709861",
+    "ipAddress": "102.90.115.128",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5.1 Mobile/15E148 Safari/604.1"
+  },
+  {
+    "acceptanceId": "SBM-1781045171346-L891S",
+    "timestamp": "2026-06-09T22:46:11.346Z",
+    "termsVersion": "June 2026",
+    "customerName": "martins obioha",
+    "email": "marhopventures@gmail.com",
+    "phone": "08037321545",
+    "ipAddress": "105.127.15.59",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
   }
 ]

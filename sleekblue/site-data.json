@@ -254,5 +254,44 @@
       ]
     }
   },
-  "stickerPriceOverrides": {}
+  "stickerPriceOverrides": {},
+  "content": {
+    "trustBar": {
+      "rating": "5.0/5",
+      "reviewCount": "500+",
+      "tagline": "TRUSTED BY GLOBAL BRANDS",
+      "partners": [
+        {
+          "key": "UBA",
+          "name": "UBA",
+          "visible": true
+        },
+        {
+          "key": "MTN",
+          "name": "MTN",
+          "visible": true
+        },
+        {
+          "key": "HERO",
+          "name": "HERO",
+          "visible": true
+        },
+        {
+          "key": "IMO_DIGITAL",
+          "name": "Imo Digital City Limited",
+          "visible": true
+        },
+        {
+          "key": "NNPC",
+          "name": "NNPC",
+          "visible": true
+        },
+        {
+          "key": "SEPLAT",
+          "name": "Seplat Energy",
+          "visible": true
+        }
+      ]
+    }
+  }
 }
