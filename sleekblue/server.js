@@ -457,6 +457,41 @@ app.put('/api/admin/upload/hero/reorder', requireAuth, (req, res) => {
   res.json({ ok: true })
 })
 
+// ── Extra default slides (uploaded, appear alongside built-in 4) ──────────────
+app.post('/api/admin/upload/hero/extra-default', requireAuth, heroUpload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+  const url = `/uploads/hero/${req.file.filename}`
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.hero = data.hero || {}
+  data.hero.extraDefaultSlides = data.hero.extraDefaultSlides || []
+  data.hero.extraDefaultSlides.push(url)
+  writeJSON(SITE_DATA_FILE, data)
+  console.log('[Admin] Extra default slide added:', url)
+  res.json({ ok: true, url })
+})
+
+app.delete('/api/admin/upload/hero/extra-default', requireAuth, (req, res) => {
+  const { url } = req.body
+  if (!url) return res.status(400).json({ error: 'No url provided' })
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.hero = data.hero || {}
+  data.hero.extraDefaultSlides = (data.hero.extraDefaultSlides || []).filter(u => u !== url)
+  data.hero.hiddenExtraDefaultSlides = (data.hero.hiddenExtraDefaultSlides || []).filter(u => u !== url)
+  writeJSON(SITE_DATA_FILE, data)
+  try { const filename = url.replace('/uploads/hero/', ''); unlinkSync(join(UPLOADS_DIR, 'hero', filename)) } catch {}
+  res.json({ ok: true })
+})
+
+app.put('/api/admin/hero/extra-default-visibility', requireAuth, (req, res) => {
+  const { hiddenExtraDefaultSlides } = req.body
+  if (!Array.isArray(hiddenExtraDefaultSlides)) return res.status(400).json({ error: 'array required' })
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.hero = data.hero || {}
+  data.hero.hiddenExtraDefaultSlides = hiddenExtraDefaultSlides
+  writeJSON(SITE_DATA_FILE, data)
+  res.json({ ok: true })
+})
+
 // ── Default slide visibility ───────────────────────────────────────────────────
 app.put('/api/admin/hero/default-slides', requireAuth, (req, res) => {
   const { hiddenDefaultSlides } = req.body

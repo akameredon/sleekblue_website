@@ -113,7 +113,10 @@ function ImageManager({ token }) {
   const [tab, setTab] = useState('hero')
   const [heroSlides, setHeroSlides] = useState([])
   const [hiddenDefaultSlides, setHiddenDefaultSlides] = useState([])
+  const [extraDefaultSlides, setExtraDefaultSlides] = useState([])
+  const [hiddenExtraDefaultSlides, setHiddenExtraDefaultSlides] = useState([])
   const [defaultSlidesMsg, setDefaultSlidesMsg] = useState('')
+  const [extraDefaultUploading, setExtraDefaultUploading] = useState(false)
   const [heroUploading, setHeroUploading] = useState(false)
   const [heroMsg, setHeroMsg] = useState('')
   const [products, setProducts] = useState(ALL_PRODUCTS)
@@ -128,6 +131,8 @@ function ImageManager({ token }) {
     fetch('/api/hero').then(r => r.ok ? r.json() : {}).then(d => {
       setHeroSlides(d.customSlides || [])
       setHiddenDefaultSlides(d.hiddenDefaultSlides || [])
+      setExtraDefaultSlides(d.extraDefaultSlides || [])
+      setHiddenExtraDefaultSlides(d.hiddenExtraDefaultSlides || [])
     })
     fetch('/api/product-images').then(r => r.ok ? r.json() : {}).then(d => setProductImages(d))
   }, [])
@@ -140,6 +145,37 @@ function ImageManager({ token }) {
     await fetch('/api/admin/hero/default-slides', { method: 'PUT', headers: authH(token), body: JSON.stringify({ hiddenDefaultSlides: next }) })
     setDefaultSlidesMsg('✓ Saved')
     setTimeout(() => setDefaultSlidesMsg(''), 2000)
+  }
+
+  async function toggleExtraDefaultSlide(url) {
+    const next = hiddenExtraDefaultSlides.includes(url)
+      ? hiddenExtraDefaultSlides.filter(u => u !== url)
+      : [...hiddenExtraDefaultSlides, url]
+    setHiddenExtraDefaultSlides(next)
+    await fetch('/api/admin/hero/extra-default-visibility', { method: 'PUT', headers: authH(token), body: JSON.stringify({ hiddenExtraDefaultSlides: next }) })
+    setDefaultSlidesMsg('✓ Saved')
+    setTimeout(() => setDefaultSlidesMsg(''), 2000)
+  }
+
+  async function uploadExtraDefaultSlide(e) {
+    const file = e.target.files[0]; if (!file) return
+    setExtraDefaultUploading(true)
+    const fd = new FormData(); fd.append('image', file)
+    const res = await fetch('/api/admin/upload/hero/extra-default', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd })
+    const data = await res.json()
+    if (data.ok) {
+      setExtraDefaultSlides(s => [...s, data.url])
+      setDefaultSlidesMsg('✓ Slide added!')
+      setTimeout(() => setDefaultSlidesMsg(''), 2000)
+    }
+    setExtraDefaultUploading(false); e.target.value = ''
+  }
+
+  async function deleteExtraDefaultSlide(url) {
+    if (!confirm('Delete this extra default slide?')) return
+    await fetch('/api/admin/upload/hero/extra-default', { method: 'DELETE', headers: authH(token), body: JSON.stringify({ url }) })
+    setExtraDefaultSlides(s => s.filter(u => u !== url))
+    setHiddenExtraDefaultSlides(s => s.filter(u => u !== url))
   }
 
   // ── Hero slide upload
@@ -235,38 +271,83 @@ function ImageManager({ token }) {
             {heroMsg && <p style={{ fontSize: '12px', color: heroMsg.startsWith('✓') ? '#16a34a' : '#dc2626', margin: '8px 0 0', fontFamily: "'HubotSans',sans-serif" }}>{heroMsg}</p>}
           </Card>
 
-          {/* Default slides management — shown when no custom slides are uploaded */}
-          {heroSlides.length === 0 && (
-            <Card style={{ marginBottom: '16px', background: '#f8f8ff', border: '1.5px solid #e0d6f5' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <h3 style={{ fontSize: '13px', fontWeight: 700, color: PRI, margin: 0, fontFamily: "'HubotSans',sans-serif" }}>🖼️ Default Built-in Slides</h3>
-                {defaultSlidesMsg && <span style={{ fontSize: '12px', color: '#16a34a', fontFamily: "'HubotSans',sans-serif" }}>{defaultSlidesMsg}</span>}
+          {/* Default slides management — always shown */}
+          <Card style={{ marginBottom: '16px', background: '#f8f8ff', border: '1.5px solid #e0d6f5' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <h3 style={{ fontSize: '13px', fontWeight: 700, color: PRI, margin: '0 0 2px', fontFamily: "'HubotSans',sans-serif" }}>🖼️ Default Built-in Slides</h3>
+                <p style={{ fontSize: '11.5px', color: '#888', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>
+                  {heroSlides.length > 0 ? 'Custom slides are active — defaults are hidden behind them.' : 'Shown when no custom slides are uploaded. Hide, restore, or add more below.'}
+                </p>
               </div>
-              <p style={{ fontSize: '12px', color: '#888', marginBottom: '12px', fontFamily: "'HubotSans',sans-serif" }}>
-                Manage which default hero slides are shown. Hide or restore individual slides. Upload custom slides above to replace all defaults.
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px' }}>
-                {DEFAULT_SLIDE_LABELS.map((label, i) => {
-                  const isHidden = hiddenDefaultSlides.includes(i)
-                  return (
-                    <div key={i} style={{ borderRadius: '10px', overflow: 'hidden', border: `2px solid ${isHidden ? '#f0f0f0' : PRI + '40'}`, opacity: isHidden ? 0.5 : 1, transition: 'all 0.2s' }}>
-                      <div style={{ background: isHidden ? '#f5f5f5' : PRI_LIGHT, padding: '14px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '28px', marginBottom: '4px' }}>🖼️</div>
-                        <p style={{ fontSize: '12px', fontWeight: 700, color: PRI, margin: 0, fontFamily: "'HubotSans',sans-serif" }}>{label}</p>
-                        <p style={{ fontSize: '10px', color: '#aaa', margin: '2px 0 0', fontFamily: "'HubotSans',sans-serif" }}>Built-in slide</p>
-                      </div>
-                      <div style={{ padding: '8px 10px', background: '#fff', display: 'flex', gap: '6px' }}>
-                        <button onClick={() => toggleDefaultSlide(i)}
-                          style={{ flex: 1, background: isHidden ? '#16a34a' : '#fee2e2', color: isHidden ? '#fff' : '#dc2626', border: 'none', borderRadius: '6px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: "'HubotSans',sans-serif" }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {defaultSlidesMsg && <span style={{ fontSize: '12px', color: '#16a34a', fontFamily: "'HubotSans',sans-serif" }}>{defaultSlidesMsg}</span>}
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: PRI, color: '#fff', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, fontFamily: "'HubotSans',sans-serif", opacity: extraDefaultUploading ? 0.6 : 1 }}>
+                  {extraDefaultUploading ? '⏳ Adding…' : '➕ Add More Slides'}
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={uploadExtraDefaultSlide} disabled={extraDefaultUploading} />
+                </label>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px' }}>
+              {/* Original 4 built-in slides */}
+              {DEFAULT_SLIDE_LABELS.map((label, i) => {
+                const isHidden = hiddenDefaultSlides.includes(i)
+                return (
+                  <div key={i} style={{ borderRadius: '10px', overflow: 'hidden', border: `2px solid ${isHidden ? '#f0f0f0' : PRI + '40'}`, opacity: isHidden ? 0.5 : 1, transition: 'all 0.2s' }}>
+                    <div style={{ background: isHidden ? '#f5f5f5' : PRI_LIGHT, padding: '14px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '28px', marginBottom: '4px' }}>🖼️</div>
+                      <p style={{ fontSize: '12px', fontWeight: 700, color: PRI, margin: 0, fontFamily: "'HubotSans',sans-serif" }}>{label}</p>
+                      <p style={{ fontSize: '10px', color: '#aaa', margin: '2px 0 0', fontFamily: "'HubotSans',sans-serif" }}>Built-in slide</p>
+                    </div>
+                    <div style={{ padding: '8px 10px', background: '#fff', display: 'flex', gap: '6px' }}>
+                      <button onClick={() => toggleDefaultSlide(i)}
+                        style={{ flex: 1, background: isHidden ? '#16a34a' : '#fee2e2', color: isHidden ? '#fff' : '#dc2626', border: 'none', borderRadius: '6px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: "'HubotSans',sans-serif" }}>
+                        {isHidden ? '✓ Restore' : '✗ Hide'}
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* Extra uploaded default slides */}
+              {extraDefaultSlides.map((url, i) => {
+                const isHidden = hiddenExtraDefaultSlides.includes(url)
+                return (
+                  <div key={url} style={{ borderRadius: '10px', overflow: 'hidden', border: `2px solid ${isHidden ? '#f0f0f0' : '#22c55e40'}`, opacity: isHidden ? 0.5 : 1, transition: 'all 0.2s' }}>
+                    <div style={{ position: 'relative', height: '110px', overflow: 'hidden', background: '#eee' }}>
+                      <img src={url} alt={`Extra slide ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      {isHidden && (
+                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ color: '#fff', fontSize: '11px', fontWeight: 700, fontFamily: "'HubotSans',sans-serif" }}>HIDDEN</span>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ padding: '6px 8px', background: '#fff' }}>
+                      <p style={{ fontSize: '11px', fontWeight: 700, color: '#22c55e', margin: '0 0 6px', fontFamily: "'HubotSans',sans-serif" }}>Extra Slide {i + 1}</p>
+                      <div style={{ display: 'flex', gap: '5px' }}>
+                        <button onClick={() => toggleExtraDefaultSlide(url)}
+                          style={{ flex: 1, background: isHidden ? '#16a34a' : '#fee2e2', color: isHidden ? '#fff' : '#dc2626', border: 'none', borderRadius: '6px', padding: '5px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: "'HubotSans',sans-serif" }}>
                           {isHidden ? '✓ Restore' : '✗ Hide'}
+                        </button>
+                        <button onClick={() => deleteExtraDefaultSlide(url)}
+                          style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: "'HubotSans',sans-serif" }}>
+                          🗑
                         </button>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
-            </Card>
-          )}
+                  </div>
+                )
+              })}
+
+              {/* Add More placeholder tile */}
+              <label style={{ borderRadius: '10px', border: `2px dashed ${PRI}60`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 10px', cursor: 'pointer', gap: '6px', minHeight: '150px', opacity: extraDefaultUploading ? 0.6 : 1 }}>
+                <span style={{ fontSize: '28px' }}>➕</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: PRI, fontFamily: "'HubotSans',sans-serif", textAlign: 'center' }}>Add More Default Slides</span>
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={uploadExtraDefaultSlide} disabled={extraDefaultUploading} />
+              </label>
+            </div>
+          </Card>
 
           {heroSlides.length === 0
             ? <div />

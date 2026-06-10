@@ -8,6 +8,36 @@ import heroSlide3 from '@assets/HERO_SLIDE_3_1779922059066.jpg'
 const ALL_DEFAULT_SLIDES = [heroSlide0, heroSlide1, heroSlide2, heroSlide3]
 const SLIDE_INTERVAL = 5000
 
+// Exact same styling as the baked-in image buttons
+const BTN_STICKER = {
+  background: '#FFE500',
+  color: '#1a0050',
+  border: 'none',
+  borderRadius: '50px',
+  padding: '10px 24px',
+  fontSize: '14px',
+  fontWeight: 800,
+  cursor: 'pointer',
+  fontFamily: "'HubotSans', sans-serif",
+  letterSpacing: '-0.1px',
+  whiteSpace: 'nowrap',
+  lineHeight: 1.3,
+}
+const BTN_FLEX = {
+  background: '#ffffff',
+  color: '#1a0050',
+  border: '2px solid rgba(26,0,80,0.25)',
+  borderRadius: '50px',
+  padding: '10px 24px',
+  fontSize: '14px',
+  fontWeight: 800,
+  cursor: 'pointer',
+  fontFamily: "'HubotSans', sans-serif",
+  letterSpacing: '-0.1px',
+  whiteSpace: 'nowrap',
+  lineHeight: 1.3,
+}
+
 export default function Hero() {
   const [current, setCurrent] = useState(0)
   const [slides, setSlides] = useState(ALL_DEFAULT_SLIDES)
@@ -21,13 +51,15 @@ export default function Hero() {
       .then(d => {
         const hidden = d.hiddenDefaultSlides || []
         const customSlides = d.customSlides || []
+        const extraDefaults = (d.extraDefaultSlides || []).filter(u => !(d.hiddenExtraDefaultSlides || []).includes(u))
 
         if (customSlides.length > 0) {
           setSlides(customSlides)
           setUsingCustom(true)
         } else {
           const visibleDefaults = ALL_DEFAULT_SLIDES.filter((_, i) => !hidden.includes(i))
-          setSlides(visibleDefaults.length > 0 ? visibleDefaults : ALL_DEFAULT_SLIDES)
+          const allDefaults = [...(visibleDefaults.length > 0 ? visibleDefaults : ALL_DEFAULT_SLIDES), ...extraDefaults]
+          setSlides(allDefaults)
           setUsingCustom(false)
         }
 
@@ -64,48 +96,56 @@ export default function Hero() {
             style={{ width: '100%', display: 'block', objectFit: 'cover', maxHeight: '520px' }}
           />
 
-          {/* Always-visible overlay with action buttons */}
-          <div style={{
-            position: 'absolute', inset: 0, zIndex: 5,
-            background: hasText ? 'rgba(0,0,0,0.45)' : 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.0) 55%)',
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'flex-start',
-            justifyContent: hasText ? 'center' : 'flex-end',
-            padding: hasText ? '0 6%' : '0 5% 9%',
-          }}>
-            {hasText && (
-              <>
+          {/* TEXT OVERLAY MODE — custom headline/subheadline set */}
+          {hasText && (
+            <div style={{
+              position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 5,
+            }}>
+              <div style={{
+                position: 'absolute', top: '14%', left: '5%', maxWidth: '44%',
+              }}>
                 {heroData.headline && (
-                  <h1 style={{ color: '#fff', fontSize: 'clamp(22px, 4vw, 52px)', fontWeight: 900, margin: '0 0 12px', fontFamily: "'HubotSans', sans-serif", lineHeight: 1.15, textShadow: '0 2px 8px rgba(0,0,0,0.4)', maxWidth: '600px' }}>
+                  <h1 style={{ color: '#fff', fontSize: 'clamp(20px, 3.5vw, 48px)', fontWeight: 900, margin: '0 0 10px', fontFamily: "'HubotSans', sans-serif", lineHeight: 1.1, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                     {heroData.headline}
                   </h1>
                 )}
                 {heroData.subheadline && (
-                  <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: 'clamp(13px, 1.8vw, 20px)', margin: '0 0 24px', fontFamily: "'HubotSans', sans-serif", maxWidth: '500px', lineHeight: 1.5 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: 'clamp(12px, 1.5vw, 18px)', margin: '0 0 20px', fontFamily: "'HubotSans', sans-serif", lineHeight: 1.5 }}>
                     {heroData.subheadline}
                   </p>
                 )}
-              </>
-            )}
-
-            {/* Always show action buttons */}
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <button onClick={() => navigate('/store/die-cut-stickers')}
-                style={{ background: '#FF6B00', color: '#fff', border: 'none', borderRadius: '8px', padding: '13px 28px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: "'HubotSans', sans-serif", boxShadow: '0 2px 12px rgba(0,0,0,0.25)' }}>
-                {btn1Label}
-              </button>
-              <button onClick={() => navigate('/store/flex-banner')}
-                style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '2px solid rgba(255,255,255,0.85)', borderRadius: '8px', padding: '13px 28px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: "'HubotSans', sans-serif", backdropFilter: 'blur(4px)' }}>
-                {btn2Label}
-              </button>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <button onClick={() => navigate('/store/die-cut-stickers')} style={BTN_STICKER}>{btn1Label}</button>
+                  <button onClick={() => navigate('/store/flex-banner')} style={BTN_FLEX}>{btn2Label}</button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* DEFAULT / CUSTOM SLIDES WITHOUT TEXT — buttons at exact image-matching position */}
+          {!hasText && (
+            <>
+              {/* Subtle left-side gradient for button readability on any image */}
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none',
+                background: usingCustom ? 'linear-gradient(to right, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.10) 45%, transparent 65%)' : 'none',
+              }} />
+              {/* Buttons at same position as baked-in image buttons (~30% from bottom, left 5%) */}
+              <div style={{
+                position: 'absolute', bottom: '30%', left: '5%',
+                display: 'flex', gap: '12px', flexWrap: 'wrap', zIndex: 5,
+              }}>
+                <button onClick={() => navigate('/store/die-cut-stickers')} style={BTN_STICKER}>{btn1Label}</button>
+                <button onClick={() => navigate('/store/flex-banner')} style={BTN_FLEX}>{btn2Label}</button>
+              </div>
+            </>
+          )}
         </div>
       ))}
 
-      {/* Dot indicators */}
+      {/* Slide dot indicators */}
       {slides.length > 1 && (
-        <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 10 }}>
+        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 10 }}>
           {slides.map((_, i) => (
             <button key={i} onClick={() => setCurrent(i)}
               style={{ width: current === i ? '24px' : '8px', height: '8px', borderRadius: '4px', border: 'none', background: current === i ? '#fff' : 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: 0, transition: 'width 0.3s' }} />
