@@ -109,6 +109,8 @@ import nylonBagB     from '@assets/nylon_bag_b_1780611760309.jpg'
 import nylonBagC     from '@assets/nylon_bag_c_1780611760310.jpg'
 
 export const PRODUCT_IMAGES = {
+  'die-cut-stickers': [sticker3x3A, sticker3x3B, sticker3x3C, sticker3x4A, sticker3x4B],
+  'graphic-design':   [logoBrandA, logoBrandB, logoBrandC, brandingA, brandingB],
   'flex-banner':      [bannerA, bannerB, bannerC],
   'billboard':        [billboardA, billboardB, billboardC, billboardD],
   'sav-printing':     [brandingC],

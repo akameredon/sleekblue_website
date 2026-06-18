@@ -161,7 +161,7 @@ const generalLimiter = rateLimit({
     logSecurityEvent('rate_limit', req)
     res.status(options.statusCode).json(options.message)
   },
-  skip: req => req.path.startsWith('/uploads'),
+  skip: req => req.path.startsWith('/uploads') || req.ip === '127.0.0.1' || req.ip === '::1' || (req.ip || '').startsWith('::ffff:127.'),
 })
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
