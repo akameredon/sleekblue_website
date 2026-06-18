@@ -8,7 +8,6 @@ import heroSlide3 from '@assets/HERO_SLIDE_3_1779922059066.jpg'
 const ALL_DEFAULT_SLIDES = [heroSlide0, heroSlide1, heroSlide2, heroSlide3]
 const SLIDE_INTERVAL = 5000
 
-// Exact same styling as the baked-in image buttons
 const BTN_STICKER = {
   background: '#FFE500',
   color: '#1a0050',
@@ -36,6 +35,21 @@ const BTN_FLEX = {
   letterSpacing: '-0.1px',
   whiteSpace: 'nowrap',
   lineHeight: 1.3,
+}
+
+// Invisible click-target overlay for default slides that have buttons baked into the image
+const BTN_INVISIBLE = {
+  background: 'transparent',
+  border: 'none',
+  borderRadius: '50px',
+  padding: '10px 24px',
+  fontSize: '14px',
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  lineHeight: 1.3,
+  color: 'transparent',
+  minWidth: '110px',
+  minHeight: '40px',
 }
 
 export default function Hero() {
@@ -96,7 +110,7 @@ export default function Hero() {
             style={{ width: '100%', display: 'block', objectFit: 'cover', maxHeight: '520px' }}
           />
 
-          {/* TEXT OVERLAY MODE — custom headline/subheadline set */}
+          {/* TEXT OVERLAY MODE — admin has set a custom headline/subheadline */}
           {hasText && (
             <div style={{
               position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 5,
@@ -122,28 +136,43 @@ export default function Hero() {
             </div>
           )}
 
-          {/* DEFAULT / CUSTOM SLIDES WITHOUT TEXT — buttons at exact image-matching position */}
+          {/* NO-TEXT MODE */}
           {!hasText && (
             <>
-              {/* Visually-hidden H1 for SEO — only shown when no custom headline is set */}
+              {/* Visually-hidden H1 for SEO */}
               {i === 0 && (
                 <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
                   Sleekblue Media Houz — Premium Printing &amp; Corporate Branding in Nigeria
                 </h1>
               )}
-              {/* Subtle left-side gradient for button readability on any image */}
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none',
-                background: usingCustom ? 'linear-gradient(to right, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.10) 45%, transparent 65%)' : 'none',
-              }} />
-              {/* Buttons at same position as baked-in image buttons (~30% from bottom, left 5%) */}
-              <div style={{
-                position: 'absolute', bottom: '30%', left: '5%',
-                display: 'flex', gap: '12px', flexWrap: 'wrap', zIndex: 5,
-              }}>
-                <button onClick={() => navigate('/store/die-cut-stickers')} style={BTN_STICKER}>{btn1Label}</button>
-                <button onClick={() => navigate('/store/flex-banner')} style={BTN_FLEX}>{btn2Label}</button>
-              </div>
+
+              {usingCustom ? (
+                /* Custom slides have no baked-in buttons — render visible styled buttons */
+                <>
+                  <div style={{
+                    position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none',
+                    background: 'linear-gradient(to right, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.10) 45%, transparent 65%)',
+                  }} />
+                  <div style={{
+                    position: 'absolute', bottom: '30%', left: '5%',
+                    display: 'flex', gap: '12px', flexWrap: 'wrap', zIndex: 5,
+                  }}>
+                    <button onClick={() => navigate('/store/die-cut-stickers')} style={BTN_STICKER}>{btn1Label}</button>
+                    <button onClick={() => navigate('/store/flex-banner')} style={BTN_FLEX}>{btn2Label}</button>
+                  </div>
+                </>
+              ) : (
+                /* Default slides already have buttons baked into the image pixels.
+                   Render invisible click-target overlays at the same position so
+                   the baked-in image buttons remain the only visible UI. */
+                <div style={{
+                  position: 'absolute', bottom: '30%', left: '5%',
+                  display: 'flex', gap: '12px', flexWrap: 'wrap', zIndex: 5,
+                }}>
+                  <button onClick={() => navigate('/store/die-cut-stickers')} style={BTN_INVISIBLE} aria-label="Print Sticker" />
+                  <button onClick={() => navigate('/store/flex-banner')} style={BTN_INVISIBLE} aria-label="Print Flex" />
+                </div>
+              )}
             </>
           )}
         </div>
