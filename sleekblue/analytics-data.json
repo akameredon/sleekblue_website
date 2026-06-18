@@ -1,6 +1,121 @@
 {
   "events": [
     {
+      "id": "EVT-1781819846084-PV5JR",
+      "type": "pageview",
+      "page": "/this-page-does-not-exist",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-18T21:57:26.019Z",
+      "ip": "127.0.0.1",
+      "location": {
+        "country": "Local",
+        "city": "Dev Server",
+        "region": "",
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    {
+      "id": "EVT-1781819846029-3VWKX",
+      "type": "pageview",
+      "page": "/this-page-does-not-exist",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-18T21:57:26.011Z",
+      "ip": "127.0.0.1",
+      "location": {
+        "country": "Local",
+        "city": "Dev Server",
+        "region": "",
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    {
+      "id": "EVT-1781819841540-ZQAGY",
+      "type": "pageview",
+      "page": "/",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-18T21:57:21.474Z",
+      "ip": "127.0.0.1",
+      "location": {
+        "country": "Local",
+        "city": "Dev Server",
+        "region": "",
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    {
+      "id": "EVT-1781819841503-Y69C6",
+      "type": "pageview",
+      "page": "/",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-18T21:57:21.460Z",
+      "ip": "127.0.0.1",
+      "location": {
+        "country": "Local",
+        "city": "Dev Server",
+        "region": "",
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    {
+      "id": "EVT-1781819740509-QRU5O",
+      "type": "product_view",
+      "page": "/store/reflective-flex",
+      "slug": "reflective-flex",
+      "name": "Reflective Flex",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "https://6777abf1-a7c6-4059-b023-3d8de7af3324-00-79sofyd8wghw.janeway.replit.dev/store/flex-banner",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-18T21:55:32.851Z",
+      "ip": "105.127.17.60",
+      "location": {
+        "country": "Nigeria",
+        "city": "Kano",
+        "region": "Kano State",
+        "lat": 12.0001,
+        "lon": 8.51672
+      }
+    },
+    {
       "id": "EVT-1781819456967-YHQK8",
       "type": "pageview",
       "page": "/product/reflective-flex",

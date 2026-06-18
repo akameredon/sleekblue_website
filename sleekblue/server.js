@@ -431,6 +431,16 @@ app.put('/api/admin/content', requireAuth, (req, res) => {
   res.json({ ok: true })
 })
 
+app.put('/api/admin/faq', requireAuth, (req, res) => {
+  const { faq } = req.body
+  if (!Array.isArray(faq)) return res.status(400).json({ error: 'faq must be an array' })
+  const data = readJSON(SITE_DATA_FILE, { content: {} })
+  data.content = { ...(data.content || {}), faq }
+  writeJSON(SITE_DATA_FILE, data)
+  console.log('[Admin] FAQ updated:', faq.length, 'items')
+  res.json({ ok: true })
+})
+
 // ── Hero image uploads ────────────────────────────────────────────────────────
 app.post('/api/admin/upload/hero', requireAuth, heroUpload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
@@ -806,6 +816,14 @@ const DEFAULT_CONTENT = {
     tagline: 'Premium print, branding & design solutions for businesses across Nigeria. Fast turnaround, zero stress.',
     services: ['Die Cut Stickers', 'Flex Banners', 'Business Cards', 'Vehicle Branding', 'Logo & Branding', 'T-Shirts & Caps', 'Rollup Stands', 'Burial Brochures'],
   },
+  faq: [
+    { question: 'What types of printing services does Sleekblue Media Houz offer?', answer: 'We offer a wide range of premium printing and branding services including die-cut stickers, flex banners, flyers & posters, business cards, rollup stands, T-shirts & caps, product labels, vehicle branding, signage & billboards, burial brochures, and corporate graphic design.' },
+    { question: 'What is the minimum order quantity?', answer: 'Minimum order quantities vary by product. For die-cut stickers, our minimum is 100 pieces. For flyers and business cards, it\'s typically 50–100 pieces. Flex banners and rollup stands can be ordered as a single piece.' },
+    { question: 'How long does production and delivery take?', answer: 'Standard production takes 1–3 business days for most products. Rush orders can be completed in 24 hours for an additional fee. We deliver nationwide across Nigeria, with delivery typically taking 1–3 extra days depending on your location.' },
+    { question: 'Do you offer custom design services?', answer: 'Yes! Our in-house design team can create professional artwork for any of our products — from logo design and full brand identity packages to individual print files. Design turnaround is usually 24–48 hours.' },
+    { question: 'Do you deliver nationwide across Nigeria?', answer: 'Absolutely. We deliver to all 36 states and the FCT via trusted courier partners. Whether you\'re in Lagos, Abuja, Port Harcourt, Kano, or anywhere else in Nigeria, we\'ll get your prints to you safely.' },
+    { question: 'How do I place an order and what payment methods do you accept?', answer: 'You can place an order directly on our website or chat with us on WhatsApp at +234 806 527 5264. We accept bank transfers, mobile payments, and online card payments. Once payment is confirmed, your order goes straight to production.' },
+  ],
 }
 
 function mergeContentDefaults(saved) {
@@ -828,6 +846,7 @@ function mergeContentDefaults(saved) {
       ...(saved.footer || {}),
       services: saved.footer?.services || DEFAULT_CONTENT.footer.services,
     },
+    faq: saved.faq || DEFAULT_CONTENT.faq,
   }
 }
 
@@ -836,6 +855,7 @@ const DEFAULT_PAGE_LAYOUT = [
   { id: 'trustBar',    label: 'Trust Bar',         icon: '⭐',  visible: true },
   { id: 'bestSelling', label: 'Best Selling',      icon: '🛍️', visible: true },
   { id: 'reviews',     label: 'Customer Reviews',  icon: '💬', visible: true },
+  { id: 'faq',         label: 'FAQ Section',       icon: '❓',  visible: true },
 ]
 
 const ABOUT_DEFAULTS = {

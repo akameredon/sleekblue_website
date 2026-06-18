@@ -20,6 +20,7 @@ const AboutPage    = lazy(() => import('./pages/AboutPage'))
 const BlogPage     = lazy(() => import('./pages/BlogPage'))
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
 const AdminPage    = lazy(() => import('./pages/AdminPage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 function PageLoader() {
   return (
@@ -55,6 +56,7 @@ function MainSite() {
             <Route path="/about"       element={<AboutPage />} />
             <Route path="/blog"        element={<BlogPage />} />
             <Route path="/blog/:slug"  element={<BlogPostPage />} />
+            <Route path="*"           element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </main>

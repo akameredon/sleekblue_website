@@ -40,6 +40,39 @@ export default function ProductPage() {
   useSEO(seoKey, { title: `${baseProduct?.name || 'Product'} — Sleekblue Media Houz`, description: `Order ${baseProduct?.name || 'custom printing'} from Sleekblue Media Houz. Premium quality, fast delivery across Nigeria.` })
   const baseDetails = getProductDetails(baseProduct.slug)
 
+  useEffect(() => {
+    const existing = document.getElementById('product-schema')
+    if (existing) existing.remove()
+    const pricingText = baseDetails?.pricing?.startingAt
+      ? String(baseDetails.pricing.startingAt).replace(/[^0-9.]/g, '')
+      : null
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: baseProduct?.name || 'Custom Printing',
+      description: `Order ${baseProduct?.name || 'custom printing'} from Sleekblue Media Houz. Premium quality, fast delivery across Nigeria. ${baseProduct?.tagline || ''}`.trim(),
+      brand: { '@type': 'Brand', name: 'Sleekblue Media Houz' },
+      url: `https://sleekbluemediahouz.com/store/${slug}`,
+      image: `https://sleekbluemediahouz.com/store/${slug}`,
+      offers: {
+        '@type': baseProduct?.isDieCut ? 'AggregateOffer' : 'Offer',
+        ...(baseProduct?.isDieCut
+          ? { lowPrice: '3000', highPrice: '80000', offerCount: Object.keys(STICKER_SIZE_PRICES).length }
+          : { price: pricingText || '5000' }
+        ),
+        priceCurrency: 'NGN',
+        availability: 'https://schema.org/InStock',
+        seller: { '@type': 'Organization', name: 'Sleekblue Media Houz' },
+      },
+    }
+    const tag = document.createElement('script')
+    tag.id = 'product-schema'
+    tag.type = 'application/ld+json'
+    tag.textContent = JSON.stringify(schema)
+    document.head.appendChild(tag)
+    return () => { const el = document.getElementById('product-schema'); if (el) el.remove() }
+  }, [slug, baseProduct, baseDetails])
+
   // Admin overrides — fetched from server, applied on top of static data
   const [adminOverride, setAdminOverride] = useState(null)
   const [uploadedImages, setUploadedImages] = useState({})

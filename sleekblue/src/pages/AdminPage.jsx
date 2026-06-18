@@ -716,6 +716,7 @@ function Sidebar({ view, setView, counts, onLogout }) {
     { id: 'blog',           icon: '✍️', label: 'Blog',       badge: counts.blogPosts || 0 },
     { id: 'about',          icon: '📖', label: 'About Us' },
     { id: 'content',        icon: '🎨', label: 'Content CMS' },
+    { id: 'faq',            icon: '❓', label: 'FAQ Manager' },
     { id: 'seo',            icon: '🔍', label: 'SEO Manager' },
     { id: 'settings',       icon: '⚙️', label: 'Site Settings' },
     { id: 'acceptances',    icon: '📋', label: 'T&C Acceptances', badge: counts.acceptances },
@@ -2296,6 +2297,138 @@ function AboutView({ token }) {
 }
 
 // ─── SEO Manager ──────────────────────────────────────────────────────────────
+// ─── FAQ Manager ──────────────────────────────────────────────────────────────
+const DEFAULT_FAQ_ITEMS = [
+  { question: 'What types of printing services does Sleekblue Media Houz offer?', answer: 'We offer a wide range of premium printing and branding services including die-cut stickers, flex banners, flyers & posters, business cards, rollup stands, T-shirts & caps, product labels, vehicle branding, signage & billboards, burial brochures, and corporate graphic design.' },
+  { question: 'What is the minimum order quantity?', answer: "Minimum order quantities vary by product. For die-cut stickers, our minimum is 100 pieces. For flyers and business cards, it's typically 50–100 pieces. Flex banners and rollup stands can be ordered as a single piece." },
+  { question: 'How long does production and delivery take?', answer: 'Standard production takes 1–3 business days for most products. Rush orders can be completed in 24 hours for an additional fee. We deliver nationwide across Nigeria, with delivery typically taking 1–3 extra days depending on your location.' },
+  { question: 'Do you offer custom design services?', answer: "Yes! Our in-house design team can create professional artwork for any of our products — from logo design and full brand identity packages to individual print files. Design turnaround is usually 24–48 hours." },
+  { question: 'Do you deliver nationwide across Nigeria?', answer: "Absolutely. We deliver to all 36 states and the FCT via trusted courier partners. Whether you're in Lagos, Abuja, Port Harcourt, Kano, or anywhere else in Nigeria, we'll get your prints to you safely." },
+  { question: 'How do I place an order and what payment methods do you accept?', answer: 'You can place an order directly on our website or chat with us on WhatsApp at +234 806 527 5264. We accept bank transfers, mobile payments, and online card payments. Once payment is confirmed, your order goes straight to production.' },
+]
+
+function FaqView({ token }) {
+  const [items, setItems] = useState([])
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [editIdx, setEditIdx] = useState(null)
+  const [newQ, setNewQ] = useState('')
+  const [newA, setNewA] = useState('')
+  const [addMode, setAddMode] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/content')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { setItems(d?.faq?.length ? d.faq : DEFAULT_FAQ_ITEMS) })
+      .catch(() => setItems(DEFAULT_FAQ_ITEMS))
+  }, [])
+
+  async function save(updated) {
+    setSaving(true)
+    const list = updated || items
+    await fetch('/api/admin/faq', { method: 'PUT', headers: authH(token), body: JSON.stringify({ faq: list }) })
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 3000)
+  }
+
+  function deleteItem(i) {
+    const next = items.filter((_, idx) => idx !== i)
+    setItems(next); save(next)
+  }
+
+  function addItem() {
+    if (!newQ.trim() || !newA.trim()) return
+    const next = [...items, { question: newQ.trim(), answer: newA.trim() }]
+    setItems(next); setNewQ(''); setNewA(''); setAddMode(false); save(next)
+  }
+
+  function updateItem(i, field, val) {
+    const next = items.map((it, idx) => idx === i ? { ...it, [field]: val } : it)
+    setItems(next)
+  }
+
+  function moveItem(i, dir) {
+    if (i + dir < 0 || i + dir >= items.length) return
+    const next = [...items]
+    ;[next[i], next[i + dir]] = [next[i + dir], next[i]]
+    setItems(next); save(next)
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: '20px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px', fontFamily: "'HubotSans',sans-serif" }}>❓ FAQ Manager</h2>
+        <p style={{ color: '#888', fontSize: '13px', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>Manage the FAQ section shown on your homepage. These questions are also embedded as schema markup for Google featured snippets.</p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+        {items.map((item, i) => (
+          <Card key={i} style={{ position: 'relative' }}>
+            {editIdx === i ? (
+              <>
+                <Input label="Question" value={item.question} onChange={e => updateItem(i, 'question', e.target.value)} />
+                <Input label="Answer" rows={3} value={item.answer} onChange={e => updateItem(i, 'answer', e.target.value)} />
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <Btn onClick={() => { setEditIdx(null); save() }} style={{ background: PRI, color: '#fff', fontWeight: 700 }}>✓ Save</Btn>
+                  <Btn variant="ghost" onClick={() => setEditIdx(null)}>Cancel</Btn>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '13.5px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 5px', fontFamily: "'HubotSans',sans-serif" }}>{item.question}</p>
+                    <p style={{ fontSize: '12.5px', color: '#666', margin: 0, lineHeight: 1.6, fontFamily: "'HubotSans',sans-serif" }}>{item.answer}</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                    <button onClick={() => moveItem(i, -1)} disabled={i === 0} title="Move up"
+                      style={{ padding: '5px 8px', border: '1px solid #ddd', borderRadius: '6px', background: '#f9f9f9', cursor: i === 0 ? 'not-allowed' : 'pointer', opacity: i === 0 ? 0.4 : 1, fontSize: '12px' }}>↑</button>
+                    <button onClick={() => moveItem(i, 1)} disabled={i === items.length - 1} title="Move down"
+                      style={{ padding: '5px 8px', border: '1px solid #ddd', borderRadius: '6px', background: '#f9f9f9', cursor: i === items.length - 1 ? 'not-allowed' : 'pointer', opacity: i === items.length - 1 ? 0.4 : 1, fontSize: '12px' }}>↓</button>
+                    <button onClick={() => setEditIdx(i)}
+                      style={{ padding: '5px 10px', border: `1px solid ${PRI}40`, borderRadius: '6px', background: PRI_LIGHT, cursor: 'pointer', fontSize: '12px', color: PRI, fontWeight: 700 }}>✏️</button>
+                    <button onClick={() => deleteItem(i)}
+                      style={{ padding: '5px 8px', border: '1px solid #dc262620', borderRadius: '6px', background: '#fef2f2', cursor: 'pointer', fontSize: '12px', color: '#dc2626' }}>🗑</button>
+                  </div>
+                </div>
+              </>
+            )}
+          </Card>
+        ))}
+      </div>
+
+      {addMode ? (
+        <Card style={{ background: '#f9f5ff', border: `1.5px solid ${PRI}40` }}>
+          <h4 style={{ fontSize: '13px', fontWeight: 700, color: PRI, margin: '0 0 14px', fontFamily: "'HubotSans',sans-serif" }}>Add New Question</h4>
+          <Input label="Question" value={newQ} onChange={e => setNewQ(e.target.value)} placeholder="e.g. Do you do same-day delivery?" />
+          <Input label="Answer" rows={3} value={newA} onChange={e => setNewA(e.target.value)} placeholder="Enter the detailed answer…" />
+          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+            <Btn onClick={addItem} style={{ background: PRI, color: '#fff', fontWeight: 700 }}>✓ Add Question</Btn>
+            <Btn variant="ghost" onClick={() => { setAddMode(false); setNewQ(''); setNewA('') }}>Cancel</Btn>
+          </div>
+        </Card>
+      ) : (
+        <button onClick={() => setAddMode(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: `2px dashed ${PRI}50`, borderRadius: '12px', padding: '14px 20px', cursor: 'pointer', color: PRI, fontWeight: 700, fontSize: '13px', fontFamily: "'HubotSans',sans-serif", width: '100%', justifyContent: 'center' }}>
+          + Add New FAQ Question
+        </button>
+      )}
+
+      <Card style={{ marginTop: '16px', background: '#f9f5ff' }}>
+        <h3 style={{ fontSize: '13px', fontWeight: 700, color: PRI, marginBottom: '10px', fontFamily: "'HubotSans',sans-serif" }}>💡 About FAQ Schema</h3>
+        <p style={{ fontSize: '12px', color: '#555', lineHeight: 1.7, margin: 0, fontFamily: "'HubotSans',sans-serif" }}>
+          These FAQ items are automatically embedded as <strong>FAQPage schema markup</strong> in your homepage. This helps Google show your Q&A directly in search results as featured snippets, driving more traffic without paid ads. Aim for 6–10 clear, helpful questions.
+        </p>
+      </Card>
+
+      {(saved || saving) && (
+        <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: saving ? '#666' : '#16a34a', color: '#fff', borderRadius: '10px', padding: '12px 20px', fontWeight: 700, fontSize: '13px', fontFamily: "'HubotSans',sans-serif", zIndex: 9999 }}>
+          {saving ? '⏳ Saving…' : '✓ FAQ saved!'}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const SEO_PAGES = [
   { key: 'home',     label: '🏠 Homepage',        path: '/' },
   { key: 'store',    label: '🛍️ Store',            path: '/store' },
@@ -2479,6 +2612,7 @@ export default function AdminPage() {
             {view === 'sticker-prices' && <StickerPricesView token={token} stickerPriceOverrides={siteData.stickerPriceOverrides} onDataChanged={fetchAll} />}
             {view === 'blog'           && <BlogView token={token} posts={siteData.blogPosts} onDataChanged={fetchAll} />}
             {view === 'about'          && <AboutView token={token} />}
+            {view === 'faq'            && <FaqView token={token} />}
             {view === 'seo'            && <SeoView token={token} />}
             {view === 'content'        && <ContentView token={token} content={siteData.content} settings={siteData.settings} onDataChanged={fetchAll} />}
             {view === 'settings'       && <SettingsView token={token} settings={siteData.settings} onDataChanged={fetchAll} />}

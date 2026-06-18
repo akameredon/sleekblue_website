@@ -3,6 +3,7 @@ import Hero from '../components/Hero'
 import TrustBar from '../components/TrustBar'
 import BestSelling from '../components/BestSelling'
 import Reviews from '../components/Reviews'
+import FAQ from '../components/FAQ'
 import { useSEO } from '../hooks/useSEO'
 
 const SECTION_MAP = {
@@ -10,6 +11,7 @@ const SECTION_MAP = {
   trustBar:    <TrustBar />,
   bestSelling: <BestSelling />,
   reviews:     <Reviews />,
+  faq:         <FAQ />,
 }
 
 const DEFAULT_LAYOUT = [
@@ -17,6 +19,7 @@ const DEFAULT_LAYOUT = [
   { id: 'trustBar',    visible: true },
   { id: 'bestSelling', visible: true },
   { id: 'reviews',     visible: true },
+  { id: 'faq',         visible: true },
 ]
 
 export default function HomePage() {
