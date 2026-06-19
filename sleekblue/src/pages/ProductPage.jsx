@@ -110,6 +110,10 @@ export default function ProductPage() {
   const [customQty, setCustomQty] = useState(isDieCut ? 100 : (product.priceTable[0]?.qty || 1))
   const [selectedThumb, setSelectedThumb] = useState(0)
   const [added, setAdded] = useState(false)
+  const [artworkFile, setArtworkFile] = useState(null)
+  const [artworkUploading, setArtworkUploading] = useState(false)
+  const [artworkDone, setArtworkDone] = useState(false)
+  const [recentlyViewed, setRecentlyViewed] = useState([])
 
   // Custom size state (only for die-cut stickers)
   const [customWidth, setCustomWidth] = useState(3)
@@ -122,6 +126,29 @@ export default function ProductPage() {
     setCustomQty(isDieCut ? 100 : (product.priceTable[0]?.qty || 1))
     setAdminOverride(null)
   }, [slug])
+
+  // Track recently viewed & load others
+  useEffect(() => {
+    try {
+      const KEY = 'sbm_recently_viewed'
+      const existing = JSON.parse(localStorage.getItem(KEY) || '[]')
+      setRecentlyViewed(existing.filter(p => p.slug !== slug).slice(0, 6))
+      const entry = { slug: product.slug, name: product.name, img: PRODUCT_IMAGES[product.slug]?.[0] || null }
+      localStorage.setItem(KEY, JSON.stringify([entry, ...existing.filter(p => p.slug !== slug)].slice(0, 10)))
+    } catch {}
+  }, [slug])
+
+  async function uploadArtwork() {
+    if (!artworkFile) return
+    setArtworkUploading(true)
+    try {
+      const fd = new FormData(); fd.append('artwork', artworkFile)
+      const res = await fetch('/api/upload/artwork', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (data.ok) { setArtworkDone(true); setTimeout(() => { setArtworkDone(false); setArtworkFile(null) }, 4000) }
+    } catch {}
+    setArtworkUploading(false)
+  }
 
   // For die-cut with Custom size, resolve to nearest standard for pricing
   const effectiveSize = (isDieCut && selectedSize === 'Custom')
@@ -440,6 +467,33 @@ export default function ProductPage() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               Ask via WhatsApp
             </a>
+
+            {/* Artwork Upload */}
+            <div style={{ marginTop: '14px', background: '#f9f5ff', borderRadius: '10px', padding: '14px 16px', border: '1.5px solid #e0d6f5' }}>
+              <p style={{ fontSize: '12.5px', fontWeight: 700, color: '#7B2FBE', margin: '0 0 6px', fontFamily: "'HubotSans', sans-serif" }}>📎 Upload Your Artwork (Optional)</p>
+              <p style={{ fontSize: '11px', color: '#888', margin: '0 0 10px', lineHeight: 1.5, fontFamily: "'HubotSans', sans-serif" }}>PDF, PNG, AI, PSD, EPS — max 25MB. We'll review before printing.</p>
+              {artworkDone ? (
+                <div style={{ background: '#dcfce7', borderRadius: '8px', padding: '10px 14px', textAlign: 'center', color: '#16a34a', fontSize: '13px', fontWeight: 700, fontFamily: "'HubotSans', sans-serif" }}>
+                  ✓ Artwork received! Our team will review it.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <label style={{ flex: 1, cursor: 'pointer', minWidth: '0' }}>
+                    <input type="file" accept=".pdf,.png,.jpg,.jpeg,.ai,.psd,.eps,.svg,.zip" style={{ display: 'none' }}
+                      onChange={e => { setArtworkFile(e.target.files[0] || null); setArtworkDone(false) }} />
+                    <div style={{ padding: '8px 12px', border: '1.5px dashed #ccc', borderRadius: '8px', background: '#fff', fontSize: '12px', color: artworkFile ? '#7B2FBE' : '#999', fontFamily: "'HubotSans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {artworkFile ? `📄 ${artworkFile.name}` : '⬆ Choose artwork file'}
+                    </div>
+                  </label>
+                  {artworkFile && (
+                    <button onClick={uploadArtwork} disabled={artworkUploading}
+                      style={{ padding: '9px 16px', background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap', fontFamily: "'HubotSans', sans-serif" }}>
+                      {artworkUploading ? '⏳ Uploading…' : 'Send File'}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -469,6 +523,32 @@ export default function ProductPage() {
                   </div>
                 )
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Recently Viewed */}
+        {recentlyViewed.length > 0 && (
+          <div style={{ marginTop: '40px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1a1a1a', textAlign: 'center', marginBottom: '16px', letterSpacing: '0.5px', fontFamily: "'HubotSans', sans-serif" }}>RECENTLY VIEWED</h3>
+            <div className="similar-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px' }}>
+              {recentlyViewed.map((item, i) => (
+                <div key={i} onClick={() => navigate(`/store/${item.slug}`)}
+                  style={{ background: '#fff', borderRadius: '10px', padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', border: '1px solid #eee', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(123,47,190,0.12)'}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'}
+                >
+                  <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: '6px', overflow: 'hidden', background: '#e0d6f5' }}>
+                    {item.img ? (
+                      <img src={item.img} alt={item.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛍️</div>
+                    )}
+                  </div>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', margin: 0, fontFamily: "'HubotSans', sans-serif" }}>{item.name}</p>
+                  <button style={{ background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '20px', padding: '5px 0', fontSize: '11px', fontWeight: 600, cursor: 'pointer', width: '80%', fontFamily: "'HubotSans', sans-serif" }}>View</button>
+                </div>
+              ))}
             </div>
           </div>
         )}

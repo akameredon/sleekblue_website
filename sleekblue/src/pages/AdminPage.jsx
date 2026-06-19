@@ -724,6 +724,8 @@ function Sidebar({ view, setView, counts, onLogout }) {
     { id: 'analytics',      icon: '📈', label: 'Analytics' },
     { id: 'reports',        icon: '💰', label: 'Reports' },
     { id: 'leads',          icon: '📲', label: 'WA Leads', badge: counts.leads || 0 },
+    { id: 'promo-banner',   icon: '📣', label: 'Promo Banner' },
+    { id: 'activity-log',   icon: '📜', label: 'Activity Log' },
   ]
   return (
     <div style={{ width: SIDEBAR_W, minHeight: '100vh', background: PRI, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
@@ -1363,6 +1365,22 @@ function SettingsView({ token, settings, onDataChanged }) {
           </div>
         </Card>
       </div>
+      <Card style={{ marginTop: '16px', background: '#f0f9ff', border: '1px solid #bae6fd' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#0369a1', marginBottom: '8px', fontFamily: "'HubotSans',sans-serif" }}>💾 Data Backup</h3>
+        <p style={{ fontSize: '12.5px', color: '#555', margin: '0 0 12px', lineHeight: 1.5, fontFamily: "'HubotSans',sans-serif" }}>Download a complete backup of all site data as JSON. Save a copy before making major changes.</p>
+        <button onClick={async () => {
+          try {
+            const res = await fetch('/api/admin/backup', { headers: authH(token) })
+            const blob = await res.blob()
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a'); a.href = url; a.download = `sleekblue-backup-${new Date().toISOString().slice(0,10)}.json`; a.click()
+            URL.revokeObjectURL(url)
+          } catch {}
+        }}
+          style={{ padding: '10px 22px', background: '#0369a1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', fontFamily: "'HubotSans',sans-serif" }}>
+          ⬇ Download Backup
+        </button>
+      </Card>
       <SaveBar onSave={handleSave} saving={saving} saved={saved} />
     </div>
   )
@@ -1888,6 +1906,7 @@ function BlogPostEditor({ token, post, onSaved, onCancel }) {
   const [form, setForm] = useState({
     title: '', slug: '', status: 'draft', category: '', date: new Date().toISOString().split('T')[0],
     excerpt: '', content: '', coverImage: '', tags: '', videoUrl: '', audioUrl: '', mediaFiles: [],
+    authorName: '', authorBio: '', publishAt: '',
     ...(post || {}),
     tags: Array.isArray(post?.tags) ? post.tags.join(', ') : (post?.tags || ''),
   })
@@ -1952,6 +1971,11 @@ function BlogPostEditor({ token, post, onSaved, onCancel }) {
               <Input label="Date" type="date" value={form.date} onChange={e => set('date', e.target.value)} />
               <Input label="Tags (comma separated)" value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="stickers, branding, tips" />
             </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <Input label="Author Name" value={form.authorName || ''} onChange={e => set('authorName', e.target.value)} placeholder="e.g. Sleekblue Team" />
+              <Input label="Schedule Publish At (optional)" type="datetime-local" value={form.publishAt || ''} onChange={e => set('publishAt', e.target.value)} />
+            </div>
+            <Input label="Author Bio (optional)" value={form.authorBio || ''} onChange={e => set('authorBio', e.target.value)} rows={2} placeholder="Brief bio shown at the bottom of the post…" />
             <Input label="Excerpt / Summary" value={form.excerpt} onChange={e => set('excerpt', e.target.value)} rows={3} placeholder="A short summary that appears on the blog list page…" />
           </Card>
         </div>
@@ -2647,6 +2671,133 @@ function SeoView({ token }) {
   )
 }
 
+// ─── Promo Banner ─────────────────────────────────────────────────────────────
+function PromoBannerView({ token }) {
+  const [form, setForm] = useState({ enabled: false, text: '', link: '', color: '#7B2FBE', bgColor: '#f5f0ff' })
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/promo-banner').then(r => r.ok ? r.json() : null).then(d => { if (d) setForm(d) }).catch(() => {})
+  }, [])
+
+  function set(k, v) { setForm(p => ({ ...p, [k]: v })) }
+
+  async function save() {
+    setSaving(true)
+    await fetch('/api/admin/promo-banner', { method: 'PUT', headers: authH(token), body: JSON.stringify(form) })
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 3000)
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: '20px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px', fontFamily: "'HubotSans',sans-serif" }}>📣 Promo Banner</h2>
+        <p style={{ color: '#888', fontSize: '13px', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>Shows a coloured announcement bar at the top of every page on your website.</p>
+      </div>
+      <Card>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '18px', padding: '12px 16px', background: form.enabled ? '#dcfce7' : '#f9f9f9', borderRadius: '8px', border: `1px solid ${form.enabled ? '#bbf7d0' : '#eee'}` }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', flex: 1 }}>
+            <input type="checkbox" checked={form.enabled} onChange={e => set('enabled', e.target.checked)} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
+            <span style={{ fontSize: '14px', fontWeight: 700, color: form.enabled ? '#16a34a' : '#888', fontFamily: "'HubotSans',sans-serif" }}>
+              {form.enabled ? '✓ Banner is LIVE on your site' : '✗ Banner is hidden'}
+            </span>
+          </label>
+        </div>
+        <Input label="Banner Text" value={form.text} onChange={e => set('text', e.target.value)} placeholder="🎉 FREE delivery on orders above ₦50,000 this week only!" />
+        <Input label="Link URL (optional)" value={form.link || ''} onChange={e => set('link', e.target.value)} placeholder="/quote or https://wa.me/..." />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '16px' }}>
+          {[['Text Color', 'color'], ['Background Color', 'bgColor']].map(([label, key]) => (
+            <div key={key}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#555', marginBottom: '8px', fontFamily: "'HubotSans',sans-serif" }}>{label}</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <input type="color" value={form[key]} onChange={e => set(key, e.target.value)} style={{ width: '50px', height: '42px', border: '1.5px solid #ddd', borderRadius: '8px', cursor: 'pointer', padding: '2px' }} />
+                <input value={form[key]} onChange={e => set(key, e.target.value)} style={{ width: '100px', padding: '9px 10px', border: '1.5px solid #ddd', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace' }} />
+                <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: form[key], border: '1px solid #eee' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        {form.text && (
+          <>
+            <p style={{ fontSize: '11px', fontWeight: 700, color: '#888', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: "'HubotSans',sans-serif" }}>Preview</p>
+            <div style={{ background: form.bgColor, borderRadius: '8px', padding: '12px 20px', textAlign: 'center', border: `2px solid ${form.color}20`, marginBottom: '8px' }}>
+              <p style={{ color: form.color, margin: 0, fontWeight: 600, fontSize: '13.5px', fontFamily: "'HubotSans',sans-serif" }}>
+                {form.text}
+                {form.link && <span style={{ marginLeft: '12px', textDecoration: 'underline' }}>Learn more →</span>}
+              </p>
+            </div>
+          </>
+        )}
+      </Card>
+      <SaveBar onSave={save} saving={saving} saved={saved} />
+    </div>
+  )
+}
+
+// ─── Activity Log ──────────────────────────────────────────────────────────────
+function ActivityLogView({ token }) {
+  const [logs, setLogs] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  function load() {
+    setLoading(true)
+    fetch('/api/admin/activity-log', { headers: authH(token) })
+      .then(r => r.ok ? r.json() : [])
+      .then(d => { setLogs(Array.isArray(d) ? d : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }
+
+  useEffect(() => { load() }, [])
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px', fontFamily: "'HubotSans',sans-serif" }}>📜 Activity Log</h2>
+          <p style={{ color: '#888', fontSize: '13px', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>Recent admin actions — last 200 entries</p>
+        </div>
+        <Btn variant="ghost" onClick={load}>↻ Refresh</Btn>
+      </div>
+      {loading ? (
+        <Card><p style={{ color: '#888', fontFamily: "'HubotSans',sans-serif", margin: 0 }}>Loading…</p></Card>
+      ) : logs.length === 0 ? (
+        <Card style={{ textAlign: 'center', padding: '48px' }}>
+          <div style={{ fontSize: '36px', marginBottom: '12px' }}>📜</div>
+          <p style={{ fontSize: '15px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 6px', fontFamily: "'HubotSans',sans-serif" }}>No activity recorded yet</p>
+          <p style={{ fontSize: '13px', color: '#888', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>Activity will appear here as you manage content and settings.</p>
+        </Card>
+      ) : (
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
+              <thead>
+                <tr style={{ background: '#f8f8f8' }}>
+                  {['Time', 'Action', 'Detail', 'User'].map(h => (
+                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 700, color: '#555', fontFamily: "'HubotSans',sans-serif", whiteSpace: 'nowrap' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {logs.map((log, i) => (
+                  <tr key={i} style={{ borderTop: '1px solid #f0f0f0' }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    <td style={{ padding: '9px 14px', color: '#888', whiteSpace: 'nowrap', fontFamily: "'HubotSans',sans-serif" }}>{new Date(log.timestamp).toLocaleString()}</td>
+                    <td style={{ padding: '9px 14px' }}><Badge>{log.action}</Badge></td>
+                    <td style={{ padding: '9px 14px', color: '#555', fontFamily: "'HubotSans',sans-serif", maxWidth: '320px' }}>{log.detail}</td>
+                    <td style={{ padding: '9px 14px', color: '#888', fontFamily: "'HubotSans',sans-serif" }}>{log.user}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+    </div>
+  )
+}
+
 // ─── Main Admin Page ──────────────────────────────────────────────────────────
 export default function AdminPage() {
   const [token, setToken] = useState(() => localStorage.getItem('sbm_admin_token') || '')
@@ -2732,6 +2883,8 @@ export default function AdminPage() {
             {view === 'analytics'      && <AnalyticsView token={token} />}
             {view === 'reports'        && <ReportsView token={token} />}
             {view === 'leads'          && <LeadsView token={token} />}
+            {view === 'promo-banner'   && <PromoBannerView token={token} />}
+            {view === 'activity-log'   && <ActivityLogView token={token} />}
           </>
         )}
       </main>

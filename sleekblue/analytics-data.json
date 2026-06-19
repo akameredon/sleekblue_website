@@ -1,6 +1,98 @@
 {
   "events": [
     {
+      "id": "EVT-1781828045796-UIRW4",
+      "type": "pageview",
+      "page": "/blog",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-19T00:14:05.778Z",
+      "ip": "127.0.0.1",
+      "location": {
+        "country": "Local",
+        "city": "Dev Server",
+        "region": "",
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    {
+      "id": "EVT-1781828045774-D1ECD",
+      "type": "pageview",
+      "page": "/blog",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-19T00:14:05.768Z",
+      "ip": "127.0.0.1",
+      "location": {
+        "country": "Local",
+        "city": "Dev Server",
+        "region": "",
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    {
+      "id": "EVT-1781828027830-K164K",
+      "type": "pageview",
+      "page": "/",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-19T00:13:47.723Z",
+      "ip": "127.0.0.1",
+      "location": {
+        "country": "Local",
+        "city": "Dev Server",
+        "region": "",
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    {
+      "id": "EVT-1781828027763-ZBIO7",
+      "type": "pageview",
+      "page": "/",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-19T00:13:47.710Z",
+      "ip": "127.0.0.1",
+      "location": {
+        "country": "Local",
+        "city": "Dev Server",
+        "region": "",
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    {
       "id": "EVT-1781823869898-7JQ2E",
       "type": "pageview",
       "page": "/blog",

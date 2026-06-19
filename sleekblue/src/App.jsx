@@ -9,19 +9,24 @@ import WhatsAppFloat from './components/WhatsAppFloat'
 import WhatsAppLeadPopup from './components/WhatsAppLeadPopup'
 import TermsModal from './components/TermsModal'
 import Footer from './components/Footer'
+import BackToTop from './components/BackToTop'
+import CookieBanner from './components/CookieBanner'
+import PromoBanner from './components/PromoBanner'
+import ErrorBoundary from './components/ErrorBoundary'
 import './index.css'
 
-const HomePage     = lazy(() => import('./pages/HomePage'))
-const StorePage    = lazy(() => import('./pages/StorePage'))
-const ProductPage  = lazy(() => import('./pages/ProductPage'))
-const CartPage     = lazy(() => import('./pages/CartPage'))
-const CheckoutPage = lazy(() => import('./pages/CheckoutPage'))
-const QuotePage    = lazy(() => import('./pages/QuotePage'))
-const AboutPage    = lazy(() => import('./pages/AboutPage'))
-const BlogPage     = lazy(() => import('./pages/BlogPage'))
-const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
-const AdminPage    = lazy(() => import('./pages/AdminPage'))
-const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
+const HomePage      = lazy(() => import('./pages/HomePage'))
+const StorePage     = lazy(() => import('./pages/StorePage'))
+const ProductPage   = lazy(() => import('./pages/ProductPage'))
+const CartPage      = lazy(() => import('./pages/CartPage'))
+const CheckoutPage  = lazy(() => import('./pages/CheckoutPage'))
+const QuotePage     = lazy(() => import('./pages/QuotePage'))
+const AboutPage     = lazy(() => import('./pages/AboutPage'))
+const BlogPage      = lazy(() => import('./pages/BlogPage'))
+const BlogPostPage  = lazy(() => import('./pages/BlogPostPage'))
+const PriceListPage = lazy(() => import('./pages/PriceListPage'))
+const AdminPage     = lazy(() => import('./pages/AdminPage'))
+const NotFoundPage  = lazy(() => import('./pages/NotFoundPage'))
 
 function PageLoader() {
   return (
@@ -42,29 +47,35 @@ function MainSite() {
   return (
     <CartProvider>
       <PageTracker />
+      <PromoBanner />
       <TermsModal />
       <Navbar />
       <SocialSidebar />
       <main>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/"            element={<HomePage />} />
-            <Route path="/store"       element={<StorePage />} />
-            <Route path="/store/:slug" element={<ProductPage />} />
-            <Route path="/cart"        element={<CartPage />} />
-            <Route path="/checkout"    element={<CheckoutPage />} />
-            <Route path="/quote"       element={<QuotePage />} />
-            <Route path="/about"       element={<AboutPage />} />
-            <Route path="/blog"        element={<BlogPage />} />
-            <Route path="/blog/:slug"  element={<BlogPostPage />} />
-            <Route path="*"           element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/"              element={<HomePage />} />
+              <Route path="/store"         element={<StorePage />} />
+              <Route path="/store/:slug"   element={<ProductPage />} />
+              <Route path="/cart"          element={<CartPage />} />
+              <Route path="/checkout"      element={<CheckoutPage />} />
+              <Route path="/quote"         element={<QuotePage />} />
+              <Route path="/about"         element={<AboutPage />} />
+              <Route path="/blog"          element={<BlogPage />} />
+              <Route path="/blog/:slug"    element={<BlogPostPage />} />
+              <Route path="/price-list"    element={<PriceListPage />} />
+              <Route path="*"             element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </main>
       <Footer />
       <WhatsAppFloat />
       <ChatWidget />
       <WhatsAppLeadPopup />
+      <BackToTop />
+      <CookieBanner />
     </CartProvider>
   )
 }

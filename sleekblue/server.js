@@ -350,7 +350,12 @@ app.get('/api/about', (req, res) => {
 
 app.get('/api/blog', (req, res) => {
   const data = readJSON(SITE_DATA_FILE, {})
-  const posts = (data.blogPosts || []).filter(p => p.status === 'published')
+  const now = new Date()
+  const posts = (data.blogPosts || []).filter(p => {
+    if (p.status !== 'published') return false
+    if (p.publishAt && new Date(p.publishAt) > now) return false
+    return true
+  })
   res.json(posts)
 })
 
@@ -683,6 +688,10 @@ app.post('/api/admin/blog', requireAuth, (req, res) => {
     videoUrl: req.body.videoUrl || '',
     audioUrl: req.body.audioUrl || '',
     mediaFiles: req.body.mediaFiles || [],
+    authorName: req.body.authorName || '',
+    authorBio: req.body.authorBio || '',
+    publishAt: req.body.publishAt || '',
+    viewCount: 0,
     order: data.blogPosts.length,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -913,5 +922,129 @@ const ABOUT_DEFAULTS = {
   ],
   showStats: true,
 }
+
+// ── Activity log ──────────────────────────────────────────────────────────────
+const ACTIVITY_FILE = join(__dirname, 'activity-log.json')
+function logActivity(action, detail, user = 'admin') {
+  try {
+    const log = readJSON(ACTIVITY_FILE, [])
+    log.unshift({ id: generateId('ACT'), action, detail, user, timestamp: new Date().toISOString() })
+    writeJSON(ACTIVITY_FILE, log.slice(0, 500))
+  } catch {}
+}
+
+// ── Artwork upload (public — customers send print files) ───────────────────────
+mkdirSync(join(UPLOADS_DIR, 'artwork'), { recursive: true })
+const artworkUpload = multer({ storage: makeStorage('artwork'), limits: { fileSize: 25 * 1024 * 1024 } })
+
+app.post('/api/upload/artwork', artworkUpload.single('artwork'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+  res.json({ ok: true, url: `/uploads/artwork/${req.file.filename}` })
+})
+
+// ── Blog view counter ──────────────────────────────────────────────────────────
+app.post('/api/blog/:slug/view', (req, res) => {
+  const data = readJSON(SITE_DATA_FILE, {})
+  const idx = (data.blogPosts || []).findIndex(p => p.slug === req.params.slug && p.status === 'published')
+  if (idx !== -1) {
+    data.blogPosts[idx].viewCount = (data.blogPosts[idx].viewCount || 0) + 1
+    writeJSON(SITE_DATA_FILE, data)
+  }
+  res.json({ ok: true })
+})
+
+// ── Promo banner (public) ──────────────────────────────────────────────────────
+app.get('/api/promo-banner', (req, res) => {
+  const data = readJSON(SITE_DATA_FILE, {})
+  res.json(data.promoBanner || { enabled: false, text: '', link: '', color: '#7B2FBE', bgColor: '#f5f0ff' })
+})
+
+// ── Promo banner (admin) ───────────────────────────────────────────────────────
+app.put('/api/admin/promo-banner', requireAuth, (req, res) => {
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.promoBanner = { ...(data.promoBanner || {}), ...req.body }
+  writeJSON(SITE_DATA_FILE, data)
+  logActivity('promo_banner', req.body.enabled ? 'enabled' : 'disabled')
+  res.json({ ok: true })
+})
+
+// ── Admin backup ───────────────────────────────────────────────────────────────
+app.get('/api/admin/backup', requireAuth, (req, res) => {
+  const data = readJSON(SITE_DATA_FILE, {})
+  const filename = `sleekblue-backup-${new Date().toISOString().slice(0, 10)}.json`
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+  res.setHeader('Content-Type', 'application/json')
+  logActivity('backup_download', filename)
+  res.send(JSON.stringify(data, null, 2))
+})
+
+// ── Activity log (admin) ───────────────────────────────────────────────────────
+app.get('/api/admin/activity-log', requireAuth, (req, res) => {
+  res.json(readJSON(ACTIVITY_FILE, []).slice(0, 200))
+})
+
+// ── Bulk product image upload ──────────────────────────────────────────────────
+app.post('/api/admin/upload/product/:slug/bulk', requireAuth, productUpload.array('images', 10), (req, res) => {
+  if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files' })
+  const { slug } = req.params
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.productImages = data.productImages || {}
+  data.productImages[slug] = data.productImages[slug] || []
+  const urls = req.files.map(f => `/uploads/products/${f.filename}`)
+  data.productImages[slug].push(...urls)
+  writeJSON(SITE_DATA_FILE, data)
+  logActivity('bulk_image_upload', `${urls.length} images for ${slug}`)
+  res.json({ ok: true, urls })
+})
+
+// ── Sitemap ────────────────────────────────────────────────────────────────────
+const SITEMAP_PRODUCT_SLUGS = [
+  'die-cut-stickers','product-labels','flex-banner','backlit-banner','canvas-banner',
+  'flyers-posters','business-card','letterhead','compliment-slip','invoice-receipt',
+  'burial-brochure','rollup-stand','double-sided-rollup','x-banner','pop-up-banner',
+  'vehicle-branding','t-shirts','t-shirt-cap','branded-bags','signage','billboard',
+  'graphic-design','brand-identity','social-media-design','packaging-design',
+]
+
+app.get('/sitemap.xml', (req, res) => {
+  const data = readJSON(SITE_DATA_FILE, {})
+  const BASE = 'https://sleekbluemediahouz.com'
+  const now = new Date()
+  const posts = (data.blogPosts || []).filter(p => p.status === 'published' && (!p.publishAt || new Date(p.publishAt) <= now))
+  const staticPages = ['', '/store', '/about', '/blog', '/quote', '/price-list']
+  const urls = [
+    ...staticPages.map(p => `  <url><loc>${BASE}${p}</loc><changefreq>weekly</changefreq><priority>${p === '' ? '1.0' : '0.8'}</priority></url>`),
+    ...SITEMAP_PRODUCT_SLUGS.map(s => `  <url><loc>${BASE}/store/${s}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`),
+    ...posts.map(p => `  <url><loc>${BASE}/blog/${p.slug}</loc><lastmod>${(p.updatedAt || p.date || '').slice(0,10) || new Date().toISOString().slice(0,10)}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`),
+  ]
+  res.setHeader('Content-Type', 'application/xml')
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`)
+})
+
+// ── robots.txt ─────────────────────────────────────────────────────────────────
+app.get('/robots.txt', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain')
+  res.send('User-agent: *\nAllow: /\nDisallow: /sbm-control-2026\nDisallow: /api/\n\nSitemap: https://sleekbluemediahouz.com/sitemap.xml\n')
+})
+
+// ── RSS feed ───────────────────────────────────────────────────────────────────
+app.get('/feed.xml', (req, res) => {
+  const data = readJSON(SITE_DATA_FILE, {})
+  const BASE = 'https://sleekbluemediahouz.com'
+  const now = new Date()
+  const posts = (data.blogPosts || []).filter(p => p.status === 'published' && (!p.publishAt || new Date(p.publishAt) <= now)).slice(0, 20)
+  const items = posts.map(p => [
+    '    <item>',
+    `      <title><![CDATA[${p.title}]]></title>`,
+    `      <link>${BASE}/blog/${p.slug}</link>`,
+    `      <guid>${BASE}/blog/${p.slug}</guid>`,
+    `      <pubDate>${new Date(p.date || p.createdAt || Date.now()).toUTCString()}</pubDate>`,
+    `      <description><![CDATA[${p.excerpt || ''}]]></description>`,
+    p.coverImage ? `      <enclosure url="${BASE}${p.coverImage}" type="image/jpeg" length="0" />` : '',
+    '    </item>',
+  ].filter(Boolean).join('\n')).join('\n')
+  res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8')
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n  <channel>\n    <title>Sleekblue Media Houz Blog</title>\n    <link>${BASE}/blog</link>\n    <description>Printing tips, branding guides and business insights from Sleekblue Media Houz</description>\n    <language>en-ng</language>\n    <atom:link href="${BASE}/feed.xml" rel="self" type="application/rss+xml" />\n${items}\n  </channel>\n</rss>`)
+})
 
 app.listen(PORT, () => console.log(`Sleekblue API server running on port ${PORT}`))
