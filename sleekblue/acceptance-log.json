@@ -318,5 +318,15 @@
     "phone": "08033427367",
     "ipAddress": "105.127.17.60",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+  },
+  {
+    "acceptanceId": "SBM-1781828429755-Z96NZ",
+    "timestamp": "2026-06-19T00:20:29.755Z",
+    "termsVersion": "June 2026",
+    "customerName": "martins test",
+    "email": "martinsobioha1@gmail.com",
+    "phone": "08037321545",
+    "ipAddress": "105.127.17.60",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
   }
 ]
