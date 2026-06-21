@@ -13,6 +13,11 @@ function fmt(n) {
   return '₦' + Math.round(n).toLocaleString()
 }
 
+function getYoutubeId(url) {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/]+)/)
+  return m ? m[1] : ''
+}
+
 // Return the nearest standard sticker size for a given area (w × h)
 function findNearestSize(w, h) {
   const area = w * h
@@ -71,7 +76,21 @@ export default function ProductPage() {
     tag.type = 'application/ld+json'
     tag.textContent = JSON.stringify(schema)
     document.head.appendChild(tag)
-    return () => { const el = document.getElementById('product-schema'); if (el) el.remove() }
+    const bcTag = document.createElement('script')
+    bcTag.id = 'product-bc-schema'; bcTag.type = 'application/ld+json'
+    bcTag.textContent = JSON.stringify({
+      '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://sleekbluemediahouz.com/' },
+        { '@type': 'ListItem', position: 2, name: 'Store', item: 'https://sleekbluemediahouz.com/store' },
+        { '@type': 'ListItem', position: 3, name: baseProduct?.name || 'Product', item: `https://sleekbluemediahouz.com/store/${slug}` },
+      ],
+    })
+    document.head.appendChild(bcTag)
+    return () => {
+      const el = document.getElementById('product-schema'); if (el) el.remove()
+      const bc = document.getElementById('product-bc-schema'); if (bc) bc.remove()
+    }
   }, [slug, baseProduct, baseDetails])
 
   // Admin overrides — fetched from server, applied on top of static data
@@ -97,6 +116,11 @@ export default function ProductPage() {
       .then(r => r.ok ? r.json() : {})
       .then(d => setVariantImages(d || {}))
       .catch(() => {})
+    fetch(`/api/product/views/${baseProduct.slug}`)
+      .then(r => r.ok ? r.json() : { views7d: 0 })
+      .then(d => setViews7d(d.views7d || 0))
+      .catch(() => {})
+    try { setInWishlist((JSON.parse(localStorage.getItem('sbm_wishlist') || '[]')).includes(baseProduct.slug)) } catch {}
   }, [baseProduct.slug])
 
   const product = adminOverride ? { ...baseProduct, ...adminOverride } : baseProduct
@@ -114,6 +138,18 @@ export default function ProductPage() {
   const [artworkUploading, setArtworkUploading] = useState(false)
   const [artworkDone, setArtworkDone] = useState(false)
   const [recentlyViewed, setRecentlyViewed] = useState([])
+  const [views7d, setViews7d] = useState(0)
+  const [inWishlist, setInWishlist] = useState(false)
+
+  function toggleWishlist(e) {
+    e?.stopPropagation()
+    try {
+      const list = JSON.parse(localStorage.getItem('sbm_wishlist') || '[]')
+      const next = list.includes(slug) ? list.filter(s => s !== slug) : [...list, slug]
+      localStorage.setItem('sbm_wishlist', JSON.stringify(next))
+      setInWishlist(next.includes(slug))
+    } catch {}
+  }
 
   // Custom size state (only for die-cut stickers)
   const [customWidth, setCustomWidth] = useState(3)
@@ -278,12 +314,38 @@ export default function ProductPage() {
                 ))}
               </div>
             )}
+
+            {/* Product video */}
+            {adminOverride?.videoUrl && (
+              <div style={{ marginTop: '10px', borderRadius: '10px', overflow: 'hidden' }}>
+                {(adminOverride.videoUrl.includes('youtube') || adminOverride.videoUrl.includes('youtu.be')) ? (
+                  <iframe src={`https://www.youtube.com/embed/${getYoutubeId(adminOverride.videoUrl)}`}
+                    title="Product video"
+                    style={{ width: '100%', aspectRatio: '16/9', border: 'none', borderRadius: '10px', display: 'block' }}
+                    allowFullScreen />
+                ) : (
+                  <video src={adminOverride.videoUrl} controls
+                    style={{ width: '100%', borderRadius: '10px', display: 'block' }} />
+                )}
+              </div>
+            )}
           </div>
 
           {/* CENTER — details & pricing */}
           <div style={{ background: '#fff', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-            <h1 style={{ fontSize: '18px', fontWeight: 800, color: '#1a1a1a', marginBottom: '4px', fontFamily: "'HubotSans', sans-serif" }}>{product.name}</h1>
-            <p style={{ fontSize: '12px', color: '#888', marginBottom: '16px', fontFamily: "'HubotSans', sans-serif" }}>{product.category}</p>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
+              <h1 style={{ fontSize: '18px', fontWeight: 800, color: '#1a1a1a', margin: 0, fontFamily: "'HubotSans', sans-serif" }}>{product.name}</h1>
+              <button onClick={toggleWishlist} title={inWishlist ? 'Remove from wishlist' : 'Save for later'}
+                style={{ flexShrink: 0, background: inWishlist ? '#fef2f2' : '#f5f0ff', border: `1.5px solid ${inWishlist ? '#fca5a5' : '#e0d6f5'}`, borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: inWishlist ? '#dc2626' : '#7B2FBE', fontWeight: 600, fontSize: '12px', fontFamily: "'HubotSans', sans-serif" }}>
+                {inWishlist ? '❤️ Saved' : '🤍 Save'}
+              </button>
+            </div>
+            <p style={{ fontSize: '12px', color: '#888', marginBottom: views7d >= 3 ? '6px' : '16px', fontFamily: "'HubotSans', sans-serif" }}>{product.category}</p>
+            {views7d >= 3 && (
+              <div style={{ fontSize: '12px', color: '#e53e3e', fontWeight: 600, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: "'HubotSans', sans-serif" }}>
+                🔥 {views7d} people viewed this in the past 7 days
+              </div>
+            )}
 
             {/* Size selector */}
             <p style={{ fontSize: '12.5px', fontWeight: 700, color: '#333', marginBottom: '8px', fontFamily: "'HubotSans', sans-serif" }}>

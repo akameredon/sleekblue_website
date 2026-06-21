@@ -1,0 +1,30 @@
+[
+  {
+    "id": "ACT-1782052356200-CI2IU",
+    "action": "promo_banner",
+    "detail": "disabled",
+    "user": "admin",
+    "timestamp": "2026-06-21T14:32:36.200Z"
+  },
+  {
+    "id": "ACT-1782052327786-PP7MK",
+    "action": "promo_banner",
+    "detail": "enabled",
+    "user": "admin",
+    "timestamp": "2026-06-21T14:32:07.786Z"
+  },
+  {
+    "id": "ACT-1782052262508-2D611",
+    "action": "promo_banner",
+    "detail": "enabled",
+    "user": "admin",
+    "timestamp": "2026-06-21T14:31:02.508Z"
+  },
+  {
+    "id": "ACT-1782052160182-6WPVQ",
+    "action": "promo_banner",
+    "detail": "enabled",
+    "user": "admin",
+    "timestamp": "2026-06-21T14:29:20.182Z"
+  }
+]

@@ -65,6 +65,84 @@ function SocialShare({ url, title }) {
   )
 }
 
+function CommentsSection({ slug }) {
+  const [comments, setComments] = useState([])
+  const [form, setForm] = useState({ name: '', comment: '' })
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetch(`/api/blog/${slug}/comments`)
+      .then(r => r.ok ? r.json() : [])
+      .then(d => setComments(Array.isArray(d) ? d : []))
+      .catch(() => {})
+  }, [slug])
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    if (!form.name.trim() || !form.comment.trim()) { setError('Name and comment are required'); return }
+    setSubmitting(true); setError('')
+    try {
+      const res = await fetch(`/api/blog/${slug}/comment`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) throw new Error()
+      setSubmitted(true)
+      setForm({ name: '', comment: '' })
+    } catch { setError('Failed to submit. Please try again.') }
+    setSubmitting(false)
+  }
+
+  const fmt = ts => { try { return new Date(ts).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' }) } catch { return '' } }
+
+  return (
+    <div style={{ marginTop: '40px', paddingTop: '32px', borderTop: '1.5px solid #e8e8e8' }}>
+      <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1a1a1a', marginBottom: '20px', fontFamily: "'HubotSans',sans-serif" }}>
+        💬 Comments {comments.length > 0 && `(${comments.length})`}
+      </h3>
+      {comments.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '28px' }}>
+          {comments.map(c => (
+            <div key={c.id} style={{ background: '#fff', borderRadius: '12px', padding: '16px 18px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                <div style={{ width: 34, height: 34, borderRadius: '50%', background: PRI, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '14px', flexShrink: 0 }}>
+                  {(c.name || '?')[0].toUpperCase()}
+                </div>
+                <div>
+                  <p style={{ fontSize: '13.5px', fontWeight: 700, color: '#1a1a1a', margin: 0 }}>{c.name}</p>
+                  <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>{fmt(c.timestamp)}</p>
+                </div>
+              </div>
+              <p style={{ fontSize: '13.5px', color: '#444', margin: 0, lineHeight: 1.6 }}>{c.comment}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {comments.length === 0 && <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '20px', fontStyle: 'italic' }}>No comments yet — be the first!</p>}
+      {submitted ? (
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '16px 18px', color: '#16a34a', fontWeight: 600, fontSize: '13.5px' }}>
+          ✓ Your comment has been submitted and is awaiting moderation. Thank you!
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} style={{ background: '#fff', borderRadius: '14px', padding: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
+          <p style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 14px' }}>Leave a comment</p>
+          <input placeholder="Your name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #ddd', borderRadius: '8px', fontSize: '13px', marginBottom: '10px', outline: 'none', boxSizing: 'border-box', fontFamily: "'HubotSans',sans-serif" }} />
+          <textarea placeholder="Write your comment… *" value={form.comment} onChange={e => setForm(f => ({ ...f, comment: e.target.value }))} rows={4}
+            style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #ddd', borderRadius: '8px', fontSize: '13px', marginBottom: '10px', outline: 'none', resize: 'vertical', fontFamily: "'HubotSans',sans-serif", boxSizing: 'border-box' }} />
+          {error && <p style={{ color: '#dc2626', fontSize: '12px', margin: '0 0 10px' }}>{error}</p>}
+          <button type="submit" disabled={submitting}
+            style={{ background: PRI, color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 24px', fontSize: '13.5px', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, fontFamily: "'HubotSans',sans-serif" }}>
+            {submitting ? '⏳ Submitting…' : '✉️ Submit Comment'}
+          </button>
+        </form>
+      )}
+    </div>
+  )
+}
+
 export default function BlogPostPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
@@ -122,7 +200,21 @@ export default function BlogPostPage() {
     const tag = document.createElement('script')
     tag.id = 'article-schema'; tag.type = 'application/ld+json'; tag.textContent = JSON.stringify(schema)
     document.head.appendChild(tag)
-    return () => { const el = document.getElementById('article-schema'); if (el) el.remove() }
+    const bcTag = document.createElement('script')
+    bcTag.id = 'blog-bc-schema'; bcTag.type = 'application/ld+json'
+    bcTag.textContent = JSON.stringify({
+      '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://sleekbluemediahouz.com/' },
+        { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://sleekbluemediahouz.com/blog' },
+        { '@type': 'ListItem', position: 3, name: post.title, item: `https://sleekbluemediahouz.com/blog/${slug}` },
+      ],
+    })
+    document.head.appendChild(bcTag)
+    return () => {
+      const el = document.getElementById('article-schema'); if (el) el.remove()
+      const bc = document.getElementById('blog-bc-schema'); if (bc) bc.remove()
+    }
   }, [post, slug])
 
   if (loading) return (
@@ -300,6 +392,9 @@ export default function BlogPostPage() {
             </div>
           </div>
         )}
+
+        {/* Comments */}
+        <CommentsSection slug={slug} />
 
         {/* Back */}
         <div style={{ borderTop: '1px solid #e8e8e8', paddingTop: '24px' }}>

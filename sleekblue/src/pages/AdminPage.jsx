@@ -728,6 +728,10 @@ function Sidebar({ view, setView, counts, onLogout }) {
     { id: 'activity-log',   icon: '📜', label: 'Activity Log' },
     { id: 'seo-agent',      icon: '🤖', label: 'SEO Agent' },
     { id: 'growth',         icon: '🚀', label: 'Growth Dashboard' },
+    { id: 'newsletter',      icon: '📧', label: 'Newsletter' },
+    { id: 'comments',        icon: '💬', label: 'Comments' },
+    { id: 'reviews-pending', icon: '⭐', label: 'Reviews Pending' },
+    { id: 'referrals',       icon: '🔗', label: 'Referrals' },
   ]
   return (
     <div style={{ width: SIDEBAR_W, minHeight: '100vh', background: PRI, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
@@ -1289,6 +1293,7 @@ function SettingsView({ token, settings, onDataChanged }) {
   const [form, setForm] = useState({
     phone: '', whatsapp: '', primaryColor: '#7B2FBE', accentColor: '#FF6B00',
     heroTitle: '', heroSubtitle: '', companyName: '', email: '', address: '',
+    ga4Id: '', metaPixelId: '',
     ...settings,
   })
   const [saving, setSaving] = useState(false)
@@ -1367,6 +1372,19 @@ function SettingsView({ token, settings, onDataChanged }) {
           </div>
         </Card>
       </div>
+      <Card style={{ marginTop: '16px', background: '#f5f0ff', border: '1px solid #d4b5ff' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: 700, color: PRI, marginBottom: '8px', fontFamily: "'HubotSans',sans-serif" }}>📊 Analytics Tracking</h3>
+        <p style={{ fontSize: '12px', color: '#888', margin: '0 0 14px', lineHeight: 1.5, fontFamily: "'HubotSans',sans-serif" }}>
+          Enter your Google Analytics 4 Measurement ID and/or Meta Pixel ID. Scripts are injected automatically once saved.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          <Input label="Google Analytics 4 ID" value={form.ga4Id} onChange={e => set('ga4Id', e.target.value)} placeholder="G-XXXXXXXXXX" />
+          <Input label="Meta Pixel ID" value={form.metaPixelId} onChange={e => set('metaPixelId', e.target.value)} placeholder="1234567890" />
+        </div>
+        {form.ga4Id && <p style={{ fontSize: '11px', color: '#16a34a', margin: '8px 0 0', fontFamily: "'HubotSans',sans-serif" }}>✓ GA4 tracking active after save</p>}
+        {form.metaPixelId && <p style={{ fontSize: '11px', color: '#16a34a', margin: '4px 0 0', fontFamily: "'HubotSans',sans-serif" }}>✓ Meta Pixel active after save</p>}
+      </Card>
+
       <Card style={{ marginTop: '16px', background: '#f0f9ff', border: '1px solid #bae6fd' }}>
         <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#0369a1', marginBottom: '8px', fontFamily: "'HubotSans',sans-serif" }}>💾 Data Backup</h3>
         <p style={{ fontSize: '12.5px', color: '#555', margin: '0 0 12px', lineHeight: 1.5, fontFamily: "'HubotSans',sans-serif" }}>Download a complete backup of all site data as JSON. Save a copy before making major changes.</p>
@@ -2342,6 +2360,12 @@ function LeadsView({ token }) {
     setLeads(prev => prev.filter(l => l.id !== id))
   }
 
+  async function followUp(id) {
+    const res = await fetch(`/api/admin/leads/${id}/follow-up`, { method: 'PATCH', headers: authH(token) })
+    const data = await res.json()
+    setLeads(prev => prev.map(l => l.id === id ? { ...l, followedUp: data.followedUp, followedUpAt: data.followedUp ? new Date().toISOString() : null } : l))
+  }
+
   function exportCSV() {
     const rows = [['Name', 'Phone', 'Date'], ...leads.map(l => [l.name || '', l.phone, new Date(l.timestamp).toLocaleDateString('en-NG')])]
     const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n')
@@ -2409,6 +2433,10 @@ function LeadsView({ token }) {
                   style={{ background: '#25D366', color: '#fff', borderRadius: '7px', padding: '6px 12px', fontSize: '12px', fontWeight: 700, textDecoration: 'none', fontFamily: "'HubotSans',sans-serif", flexShrink: 0 }}>
                   💬 Chat
                 </a>
+                <button onClick={() => followUp(lead.id)}
+                  style={{ background: lead.followedUp ? '#f0fdf4' : '#fff', border: `1px solid ${lead.followedUp ? '#16a34a' : '#ccc'}`, borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', color: lead.followedUp ? '#16a34a' : '#888', fontSize: '12px', fontWeight: 600, flexShrink: 0, fontFamily: "'HubotSans',sans-serif", whiteSpace: 'nowrap' }}>
+                  {lead.followedUp ? '✓ Done' : '📞 Follow Up'}
+                </button>
                 <button onClick={() => deleteLead(lead.id)}
                   style={{ background: '#fef2f2', border: '1px solid #dc262620', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', color: '#dc2626', fontSize: '13px', flexShrink: 0 }}>🗑</button>
               </Card>
@@ -2556,6 +2584,301 @@ function FaqView({ token }) {
       {(saved || saving) && (
         <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: saving ? '#666' : '#16a34a', color: '#fff', borderRadius: '10px', padding: '12px 20px', fontWeight: 700, fontSize: '13px', fontFamily: "'HubotSans',sans-serif", zIndex: 9999 }}>
           {saving ? '⏳ Saving…' : '✓ FAQ saved!'}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Newsletter Manager ────────────────────────────────────────────────────────
+function NewsletterView({ token }) {
+  const [subs, setSubs] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/admin/newsletter', { headers: authH(token) })
+      .then(r => r.ok ? r.json() : [])
+      .then(d => { setSubs(Array.isArray(d) ? d : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  function exportCSV() {
+    const rows = [['Email', 'Name', 'Date'], ...subs.map(s => [s.email, s.name || '', new Date(s.timestamp).toLocaleDateString('en-NG')])]
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'sleekblue-newsletter.csv'; a.click(); URL.revokeObjectURL(url)
+  }
+
+  async function del(id) {
+    await fetch(`/api/admin/newsletter/${id}`, { method: 'DELETE', headers: authH(token) })
+    setSubs(prev => prev.filter(s => s.id !== id))
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px', fontFamily: "'HubotSans',sans-serif" }}>📧 Newsletter Subscribers</h2>
+          <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>{subs.length} subscriber{subs.length !== 1 ? 's' : ''} collected</p>
+        </div>
+        <Btn onClick={exportCSV} style={{ background: PRI, color: '#fff', fontWeight: 700, fontSize: '12px' }}>⬇ Export CSV</Btn>
+      </div>
+      {loading ? <Card><p style={{ color: '#888', margin: 0 }}>Loading…</p></Card> : subs.length === 0 ? (
+        <Card style={{ textAlign: 'center', padding: '48px' }}>
+          <div style={{ fontSize: '40px', marginBottom: '12px' }}>📭</div>
+          <p style={{ fontWeight: 700, color: '#1a1a1a', margin: '0 0 8px', fontFamily: "'HubotSans',sans-serif" }}>No subscribers yet</p>
+          <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Add the newsletter widget to your site to start collecting emails.</p>
+        </Card>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {subs.map((s, i) => (
+            <Card key={s.id || i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 18px' }}>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', background: `${PRI}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>📧</div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: '13.5px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 2px', fontFamily: "'HubotSans',sans-serif" }}>{s.email}</p>
+                {s.name && <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>{s.name}</p>}
+              </div>
+              <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>{new Date(s.timestamp).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+              <button onClick={() => del(s.id)} style={{ background: '#fef2f2', border: '1px solid #dc262620', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', color: '#dc2626', fontSize: '13px' }}>🗑</button>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Comments Moderator ────────────────────────────────────────────────────────
+function CommentsView({ token }) {
+  const [comments, setComments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState('all')
+
+  useEffect(() => {
+    fetch('/api/admin/comments', { headers: authH(token) })
+      .then(r => r.ok ? r.json() : [])
+      .then(d => { setComments(Array.isArray(d) ? d : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  async function approve(id) {
+    await fetch(`/api/admin/comments/${id}/approve`, { method: 'PATCH', headers: authH(token) })
+    setComments(prev => prev.map(c => c.id === id ? { ...c, approved: true } : c))
+  }
+
+  async function del(id) {
+    await fetch(`/api/admin/comments/${id}`, { method: 'DELETE', headers: authH(token) })
+    setComments(prev => prev.filter(c => c.id !== id))
+  }
+
+  const visible = comments.filter(c => filter === 'all' ? true : filter === 'pending' ? !c.approved : c.approved)
+  const pending = comments.filter(c => !c.approved).length
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px', fontFamily: "'HubotSans',sans-serif" }}>💬 Comment Moderation</h2>
+          <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>{pending} pending approval · {comments.length} total</p>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {['all', 'pending', 'approved'].map(f => (
+            <button key={f} onClick={() => setFilter(f)}
+              style={{ padding: '6px 14px', borderRadius: '16px', border: `1.5px solid ${filter === f ? PRI : '#ddd'}`, background: filter === f ? PRI : '#fff', color: filter === f ? '#fff' : '#555', fontSize: '12px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+      {loading ? <Card><p style={{ color: '#888', margin: 0 }}>Loading…</p></Card> : visible.length === 0 ? (
+        <Card style={{ textAlign: 'center', padding: '48px' }}>
+          <p style={{ fontWeight: 700, color: '#1a1a1a', margin: 0 }}>No comments here</p>
+        </Card>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {visible.map(c => (
+            <Card key={c.id} style={{ padding: '16px 18px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div style={{ width: 34, height: 34, borderRadius: '50%', background: c.approved ? '#f0fdf4' : '#fef9e7', border: `1.5px solid ${c.approved ? '#bbf7d0' : '#fde68a'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', flexShrink: 0 }}>
+                  {c.approved ? '✓' : '⏳'}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#1a1a1a', fontFamily: "'HubotSans',sans-serif" }}>{c.name}</span>
+                    <span style={{ fontSize: '11px', background: '#f0e8ff', color: PRI, padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>on /{c.slug}</span>
+                    <span style={{ fontSize: '11px', color: '#aaa' }}>{new Date(c.timestamp).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                    {c.approved && <span style={{ fontSize: '11px', background: '#f0fdf4', color: '#16a34a', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>✓ Approved</span>}
+                  </div>
+                  <p style={{ fontSize: '13.5px', color: '#444', margin: 0, lineHeight: 1.6 }}>{c.comment}</p>
+                </div>
+                <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                  {!c.approved && (
+                    <button onClick={() => approve(c.id)}
+                      style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '7px', padding: '6px 12px', cursor: 'pointer', color: '#16a34a', fontSize: '12px', fontWeight: 700 }}>✓ Approve</button>
+                  )}
+                  <button onClick={() => del(c.id)}
+                    style={{ background: '#fef2f2', border: '1px solid #dc262620', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', color: '#dc2626', fontSize: '13px' }}>🗑</button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Reviews Pending ───────────────────────────────────────────────────────────
+function ReviewsPendingView({ token }) {
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/admin/reviews', { headers: authH(token) })
+      .then(r => r.ok ? r.json() : [])
+      .then(d => { setReviews(Array.isArray(d) ? d : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  async function approve(id) {
+    await fetch(`/api/admin/reviews/${id}/approve`, { method: 'PATCH', headers: authH(token) })
+    setReviews(prev => prev.filter(r => r.id !== id))
+  }
+
+  async function del(id) {
+    await fetch(`/api/admin/reviews/${id}`, { method: 'DELETE', headers: authH(token) })
+    setReviews(prev => prev.filter(r => r.id !== id))
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: '20px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px', fontFamily: "'HubotSans',sans-serif" }}>⭐ Pending Reviews</h2>
+        <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>{reviews.length} review{reviews.length !== 1 ? 's' : ''} awaiting approval. Approved reviews appear on the homepage.</p>
+      </div>
+      {loading ? <Card><p style={{ color: '#888', margin: 0 }}>Loading…</p></Card> : reviews.length === 0 ? (
+        <Card style={{ textAlign: 'center', padding: '48px' }}>
+          <div style={{ fontSize: '40px', marginBottom: '12px' }}>⭐</div>
+          <p style={{ fontWeight: 700, color: '#1a1a1a', margin: '0 0 8px', fontFamily: "'HubotSans',sans-serif" }}>No pending reviews</p>
+          <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>New review submissions will appear here.</p>
+        </Card>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {reviews.map(r => (
+            <Card key={r.id} style={{ padding: '16px 18px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#fef9e7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>👤</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', fontFamily: "'HubotSans',sans-serif" }}>{r.name}</span>
+                    {r.location && <span style={{ fontSize: '12px', color: '#888' }}>📍 {r.location}</span>}
+                    <span style={{ fontSize: '13px' }}>{'★'.repeat(r.rating || 5)}</span>
+                    <span style={{ fontSize: '11px', color: '#aaa' }}>{new Date(r.timestamp).toLocaleDateString('en-NG')}</span>
+                  </div>
+                  <p style={{ fontSize: '13.5px', color: '#444', margin: 0, lineHeight: 1.6 }}>{r.text}</p>
+                </div>
+                <div style={{ display: 'flex', gap: '6px', flexShrink: 0, flexDirection: 'column' }}>
+                  <button onClick={() => approve(r.id)}
+                    style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '7px', padding: '7px 14px', cursor: 'pointer', color: '#16a34a', fontSize: '12px', fontWeight: 700 }}>✓ Approve</button>
+                  <button onClick={() => del(r.id)}
+                    style={{ background: '#fef2f2', border: '1px solid #dc262620', borderRadius: '7px', padding: '7px 10px', cursor: 'pointer', color: '#dc2626', fontSize: '12px', fontWeight: 600 }}>✗ Reject</button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Referrals Manager ─────────────────────────────────────────────────────────
+function ReferralsView({ token }) {
+  const [refs, setRefs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [form, setForm] = useState({ name: '', contact: '' })
+  const [creating, setCreating] = useState(false)
+  const [newRef, setNewRef] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/admin/referrals', { headers: authH(token) })
+      .then(r => r.ok ? r.json() : [])
+      .then(d => { setRefs(Array.isArray(d) ? d : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  async function create() {
+    if (!form.name.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/referral/generate', { method: 'POST', headers: { ...authH(token), 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      const data = await res.json()
+      if (data.ok) { setNewRef(data); setRefs(prev => [{ id: data.code, code: data.code, name: form.name, contact: form.contact, createdAt: new Date().toISOString(), clicks: 0 }, ...prev]); setForm({ name: '', contact: '' }) }
+    } catch {}
+    setCreating(false)
+  }
+
+  async function del(id) {
+    await fetch(`/api/admin/referrals/${id}`, { method: 'DELETE', headers: authH(token) })
+    setRefs(prev => prev.filter(r => r.id !== id))
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: '20px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px', fontFamily: "'HubotSans',sans-serif" }}>🔗 Referral Links</h2>
+        <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Create unique referral links for partners and track their performance.</p>
+      </div>
+
+      <Card style={{ marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: 700, color: PRI, marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>Generate New Referral Link</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '12px', alignItems: 'end' }}>
+          <Input label="Partner Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Tunde Bakare" />
+          <Input label="Contact (optional)" value={form.contact} onChange={e => setForm(f => ({ ...f, contact: e.target.value }))} placeholder="Phone or email" />
+          <button onClick={create} disabled={creating || !form.name.trim()}
+            style={{ padding: '10px 20px', background: PRI, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', opacity: creating || !form.name.trim() ? 0.6 : 1 }}>
+            {creating ? '⏳' : '+ Create'}
+          </button>
+        </div>
+        {newRef && (
+          <div style={{ marginTop: '14px', background: '#f0fdf4', borderRadius: '8px', padding: '12px 14px', border: '1px solid #bbf7d0' }}>
+            <p style={{ fontSize: '12px', color: '#16a34a', fontWeight: 700, margin: '0 0 6px' }}>✓ Link created!</p>
+            <p style={{ fontSize: '12px', color: '#555', margin: 0, wordBreak: 'break-all' }}>
+              <strong>URL:</strong> {newRef.url}
+            </p>
+            <button onClick={() => navigator.clipboard.writeText(newRef.url)}
+              style={{ marginTop: '8px', padding: '5px 12px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+              📋 Copy Link
+            </button>
+          </div>
+        )}
+      </Card>
+
+      {loading ? <Card><p style={{ color: '#888', margin: 0 }}>Loading…</p></Card> : refs.length === 0 ? (
+        <Card style={{ textAlign: 'center', padding: '32px' }}>
+          <p style={{ fontWeight: 700, color: '#1a1a1a', margin: 0 }}>No referral links yet</p>
+        </Card>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {refs.map(r => (
+            <Card key={r.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 18px' }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: '13.5px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 2px', fontFamily: "'HubotSans',sans-serif" }}>{r.name}</p>
+                <p style={{ fontSize: '12px', color: '#888', margin: '0 0 4px', fontFamily: 'monospace' }}>
+                  sleekbluemediahouz.com?ref=<strong style={{ color: PRI }}>{r.code}</strong>
+                </p>
+                {r.contact && <p style={{ fontSize: '11.5px', color: '#aaa', margin: 0 }}>{r.contact}</p>}
+              </div>
+              <div style={{ textAlign: 'center', padding: '8px 16px', background: '#f0e8ff', borderRadius: '8px' }}>
+                <p style={{ fontSize: '18px', fontWeight: 800, color: PRI, margin: 0 }}>{r.clicks || 0}</p>
+                <p style={{ fontSize: '10px', color: '#888', margin: 0 }}>Clicks</p>
+              </div>
+              <button onClick={() => navigator.clipboard.writeText(`https://sleekbluemediahouz.com?ref=${r.code}`)}
+                style={{ background: '#f0e8ff', border: '1px solid #d4b5ff', borderRadius: '7px', padding: '7px 12px', cursor: 'pointer', color: PRI, fontSize: '12px', fontWeight: 700 }}>📋</button>
+              <button onClick={() => del(r.id)}
+                style={{ background: '#fef2f2', border: '1px solid #dc262620', borderRadius: '7px', padding: '7px 10px', cursor: 'pointer', color: '#dc2626', fontSize: '13px' }}>🗑</button>
+            </Card>
+          ))}
         </div>
       )}
     </div>
@@ -3275,7 +3598,11 @@ export default function AdminPage() {
             {view === 'promo-banner'   && <PromoBannerView token={token} />}
             {view === 'activity-log'   && <ActivityLogView token={token} />}
             {view === 'seo-agent'      && <SeoAgentView token={token} />}
-            {view === 'growth'         && <GrowthDashboardView token={token} />}
+            {view === 'growth'          && <GrowthDashboardView token={token} />}
+            {view === 'newsletter'      && <NewsletterView token={token} />}
+            {view === 'comments'        && <CommentsView token={token} />}
+            {view === 'reviews-pending' && <ReviewsPendingView token={token} />}
+            {view === 'referrals'       && <ReferralsView token={token} />}
           </>
         )}
       </main>

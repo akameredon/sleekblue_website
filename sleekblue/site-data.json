@@ -393,32 +393,188 @@
       "reviewCount": "40",
       "googleReviewUrl": "https://share.google/OwMhndIizA29kGair",
       "testimonials": [
-        { "name": "Makuochukwu Augustine Okeke", "text": "Always delivers. I must say I started enjoying peace of mind in event branding when I made the switch to Sleekblue.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Utoh Chiugo", "text": "I was really thrilled by their service. I printed a wedding card and souvenir stickers — they gave attention to details, good printing, good graphics designs and a lovely space. Their prices are very good. I love printing here and recommend it to anyone.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Promise Nwachukwu", "text": "Sleekblue print and cut delivers top notch quality with clean finishing and fast turnaround time. Very professional and detail oriented. I highly recommend them for any branding and printing services.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Boniface Emmanuel", "text": "Outstanding printing service! Clean, high-quality output, fast delivery, and great customer support. Definitely my go-to for all printing needs.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Mark Uwajeh", "text": "Number 1, very reliable.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Igbokwe Ann", "text": "Sleekblue media houz, the surest place when it comes to designing and printing. I received my work with so much joy.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Elizabeth Solomon", "text": "Tasted and trusted, always on point... I have never regretted trusting Sleekblue media house with my printing.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Nwagwu Emmanuella", "text": "Sleekblue media house is the number one media house in Nigeria! Their customer service is top notch, they are never late to deliver! They got you covered on all your printing and graphics needs.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Meg Obiomah", "text": "Sleekblue media houz is not just a business place, but one that adds value to everyone who comes along. There's personal touch, there's excellence. It's wholesome, it's engaging.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "CHIZARAM ZOE CHARIS", "text": "Sleekblue is my GO TO when I need that perfect job and on time too. Big ups!! More than a 5 star rating.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Glory Akhigbe", "text": "Call them at odd hours they will always deliver. Sleekblue has always been reliable and dependable — very creative and excellent.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Endurance John", "text": "You guys are simply amazing creating amazing designs. You are truly sleek. Good value and good quality.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Mma Sylvia", "text": "With Sleekblue you can be sure of quality. They are simply very good.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Deraa", "text": "Every customer is family, and every job done with them ends in great smiles.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Ojinkama Mary", "text": "Reliable and very accommodating. Price friendly. Very creative and trustworthy.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Anastasia Ugwulebo", "text": "Very creative, reliable and updated with recent tech ideas for business growth.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Harriet Aneke", "text": "Delivers good quality jobs and exhibits high level of professionalism.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Don Creative Hub", "text": "I appreciate the effort you put into every job. Top professionals.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Melvin Moore", "text": "Very creative and dependable anytime.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Kamsi Vivian", "text": "You guys pay attention to details, productive and creative.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Shaly Okorie", "text": "Quick and reliable anytime.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Joseph Emmanuel", "text": "Truly excellent and creative.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Stephen Obioha", "text": "Excellent service. Always consistent and professional.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Doris Chidera", "text": "Printing of product label and flex banner — Sleekblue is your best print partner.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Pst Lydia Ojiaku", "text": "I love the quality and style. Sleekblue always delivers beyond expectation.", "rating": 5, "location": "Owerri, Nigeria", "visible": true },
-        { "name": "Ahaotu Wisdom", "text": "I think they are the best. Stick with Sleekblue and you will believe it too.", "rating": 5, "location": "Owerri, Nigeria", "visible": true }
+        {
+          "name": "Makuochukwu Augustine Okeke",
+          "text": "Always delivers. I must say I started enjoying peace of mind in event branding when I made the switch to Sleekblue.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Utoh Chiugo",
+          "text": "I was really thrilled by their service. I printed a wedding card and souvenir stickers — they gave attention to details, good printing, good graphics designs and a lovely space. Their prices are very good. I love printing here and recommend it to anyone.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Promise Nwachukwu",
+          "text": "Sleekblue print and cut delivers top notch quality with clean finishing and fast turnaround time. Very professional and detail oriented. I highly recommend them for any branding and printing services.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Boniface Emmanuel",
+          "text": "Outstanding printing service! Clean, high-quality output, fast delivery, and great customer support. Definitely my go-to for all printing needs.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Mark Uwajeh",
+          "text": "Number 1, very reliable.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Igbokwe Ann",
+          "text": "Sleekblue media houz, the surest place when it comes to designing and printing. I received my work with so much joy.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Elizabeth Solomon",
+          "text": "Tasted and trusted, always on point... I have never regretted trusting Sleekblue media house with my printing.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Nwagwu Emmanuella",
+          "text": "Sleekblue media house is the number one media house in Nigeria! Their customer service is top notch, they are never late to deliver! They got you covered on all your printing and graphics needs.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Meg Obiomah",
+          "text": "Sleekblue media houz is not just a business place, but one that adds value to everyone who comes along. There's personal touch, there's excellence. It's wholesome, it's engaging.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "CHIZARAM ZOE CHARIS",
+          "text": "Sleekblue is my GO TO when I need that perfect job and on time too. Big ups!! More than a 5 star rating.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Glory Akhigbe",
+          "text": "Call them at odd hours they will always deliver. Sleekblue has always been reliable and dependable — very creative and excellent.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Endurance John",
+          "text": "You guys are simply amazing creating amazing designs. You are truly sleek. Good value and good quality.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Mma Sylvia",
+          "text": "With Sleekblue you can be sure of quality. They are simply very good.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Deraa",
+          "text": "Every customer is family, and every job done with them ends in great smiles.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Ojinkama Mary",
+          "text": "Reliable and very accommodating. Price friendly. Very creative and trustworthy.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Anastasia Ugwulebo",
+          "text": "Very creative, reliable and updated with recent tech ideas for business growth.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Harriet Aneke",
+          "text": "Delivers good quality jobs and exhibits high level of professionalism.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Don Creative Hub",
+          "text": "I appreciate the effort you put into every job. Top professionals.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Melvin Moore",
+          "text": "Very creative and dependable anytime.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Kamsi Vivian",
+          "text": "You guys pay attention to details, productive and creative.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Shaly Okorie",
+          "text": "Quick and reliable anytime.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Joseph Emmanuel",
+          "text": "Truly excellent and creative.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Stephen Obioha",
+          "text": "Excellent service. Always consistent and professional.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Doris Chidera",
+          "text": "Printing of product label and flex banner — Sleekblue is your best print partner.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Pst Lydia Ojiaku",
+          "text": "I love the quality and style. Sleekblue always delivers beyond expectation.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Ahaotu Wisdom",
+          "text": "I think they are the best. Stick with Sleekblue and you will believe it too.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        }
       ]
     },
     "trustBar": {
@@ -457,7 +613,33 @@
           "visible": true
         }
       ]
-    }
+    },
+    "faq": [
+      {
+        "question": "What types of printing services does Sleekblue Media Houz offer?",
+        "answer": "We offer a wide range of premium printing and branding services including die-cut stickers, flex banners, flyers & posters, business cards, rollup stands, T-shirts & caps, product labels, vehicle branding, signage & billboards, burial brochures, and corporate graphic design."
+      },
+      {
+        "question": "What is the minimum order quantity?",
+        "answer": "Minimum order quantities vary by product. For die-cut stickers, our minimum is 100 pieces. For flyers and business cards, it's typically 50–100 pieces. Flex banners and rollup stands can be ordered as a single piece."
+      },
+      {
+        "question": "How long does production and delivery take?",
+        "answer": "Standard production takes 1–3 business days for most products. Rush orders can be completed in 24 hours for an additional fee. We deliver nationwide across Nigeria, with delivery typically taking 1–3 extra days depending on your location."
+      },
+      {
+        "question": "Do you offer custom design services?",
+        "answer": "Yes! Our in-house design team can create professional artwork for any of our products — from logo design and full brand identity packages to individual print files. Design turnaround is usually 24–48 hours."
+      },
+      {
+        "question": "Do you deliver nationwide across Nigeria?",
+        "answer": "Absolutely. We deliver to all 36 states and the FCT via trusted courier partners. Whether you're in Lagos, Abuja, Port Harcourt, Kano, or anywhere else in Nigeria, we'll get your prints to you safely."
+      },
+      {
+        "question": "How do I place an order and what payment methods do you accept?",
+        "answer": "You can place an order directly on our website or chat with us on WhatsApp at +234 806 527 5264. We accept bank transfers, mobile payments, and online card payments. Once payment is confirmed, your order goes straight to production."
+      }
+    ]
   },
   "productImages": {
     "die-cut-stickers": [
@@ -536,5 +718,12 @@
       }
     ],
     "showStats": true
+  },
+  "promoBanner": {
+    "enabled": false,
+    "text": "FREE DELIVERY WITHIN OWERRI",
+    "link": "",
+    "color": "#ffffff",
+    "bgColor": "#340dc5"
   }
 }

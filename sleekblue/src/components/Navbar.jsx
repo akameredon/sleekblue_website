@@ -17,16 +17,28 @@ export default function Navbar() {
   const searchRef = useRef(null)
 
   const allMenuItems = Object.values(NAV_MENUS).flat()
+  const [blogResults, setBlogResults] = useState([])
+  const [cachedPosts, setCachedPosts] = useState([])
+
+  useEffect(() => {
+    fetch('/api/blog').then(r => r.ok ? r.json() : []).then(posts => setCachedPosts(Array.isArray(posts) ? posts : [])).catch(() => {})
+  }, [])
 
   function handleSearch(q) {
     setSearchQuery(q)
-    if (q.trim().length < 2) { setSearchResults([]); setShowSearch(false); return }
-    const results = ALL_PRODUCTS.filter(p =>
-      p.name.toLowerCase().includes(q.toLowerCase()) ||
-      p.category.toLowerCase().includes(q.toLowerCase())
+    if (q.trim().length < 2) { setSearchResults([]); setBlogResults([]); setShowSearch(false); return }
+    const ql = q.toLowerCase()
+    const products = ALL_PRODUCTS.filter(p =>
+      p.name.toLowerCase().includes(ql) || p.category.toLowerCase().includes(ql)
     )
-    setSearchResults(results)
-    setShowSearch(true)
+    const posts = cachedPosts.filter(p =>
+      (p.title || '').toLowerCase().includes(ql) ||
+      (p.category || '').toLowerCase().includes(ql) ||
+      (p.excerpt || '').toLowerCase().includes(ql)
+    ).slice(0, 4)
+    setSearchResults(products)
+    setBlogResults(posts)
+    setShowSearch(products.length > 0 || posts.length > 0)
   }
 
   useEffect(() => {
@@ -61,23 +73,41 @@ export default function Navbar() {
               <FaSearch size={14} />
             </button>
           </div>
-          {showSearch && searchResults.length > 0 && (
-            <div style={{ position: 'absolute', top: '110%', left: 0, right: 0, background: '#fff', border: '1px solid #e5e5e5', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 2000, maxHeight: '320px', overflowY: 'auto' }}>
-              {searchResults.map(p => (
-                <div key={p.id} onClick={() => { navigate(`/store/${p.slug}`); setShowSearch(false); setSearchQuery('') }}
-                  style={{ padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0', fontSize: '13px', color: '#333' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#f5f0ff'}
-                  onMouseLeave={e => e.currentTarget.style.background = '#fff'}
-                >
-                  <span style={{ fontWeight: 600, color: '#7B2FBE' }}>{p.name}</span>
-                  <span style={{ color: '#999', marginLeft: '8px', fontSize: '11px' }}>{p.category}</span>
-                </div>
-              ))}
+          {showSearch && (searchResults.length > 0 || blogResults.length > 0) && (
+            <div style={{ position: 'absolute', top: '110%', left: 0, right: 0, background: '#fff', border: '1px solid #e5e5e5', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 2000, maxHeight: '360px', overflowY: 'auto' }}>
+              {searchResults.length > 0 && (
+                <>
+                  <div style={{ padding: '7px 16px 4px', fontSize: '10px', fontWeight: 700, color: '#aaa', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Products</div>
+                  {searchResults.map(p => (
+                    <div key={p.id} onClick={() => { navigate(`/store/${p.slug}`); setShowSearch(false); setSearchQuery('') }}
+                      style={{ padding: '9px 16px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0', fontSize: '13px', color: '#333', display: 'flex', alignItems: 'center', gap: '8px' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#f5f0ff'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
+                      <span style={{ fontSize: '16px' }}>🛍️</span>
+                      <div><span style={{ fontWeight: 600, color: '#7B2FBE' }}>{p.name}</span><span style={{ color: '#999', marginLeft: '6px', fontSize: '11px' }}>{p.category}</span></div>
+                    </div>
+                  ))}
+                </>
+              )}
+              {blogResults.length > 0 && (
+                <>
+                  <div style={{ padding: '7px 16px 4px', fontSize: '10px', fontWeight: 700, color: '#aaa', letterSpacing: '0.5px', textTransform: 'uppercase', borderTop: searchResults.length > 0 ? '1px solid #f0f0f0' : 'none' }}>Blog Posts</div>
+                  {blogResults.map(p => (
+                    <div key={p.slug} onClick={() => { navigate(`/blog/${p.slug}`); setShowSearch(false); setSearchQuery('') }}
+                      style={{ padding: '9px 16px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0', fontSize: '13px', color: '#333', display: 'flex', alignItems: 'center', gap: '8px' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#f5f0ff'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
+                      <span style={{ fontSize: '16px' }}>✍️</span>
+                      <div><span style={{ fontWeight: 600, color: '#1a1a1a' }}>{p.title}</span>{p.category && <span style={{ color: '#999', marginLeft: '6px', fontSize: '11px' }}>{p.category}</span>}</div>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           )}
-          {showSearch && searchResults.length === 0 && searchQuery.length >= 2 && (
+          {showSearch && searchResults.length === 0 && blogResults.length === 0 && searchQuery.length >= 2 && (
             <div style={{ position: 'absolute', top: '110%', left: 0, right: 0, background: '#fff', border: '1px solid #e5e5e5', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 2000, padding: '14px 16px', fontSize: '13px', color: '#888' }}>
-              No products found for "{searchQuery}"
+              No results for "{searchQuery}"
             </div>
           )}
         </div>

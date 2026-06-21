@@ -1210,4 +1210,138 @@ app.get('/api/admin/growth', requireAuth, (req, res) => {
   })
 })
 
+// ── Newsletter ─────────────────────────────────────────────────────────────────
+const NEWSLETTER_FILE     = join(__dirname, 'newsletter.json')
+const COMMENTS_FILE       = join(__dirname, 'comments.json')
+const REVIEWS_PENDING_FILE= join(__dirname, 'reviews-pending.json')
+const REFERRALS_FILE      = join(__dirname, 'referrals.json')
+
+app.post('/api/newsletter', (req, res) => {
+  const { email, name } = req.body || {}
+  if (!email || !/\S+@\S+\.\S+/.test(email)) return res.status(400).json({ error: 'Valid email required' })
+  const list = readJSON(NEWSLETTER_FILE, [])
+  if (list.find(s => s.email.toLowerCase() === email.toLowerCase())) return res.json({ ok: true, already: true })
+  list.unshift({ id: generateId('NL'), email, name: name || '', timestamp: new Date().toISOString() })
+  writeJSON(NEWSLETTER_FILE, list)
+  logActivity('newsletter_subscribe', `${name || email} subscribed to newsletter`, 'public')
+  res.json({ ok: true })
+})
+app.get('/api/admin/newsletter', requireAuth, (req, res) => res.json(readJSON(NEWSLETTER_FILE, [])))
+app.delete('/api/admin/newsletter/:id', requireAuth, (req, res) => {
+  writeJSON(NEWSLETTER_FILE, readJSON(NEWSLETTER_FILE, []).filter(s => s.id !== req.params.id))
+  res.json({ ok: true })
+})
+
+// ── Blog comments ──────────────────────────────────────────────────────────────
+app.get('/api/blog/:slug/comments', (req, res) => {
+  const all = readJSON(COMMENTS_FILE, {})
+  res.json((all[req.params.slug] || []).filter(c => c.approved))
+})
+app.post('/api/blog/:slug/comment', (req, res) => {
+  const { name, comment } = req.body || {}
+  if (!name || !comment) return res.status(400).json({ error: 'Name and comment required' })
+  const all = readJSON(COMMENTS_FILE, {})
+  const slug = req.params.slug
+  if (!all[slug]) all[slug] = []
+  const entry = { id: generateId('CMT'), slug, name, comment, timestamp: new Date().toISOString(), approved: false }
+  all[slug].unshift(entry)
+  writeJSON(COMMENTS_FILE, all)
+  logActivity('comment_submitted', `${name} commented on ${slug}`, 'public')
+  res.json({ ok: true, id: entry.id })
+})
+app.get('/api/admin/comments', requireAuth, (req, res) => {
+  const all = readJSON(COMMENTS_FILE, {})
+  const flat = Object.values(all).flat().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+  res.json(flat)
+})
+app.patch('/api/admin/comments/:id/approve', requireAuth, (req, res) => {
+  const all = readJSON(COMMENTS_FILE, {})
+  for (const slug in all) {
+    const idx = all[slug].findIndex(c => c.id === req.params.id)
+    if (idx !== -1) { all[slug][idx].approved = true; writeJSON(COMMENTS_FILE, all); return res.json({ ok: true }) }
+  }
+  res.status(404).json({ error: 'Comment not found' })
+})
+app.delete('/api/admin/comments/:id', requireAuth, (req, res) => {
+  const all = readJSON(COMMENTS_FILE, {})
+  for (const slug in all) all[slug] = (all[slug] || []).filter(c => c.id !== req.params.id)
+  writeJSON(COMMENTS_FILE, all)
+  res.json({ ok: true })
+})
+
+// ── Review submissions ─────────────────────────────────────────────────────────
+app.post('/api/reviews/submit', (req, res) => {
+  const { name, rating, text, location } = req.body || {}
+  if (!name || !text) return res.status(400).json({ error: 'Name and review required' })
+  const list = readJSON(REVIEWS_PENDING_FILE, [])
+  const entry = { id: generateId('REV'), name, rating: parseInt(rating) || 5, text, location: location || '', timestamp: new Date().toISOString() }
+  list.unshift(entry)
+  writeJSON(REVIEWS_PENDING_FILE, list)
+  logActivity('review_submitted', `${name} submitted a review`, 'public')
+  res.json({ ok: true })
+})
+app.get('/api/admin/reviews', requireAuth, (req, res) => res.json(readJSON(REVIEWS_PENDING_FILE, [])))
+app.patch('/api/admin/reviews/:id/approve', requireAuth, (req, res) => {
+  const list = readJSON(REVIEWS_PENDING_FILE, [])
+  const rev = list.find(r => r.id === req.params.id)
+  if (!rev) return res.status(404).json({ error: 'Not found' })
+  const data = readJSON(SITE_DATA_FILE, {})
+  data.content = data.content || {}
+  data.content.reviews = data.content.reviews || {}
+  data.content.reviews.testimonials = data.content.reviews.testimonials || []
+  data.content.reviews.testimonials.unshift({ id: rev.id, name: rev.name, rating: rev.rating, text: rev.text, location: rev.location, visible: true })
+  writeJSON(SITE_DATA_FILE, data)
+  writeJSON(REVIEWS_PENDING_FILE, list.filter(r => r.id !== req.params.id))
+  logActivity('review_approved', `Review by ${rev.name} approved`, 'admin')
+  res.json({ ok: true })
+})
+app.delete('/api/admin/reviews/:id', requireAuth, (req, res) => {
+  writeJSON(REVIEWS_PENDING_FILE, readJSON(REVIEWS_PENDING_FILE, []).filter(r => r.id !== req.params.id))
+  res.json({ ok: true })
+})
+
+// ── Referral system ────────────────────────────────────────────────────────────
+app.post('/api/referral/generate', requireAuth, (req, res) => {
+  const { name, contact } = req.body || {}
+  if (!name) return res.status(400).json({ error: 'Name required' })
+  const list = readJSON(REFERRALS_FILE, [])
+  const code = `SBM-${Math.random().toString(36).slice(2,8).toUpperCase()}`
+  const entry = { id: generateId('REF'), code, name, contact: contact || '', createdAt: new Date().toISOString(), clicks: 0, referredLeads: 0 }
+  list.unshift(entry)
+  writeJSON(REFERRALS_FILE, list)
+  logActivity('referral_created', `Referral link created for ${name}`, 'admin')
+  res.json({ ok: true, code, url: `https://sleekbluemediahouz.com?ref=${code}` })
+})
+app.get('/api/referral/track/:code', (req, res) => {
+  const list = readJSON(REFERRALS_FILE, [])
+  const idx = list.findIndex(r => r.code === req.params.code)
+  if (idx !== -1) { list[idx].clicks = (list[idx].clicks || 0) + 1; writeJSON(REFERRALS_FILE, list) }
+  res.json({ ok: true })
+})
+app.get('/api/admin/referrals', requireAuth, (req, res) => res.json(readJSON(REFERRALS_FILE, [])))
+app.delete('/api/admin/referrals/:id', requireAuth, (req, res) => {
+  writeJSON(REFERRALS_FILE, readJSON(REFERRALS_FILE, []).filter(r => r.id !== req.params.id))
+  res.json({ ok: true })
+})
+
+// ── Lead follow-up toggle ──────────────────────────────────────────────────────
+app.patch('/api/admin/leads/:id/follow-up', requireAuth, (req, res) => {
+  const leads = readJSON(LEADS_FILE, [])
+  const idx = leads.findIndex(l => l.id === req.params.id)
+  if (idx === -1) return res.status(404).json({ error: 'Lead not found' })
+  leads[idx].followedUp = !leads[idx].followedUp
+  leads[idx].followedUpAt = leads[idx].followedUp ? new Date().toISOString() : null
+  writeJSON(LEADS_FILE, leads)
+  res.json({ ok: true, followedUp: leads[idx].followedUp })
+})
+
+// ── Social proof — product view count (7-day) ──────────────────────────────────
+app.get('/api/product/views/:slug', (req, res) => {
+  const analytics = readAnalytics()
+  const slug = req.params.slug
+  const cutoff = new Date(Date.now() - 7 * 86400000)
+  const views7d = (analytics.events || []).filter(e => e.type === 'product_view' && e.slug === slug && new Date(e.timestamp) >= cutoff).length
+  res.json({ slug, views7d })
+})
+
 app.listen(PORT, () => console.log(`Sleekblue API server running on port ${PORT}`))
