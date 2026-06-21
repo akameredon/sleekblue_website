@@ -1047,4 +1047,167 @@ app.get('/feed.xml', (req, res) => {
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n  <channel>\n    <title>Sleekblue Media Houz Blog</title>\n    <link>${BASE}/blog</link>\n    <description>Printing tips, branding guides and business insights from Sleekblue Media Houz</description>\n    <language>en-ng</language>\n    <atom:link href="${BASE}/feed.xml" rel="self" type="application/rss+xml" />\n${items}\n  </channel>\n</rss>`)
 })
 
+// ── SEO Agent audit ────────────────────────────────────────────────────────────
+const STATIC_PAGES = [
+  { key: 'home',       label: 'Homepage',          path: '/' },
+  { key: 'store',      label: 'Store',              path: '/store' },
+  { key: 'about',      label: 'About Us',           path: '/about' },
+  { key: 'blog',       label: 'Blog',               path: '/blog' },
+  { key: 'quote',      label: 'Request a Quote',    path: '/quote' },
+  { key: 'dieCut',     label: 'Die-Cut Stickers',   path: '/store/die-cut-stickers' },
+  { key: 'flexBanner', label: 'Flex Banner',         path: '/store/flex-banner' },
+  { key: 'labels',     label: 'Product Labels',      path: '/store/product-labels' },
+]
+
+function scorePage(seo = {}) {
+  const issues = []
+  const passes = []
+  let score = 0
+
+  const title = (seo.title || '').trim()
+  const desc  = (seo.description || '').trim()
+  const canon = (seo.canonical || '').trim()
+  const ogImg = (seo.ogImage || '').trim()
+
+  if (!title)                  { issues.push({ sev: 'critical', msg: 'Missing meta title' }) }
+  else if (title.length < 30)  { issues.push({ sev: 'warn', msg: `Title too short (${title.length} chars — aim 50-60)` }); score += 15 }
+  else if (title.length > 65)  { issues.push({ sev: 'warn', msg: `Title too long (${title.length} chars — aim 50-60)` }); score += 15 }
+  else                         { passes.push('Title length is optimal'); score += 25 }
+
+  if (!desc)                   { issues.push({ sev: 'critical', msg: 'Missing meta description' }) }
+  else if (desc.length < 100)  { issues.push({ sev: 'warn', msg: `Description too short (${desc.length} chars — aim 150-160)` }); score += 10 }
+  else if (desc.length > 170)  { issues.push({ sev: 'warn', msg: `Description too long (${desc.length} chars — trim to 160)` }); score += 10 }
+  else                         { passes.push('Description length is optimal'); score += 25 }
+
+  if (!canon)  { issues.push({ sev: 'warn', msg: 'No canonical URL set' }) }
+  else         { passes.push('Canonical URL present'); score += 20 }
+
+  if (!ogImg)  { issues.push({ sev: 'warn', msg: 'No Open Graph image set' }) }
+  else         { passes.push('OG image present'); score += 20 }
+
+  if (title && title.toLowerCase().includes('sleekblue')) { passes.push('Brand in title'); score += 5 }
+  else if (title) { issues.push({ sev: 'info', msg: 'Consider adding brand name to title' }) }
+
+  if (title && desc) {
+    const kw = title.split(' ')[0].toLowerCase()
+    if (desc.toLowerCase().includes(kw)) { passes.push('Primary keyword in description'); score += 5 }
+    else { issues.push({ sev: 'info', msg: 'Primary keyword not found in description' }) }
+  }
+
+  return { score: Math.min(score, 100), issues, passes }
+}
+
+app.get('/api/admin/seo-audit', requireAuth, (req, res) => {
+  const data  = readJSON(SITE_DATA_FILE, {})
+  const seo   = data.seo || {}
+  const now   = new Date()
+
+  const pages = STATIC_PAGES.map(p => {
+    const audit = scorePage(seo[p.key] || {})
+    return { ...p, seo: seo[p.key] || {}, ...audit }
+  })
+
+  const posts = (data.blogPosts || [])
+    .filter(p => p.status === 'published' && (!p.publishAt || new Date(p.publishAt) <= now))
+    .slice(0, 20)
+    .map(p => {
+      const fakeSeo = { title: p.title, description: p.excerpt, canonical: `https://sleekbluemediahouz.com/blog/${p.slug}`, ogImage: p.coverImage }
+      const audit = scorePage(fakeSeo)
+      return { key: p.slug, label: p.title, path: `/blog/${p.slug}`, seo: fakeSeo, ...audit }
+    })
+
+  const all    = [...pages, ...posts]
+  const total  = all.length
+  const avgScore = total ? Math.round(all.reduce((s, p) => s + p.score, 0) / total) : 0
+  const critical = all.reduce((n, p) => n + p.issues.filter(i => i.sev === 'critical').length, 0)
+  const warnings = all.reduce((n, p) => n + p.issues.filter(i => i.sev === 'warn').length, 0)
+
+  res.json({ pages, posts, avgScore, critical, warnings, total })
+})
+
+// ── Growth Dashboard ────────────────────────────────────────────────────────────
+app.get('/api/admin/growth', requireAuth, (req, res) => {
+  const analytics  = readAnalytics()
+  const events     = analytics.events || []
+  const leads      = readJSON(LEADS_FILE, [])
+  const data       = readJSON(SITE_DATA_FILE, {})
+  const now        = new Date()
+  const msDay      = 86400000
+  const days30     = 30
+
+  // Build last-30-days date keys
+  const dateKeys = []
+  for (let i = days30 - 1; i >= 0; i--) {
+    dateKeys.push(new Date(now - i * msDay).toISOString().slice(0, 10))
+  }
+  const cutoff = new Date(now - days30 * msDay)
+
+  // Daily page views
+  const viewsByDay = {}
+  dateKeys.forEach(d => { viewsByDay[d] = 0 })
+  events.filter(e => e.type === 'pageview' && new Date(e.timestamp) >= cutoff)
+    .forEach(e => {
+      const d = e.timestamp.slice(0, 10)
+      if (viewsByDay[d] !== undefined) viewsByDay[d]++
+    })
+
+  // Daily leads
+  const leadsByDay = {}
+  dateKeys.forEach(d => { leadsByDay[d] = 0 })
+  leads.filter(l => new Date(l.timestamp) >= cutoff)
+    .forEach(l => {
+      const d = (l.timestamp || '').slice(0, 10)
+      if (leadsByDay[d] !== undefined) leadsByDay[d]++
+    })
+
+  // Top pages
+  const pageCounts = {}
+  events.filter(e => e.type === 'pageview' && new Date(e.timestamp) >= cutoff)
+    .forEach(e => { pageCounts[e.page || '/'] = (pageCounts[e.page || '/'] || 0) + 1 })
+  const topPages = Object.entries(pageCounts).sort((a, b) => b[1] - a[1]).slice(0, 8)
+    .map(([page, views]) => ({ page, views }))
+
+  // Top products by view events
+  const productCounts = {}
+  events.filter(e => e.type === 'product_view' && e.slug && new Date(e.timestamp) >= cutoff)
+    .forEach(e => { productCounts[e.slug] = (productCounts[e.slug] || 0) + 1 })
+  const topProducts = Object.entries(productCounts).sort((a, b) => b[1] - a[1]).slice(0, 8)
+    .map(([slug, views]) => ({ slug, name: slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), views }))
+
+  // Blog post performance (views stored in blogPosts)
+  const blogPerf = (data.blogPosts || [])
+    .filter(p => p.status === 'published')
+    .map(p => ({ slug: p.slug, title: p.title, views: p.viewCount || 0, date: p.date }))
+    .sort((a, b) => b.views - a.views).slice(0, 8)
+
+  // Device breakdown
+  const deviceCounts = {}
+  events.filter(e => e.type === 'pageview' && new Date(e.timestamp) >= cutoff)
+    .forEach(e => { const d = e.device || 'unknown'; deviceCounts[d] = (deviceCounts[d] || 0) + 1 })
+
+  // City breakdown
+  const cityCounts = {}
+  events.filter(e => e.type === 'pageview' && new Date(e.timestamp) >= cutoff && e.location?.city)
+    .forEach(e => {
+      const key = `${e.location.city}, ${e.location.region || e.location.country}`
+      cityCounts[key] = (cityCounts[key] || 0) + 1
+    })
+  const topCities = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]).slice(0, 8)
+    .map(([city, views]) => ({ city, views }))
+
+  // Quote requests (events with type cart_add or quote_request)
+  const quotesCount = events.filter(e => (e.type === 'quote_request' || e.type === 'cart_add') && new Date(e.timestamp) >= cutoff).length
+
+  const totalViews30 = Object.values(viewsByDay).reduce((s, v) => s + v, 0)
+  const totalLeads30 = Object.values(leadsByDay).reduce((s, v) => s + v, 0)
+
+  res.json({
+    dateKeys,
+    viewsByDay: dateKeys.map(d => ({ date: d, views: viewsByDay[d] })),
+    leadsByDay: dateKeys.map(d => ({ date: d, leads: leadsByDay[d] })),
+    topPages, topProducts, blogPerf, deviceCounts, topCities,
+    summary: { totalViews30, totalLeads30, totalQuotes30: quotesCount, totalLeads: leads.length }
+  })
+})
+
 app.listen(PORT, () => console.log(`Sleekblue API server running on port ${PORT}`))

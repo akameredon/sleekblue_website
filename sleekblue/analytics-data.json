@@ -8490,6 +8490,24 @@
   ],
   "securityEvents": [
     {
+      "id": "SEC-1782051375717-8BXLN",
+      "type": "invalid_token",
+      "ip": "127.0.0.1",
+      "path": "/api/admin/growth",
+      "method": "GET",
+      "userAgent": "curl/8.14.1",
+      "timestamp": "2026-06-21T14:16:15.717Z"
+    },
+    {
+      "id": "SEC-1782051375637-X9FZX",
+      "type": "invalid_token",
+      "ip": "127.0.0.1",
+      "path": "/api/admin/seo-audit",
+      "method": "GET",
+      "userAgent": "curl/8.14.1",
+      "timestamp": "2026-06-21T14:16:15.637Z"
+    },
+    {
       "id": "SEC-1781856045409-73FU6",
       "type": "invalid_token",
       "ip": "105.127.17.92",
@@ -12970,24 +12988,6 @@
       "method": "POST",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.7827.55 Safari/537.36",
       "timestamp": "2026-06-18T20:01:24.926Z"
-    },
-    {
-      "id": "SEC-1781812883049-UFO7B",
-      "type": "rate_limit",
-      "ip": "127.0.0.1",
-      "path": "/content",
-      "method": "GET",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.7827.55 Safari/537.36",
-      "timestamp": "2026-06-18T20:01:23.049Z"
-    },
-    {
-      "id": "SEC-1781812882829-B7NZG",
-      "type": "rate_limit",
-      "ip": "127.0.0.1",
-      "path": "/content",
-      "method": "GET",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.7827.55 Safari/537.36",
-      "timestamp": "2026-06-18T20:01:22.829Z"
     }
   ]
 }

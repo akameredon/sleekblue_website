@@ -726,6 +726,8 @@ function Sidebar({ view, setView, counts, onLogout }) {
     { id: 'leads',          icon: '📲', label: 'WA Leads', badge: counts.leads || 0 },
     { id: 'promo-banner',   icon: '📣', label: 'Promo Banner' },
     { id: 'activity-log',   icon: '📜', label: 'Activity Log' },
+    { id: 'seo-agent',      icon: '🤖', label: 'SEO Agent' },
+    { id: 'growth',         icon: '🚀', label: 'Growth Dashboard' },
   ]
   return (
     <div style={{ width: SIDEBAR_W, minHeight: '100vh', background: PRI, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
@@ -2560,6 +2562,393 @@ function FaqView({ token }) {
   )
 }
 
+// ─── SEO Agent ────────────────────────────────────────────────────────────────
+function SeoAgentView({ token }) {
+  const [audit, setAudit] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [expanded, setExpanded] = useState(null)
+
+  function fetchAudit() {
+    setLoading(true)
+    fetch('/api/admin/seo-audit', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { setAudit(d); setLoading(false) })
+      .catch(() => setLoading(false))
+  }
+
+  useEffect(() => { fetchAudit() }, [])
+
+  function scoreColor(s) {
+    if (s >= 80) return '#22c55e'
+    if (s >= 55) return '#f59e0b'
+    return '#ef4444'
+  }
+
+  function scoreLabel(s) {
+    if (s >= 80) return 'Good'
+    if (s >= 55) return 'Needs Work'
+    return 'Critical'
+  }
+
+  function sevIcon(sev) {
+    if (sev === 'critical') return { icon: '🔴', color: '#ef4444' }
+    if (sev === 'warn')     return { icon: '🟡', color: '#f59e0b' }
+    return { icon: '🔵', color: '#60a5fa' }
+  }
+
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>Running SEO audit…</div>
+  if (!audit)  return <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>Failed to load audit.</div>
+
+  const allPages = [...(audit.pages || []), ...(audit.posts || [])]
+
+  return (
+    <div style={{ maxWidth: 960, margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 22, color: '#1e293b' }}>🤖 SEO Agent</h2>
+          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: 14 }}>Automated audit across all pages and blog posts</p>
+        </div>
+        <button onClick={fetchAudit} style={{ background: PRI, color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontWeight: 600 }}>
+          ↻ Re-scan
+        </button>
+      </div>
+
+      {/* Summary KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+        {[
+          { label: 'Overall Score', value: `${audit.avgScore}`, unit: '/100', color: scoreColor(audit.avgScore) },
+          { label: 'Pages Audited', value: audit.total, unit: 'pages', color: '#6366f1' },
+          { label: 'Critical Issues', value: audit.critical, unit: 'issues', color: '#ef4444' },
+          { label: 'Warnings', value: audit.warnings, unit: 'warnings', color: '#f59e0b' },
+        ].map(k => (
+          <div key={k.label} style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)', borderTop: `3px solid ${k.color}` }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: k.color }}>{k.value}<span style={{ fontSize: 14, fontWeight: 400, color: '#94a3b8', marginLeft: 4 }}>{k.unit}</span></div>
+            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{k.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Score dial */}
+      <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)', marginBottom: 24 }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 15, color: '#1e293b' }}>Page-by-Page Scores</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {allPages.map(p => (
+            <div key={p.key}>
+              <div
+                onClick={() => setExpanded(expanded === p.key ? null : p.key)}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '8px 0', borderBottom: '1px solid #f1f5f9' }}
+              >
+                <div style={{ width: 42, height: 42, borderRadius: '50%', background: scoreColor(p.score), display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 13, flexShrink: 0 }}>
+                  {p.score}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: '#1e293b' }}>{p.label}</div>
+                  <div style={{ fontSize: 12, color: '#94a3b8' }}>{p.path}</div>
+                </div>
+                <div style={{ background: scoreColor(p.score) + '20', color: scoreColor(p.score), fontSize: 12, fontWeight: 600, borderRadius: 20, padding: '3px 10px' }}>
+                  {scoreLabel(p.score)}
+                </div>
+                <div style={{ fontSize: 12, color: '#94a3b8' }}>
+                  {p.issues.length} issue{p.issues.length !== 1 ? 's' : ''} · {p.passes.length} passed · {expanded === p.key ? '▲' : '▼'}
+                </div>
+              </div>
+
+              {expanded === p.key && (
+                <div style={{ padding: '14px 0 6px 54px', display: 'flex', gap: 20 }}>
+                  <div style={{ flex: 1 }}>
+                    {p.issues.length > 0 && (
+                      <>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: '#64748b', marginBottom: 6 }}>Issues</div>
+                        {p.issues.map((iss, i) => {
+                          const { icon, color } = sevIcon(iss.sev)
+                          return (
+                            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 5 }}>
+                              <span style={{ fontSize: 13 }}>{icon}</span>
+                              <span style={{ fontSize: 13, color }}>{iss.msg}</span>
+                            </div>
+                          )
+                        })}
+                      </>
+                    )}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    {p.passes.length > 0 && (
+                      <>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: '#64748b', marginBottom: 6 }}>Passing</div>
+                        {p.passes.map((pass, i) => (
+                          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 5 }}>
+                            <span style={{ fontSize: 13 }}>✅</span>
+                            <span style={{ fontSize: 13, color: '#22c55e' }}>{pass}</span>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#64748b', marginBottom: 6 }}>Current Meta</div>
+                    <div style={{ fontSize: 12, color: '#475569' }}><strong>Title:</strong> {p.seo.title || <em style={{ color: '#ef4444' }}>none</em>}</div>
+                    <div style={{ fontSize: 12, color: '#475569', marginTop: 4 }}><strong>Desc:</strong> {p.seo.description ? p.seo.description.slice(0, 80) + '…' : <em style={{ color: '#ef4444' }}>none</em>}</div>
+                    {p.seo.canonical && <div style={{ fontSize: 12, color: '#475569', marginTop: 4 }}><strong>Canonical:</strong> ✓</div>}
+                    {p.seo.ogImage  && <div style={{ fontSize: 12, color: '#475569', marginTop: 4 }}><strong>OG Image:</strong> ✓</div>}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recommendations */}
+      <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 15, color: '#1e293b' }}>💡 Top Recommendations</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {audit.critical > 0 && (
+            <div style={{ background: '#fef2f2', borderLeft: '4px solid #ef4444', padding: '12px 16px', borderRadius: 4 }}>
+              <strong style={{ color: '#ef4444' }}>Critical:</strong> <span style={{ color: '#374151', fontSize: 14 }}>{audit.critical} page{audit.critical !== 1 ? 's are' : ' is'} missing meta title or description — fix these first for maximum SEO impact. Go to <strong>SEO Manager</strong> to set them.</span>
+            </div>
+          )}
+          {audit.warnings > 0 && (
+            <div style={{ background: '#fffbeb', borderLeft: '4px solid #f59e0b', padding: '12px 16px', borderRadius: 4 }}>
+              <strong style={{ color: '#f59e0b' }}>Warnings:</strong> <span style={{ color: '#374151', fontSize: 14 }}>{audit.warnings} warning{audit.warnings !== 1 ? 's' : ''} found — check title/description length and add missing canonical/OG image fields.</span>
+            </div>
+          )}
+          <div style={{ background: '#f0fdf4', borderLeft: '4px solid #22c55e', padding: '12px 16px', borderRadius: 4 }}>
+            <strong style={{ color: '#22c55e' }}>Best practice:</strong> <span style={{ color: '#374151', fontSize: 14 }}>All blog posts should have cover images (used as OG image). Add an Author Name to posts for Article schema credibility.</span>
+          </div>
+          <div style={{ background: '#eff6ff', borderLeft: '4px solid #6366f1', padding: '12px 16px', borderRadius: 4 }}>
+            <strong style={{ color: '#6366f1' }}>Growth tip:</strong> <span style={{ color: '#374151', fontSize: 14 }}>Publish at least 2 blog posts/month targeting local keywords like "printing company Owerri" or "die-cut stickers Nigeria" to build organic traffic.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Growth Dashboard ──────────────────────────────────────────────────────────
+function GrowthDashboardView({ token }) {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState('overview')
+
+  useEffect(() => {
+    fetch('/api/admin/growth', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { setData(d); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>Loading growth data…</div>
+  if (!data)   return <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>Failed to load growth data.</div>
+
+  const { summary, viewsByDay, leadsByDay, topPages, topProducts, blogPerf, deviceCounts, topCities } = data
+  const maxViews = Math.max(...viewsByDay.map(d => d.views), 1)
+  const maxLeads = Math.max(...leadsByDay.map(d => d.leads), 1)
+  const maxPageViews = Math.max(...(topPages || []).map(p => p.views), 1)
+  const maxBlogViews = Math.max(...(blogPerf || []).map(p => p.views), 1)
+  const totalDevice = Object.values(deviceCounts || {}).reduce((s, v) => s + v, 0) || 1
+
+  const TABS = ['overview', 'traffic', 'products', 'blog', 'locations']
+
+  return (
+    <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 22, color: '#1e293b' }}>🚀 Growth Dashboard</h2>
+          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: 14 }}>Last 30 days — updated in real time</p>
+        </div>
+      </div>
+
+      {/* KPI row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+        {[
+          { label: 'Page Views (30d)', value: summary.totalViews30.toLocaleString(), icon: '👁️', color: '#6366f1' },
+          { label: 'New Leads (30d)',  value: summary.totalLeads30.toLocaleString(),  icon: '📲', color: '#22c55e' },
+          { label: 'Quote Events',     value: summary.totalQuotes30.toLocaleString(), icon: '📝', color: '#f59e0b' },
+          { label: 'Total Leads',      value: summary.totalLeads.toLocaleString(),    icon: '🏆', color: '#ec4899' },
+        ].map(k => (
+          <div key={k.label} style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)', borderTop: `3px solid ${k.color}` }}>
+            <div style={{ fontSize: 26, marginBottom: 4 }}>{k.icon}</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: k.color }}>{k.value}</div>
+            <div style={{ fontSize: 12, color: '#64748b' }}>{k.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
+        {TABS.map(t => (
+          <button key={t} onClick={() => setTab(t)}
+            style={{ padding: '8px 18px', borderRadius: 20, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 13,
+              background: tab === t ? PRI : '#f1f5f9', color: tab === t ? '#fff' : '#475569' }}>
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Overview Tab */}
+      {tab === 'overview' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* Page views chart */}
+          <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: 15, color: '#1e293b' }}>📈 Page Views — Last 30 Days</h3>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 100, paddingBottom: 4 }}>
+              {viewsByDay.map((d, i) => (
+                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }} title={`${d.date}: ${d.views} views`}>
+                  <div style={{ width: '100%', background: '#6366f1', borderRadius: '3px 3px 0 0', minHeight: d.views > 0 ? 4 : 0,
+                    height: `${Math.round((d.views / maxViews) * 90)}px`, transition: 'height 0.3s', opacity: d.views === 0 ? 0.2 : 1 }} />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8', marginTop: 4 }}>
+              <span>{viewsByDay[0]?.date?.slice(5)}</span>
+              <span>{viewsByDay[14]?.date?.slice(5)}</span>
+              <span>{viewsByDay[29]?.date?.slice(5)}</span>
+            </div>
+          </div>
+
+          {/* Leads chart */}
+          <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: 15, color: '#1e293b' }}>📲 New Leads — Last 30 Days</h3>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 80, paddingBottom: 4 }}>
+              {leadsByDay.map((d, i) => (
+                <div key={i} style={{ flex: 1 }} title={`${d.date}: ${d.leads} leads`}>
+                  <div style={{ width: '100%', background: '#22c55e', borderRadius: '3px 3px 0 0', minHeight: d.leads > 0 ? 4 : 0,
+                    height: `${Math.round((d.leads / maxLeads) * 72)}px`, transition: 'height 0.3s', opacity: d.leads === 0 ? 0.2 : 1 }} />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8', marginTop: 4 }}>
+              <span>{leadsByDay[0]?.date?.slice(5)}</span>
+              <span>{leadsByDay[14]?.date?.slice(5)}</span>
+              <span>{leadsByDay[29]?.date?.slice(5)}</span>
+            </div>
+          </div>
+
+          {/* Device breakdown */}
+          <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: 15, color: '#1e293b' }}>📱 Device Breakdown</h3>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              {Object.entries(deviceCounts || {}).map(([device, count]) => {
+                const pct = Math.round((count / totalDevice) * 100)
+                const COLORS = { desktop: '#6366f1', mobile: '#22c55e', tablet: '#f59e0b', unknown: '#94a3b8' }
+                const color = COLORS[device] || '#94a3b8'
+                return (
+                  <div key={device} style={{ flex: '1 1 120px', textAlign: 'center', padding: '16px 12px', background: '#f8fafc', borderRadius: 10 }}>
+                    <div style={{ fontSize: 28, marginBottom: 4 }}>{device === 'mobile' ? '📱' : device === 'desktop' ? '🖥️' : '📟'}</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, color }}>{pct}%</div>
+                    <div style={{ fontSize: 12, color: '#64748b', textTransform: 'capitalize' }}>{device}</div>
+                    <div style={{ fontSize: 11, color: '#94a3b8' }}>{count.toLocaleString()} visits</div>
+                  </div>
+                )
+              })}
+              {Object.keys(deviceCounts || {}).length === 0 && <div style={{ color: '#94a3b8', fontSize: 14 }}>No device data yet.</div>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Traffic Tab */}
+      {tab === 'traffic' && (
+        <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 15, color: '#1e293b' }}>Top Pages by Views (30d)</h3>
+          {topPages.length === 0 ? <div style={{ color: '#94a3b8' }}>No page view data yet.</div> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {topPages.map(p => (
+                <div key={p.page}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{p.page || '/'}</span>
+                    <span style={{ fontSize: 13, color: '#6366f1', fontWeight: 700 }}>{p.views.toLocaleString()}</span>
+                  </div>
+                  <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: '#6366f1', borderRadius: 4, width: `${Math.round((p.views / maxPageViews) * 100)}%`, transition: 'width 0.4s' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Products Tab */}
+      {tab === 'products' && (
+        <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 15, color: '#1e293b' }}>Top Products by Views (30d)</h3>
+          {topProducts.length === 0 ? <div style={{ color: '#94a3b8' }}>No product view events yet. Product views are tracked when customers open a product page.</div> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {topProducts.map(p => (
+                <div key={p.slug}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{p.name}</span>
+                    <span style={{ fontSize: 13, color: '#f59e0b', fontWeight: 700 }}>{p.views.toLocaleString()} views</span>
+                  </div>
+                  <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: '#f59e0b', borderRadius: 4, width: `${Math.round((p.views / Math.max(...topProducts.map(x => x.views), 1)) * 100)}%`, transition: 'width 0.4s' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Blog Tab */}
+      {tab === 'blog' && (
+        <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 15, color: '#1e293b' }}>Blog Post Performance</h3>
+          {blogPerf.length === 0 ? <div style={{ color: '#94a3b8' }}>No published blog posts yet.</div> : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: '#f8fafc' }}>
+                  {['Post Title', 'Date', 'Views', 'Bar'].map(h => (
+                    <th key={h} style={{ textAlign: 'left', padding: '10px 12px', fontSize: 12, color: '#64748b', fontWeight: 600, borderBottom: '1px solid #e2e8f0' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {blogPerf.map(p => (
+                  <tr key={p.slug} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '10px 12px', color: '#1e293b', fontWeight: 500 }}>{p.title}</td>
+                    <td style={{ padding: '10px 12px', color: '#94a3b8' }}>{(p.date || '').slice(0, 10)}</td>
+                    <td style={{ padding: '10px 12px', color: '#22c55e', fontWeight: 700 }}>{p.views}</td>
+                    <td style={{ padding: '10px 12px', width: 120 }}>
+                      <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', background: '#22c55e', borderRadius: 4, width: `${Math.round((p.views / maxBlogViews) * 100)}%` }} />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {/* Locations Tab */}
+      {tab === 'locations' && (
+        <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 15, color: '#1e293b' }}>Top Visitor Cities (30d)</h3>
+          {topCities.length === 0 ? <div style={{ color: '#94a3b8' }}>No location data yet.</div> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {topCities.map(c => (
+                <div key={c.city}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>📍 {c.city}</span>
+                    <span style={{ fontSize: 13, color: '#ec4899', fontWeight: 700 }}>{c.views.toLocaleString()} visits</span>
+                  </div>
+                  <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: '#ec4899', borderRadius: 4, width: `${Math.round((c.views / Math.max(...topCities.map(x => x.views), 1)) * 100)}%`, transition: 'width 0.4s' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── SEO Manager (existing) ────────────────────────────────────────────────────
 const SEO_PAGES = [
   { key: 'home',     label: '🏠 Homepage',        path: '/' },
   { key: 'store',    label: '🛍️ Store',            path: '/store' },
@@ -2885,6 +3274,8 @@ export default function AdminPage() {
             {view === 'leads'          && <LeadsView token={token} />}
             {view === 'promo-banner'   && <PromoBannerView token={token} />}
             {view === 'activity-log'   && <ActivityLogView token={token} />}
+            {view === 'seo-agent'      && <SeoAgentView token={token} />}
+            {view === 'growth'         && <GrowthDashboardView token={token} />}
           </>
         )}
       </main>
