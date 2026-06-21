@@ -1,6 +1,98 @@
 {
   "events": [
     {
+      "id": "EVT-1782062334951-TBPSU",
+      "type": "pageview",
+      "page": "/",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "https://c7234b33-faa1-4540-8824-ae0f6277e432-00-2y7b62m5biotw.picard.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-21T17:18:54.767Z",
+      "ip": "105.112.76.70",
+      "location": {
+        "country": "Nigeria",
+        "city": "Lagos",
+        "region": "Lagos",
+        "lat": 6.4474,
+        "lon": 3.3903
+      }
+    },
+    {
+      "id": "EVT-1782062334928-0YRUN",
+      "type": "pageview",
+      "page": "/",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "https://c7234b33-faa1-4540-8824-ae0f6277e432-00-2y7b62m5biotw.picard.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-21T17:18:54.753Z",
+      "ip": "105.112.76.70",
+      "location": {
+        "country": "Nigeria",
+        "city": "Lagos",
+        "region": "Lagos",
+        "lat": 6.4474,
+        "lon": 3.3903
+      }
+    },
+    {
+      "id": "EVT-1782061450131-NHAZ7",
+      "type": "pageview",
+      "page": "/",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "https://c7234b33-faa1-4540-8824-ae0f6277e432-00-2y7b62m5biotw.picard.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-21T17:04:09.887Z",
+      "ip": "105.112.76.70",
+      "location": {
+        "country": "Nigeria",
+        "city": "Lagos",
+        "region": "Lagos",
+        "lat": 6.4474,
+        "lon": 3.3903
+      }
+    },
+    {
+      "id": "EVT-1782061450040-P947U",
+      "type": "pageview",
+      "page": "/",
+      "slug": "",
+      "name": "",
+      "qty": null,
+      "price": null,
+      "event": "",
+      "target": "",
+      "device": "desktop",
+      "referrer": "https://c7234b33-faa1-4540-8824-ae0f6277e432-00-2y7b62m5biotw.picard.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+      "timestamp": "2026-06-21T17:04:09.879Z",
+      "ip": "105.112.76.70",
+      "location": {
+        "country": "Nigeria",
+        "city": "Lagos",
+        "region": "Lagos",
+        "lat": 6.4474,
+        "lon": 3.3903
+      }
+    },
+    {
       "id": "EVT-1782056346771-4H7MM",
       "type": "pageview",
       "page": "/store",
