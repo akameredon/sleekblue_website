@@ -1,5 +1,19 @@
 [
   {
+    "id": "ACT-1782055516225-V8S8M",
+    "action": "comment_submitted",
+    "detail": "frank commented on dvddgd",
+    "user": "public",
+    "timestamp": "2026-06-21T15:25:16.225Z"
+  },
+  {
+    "id": "ACT-1782054972007-0MZ21",
+    "action": "referral_created",
+    "detail": "Referral link created for CHIBUIKE",
+    "user": "admin",
+    "timestamp": "2026-06-21T15:16:12.007Z"
+  },
+  {
     "id": "ACT-1782052356200-CI2IU",
     "action": "promo_banner",
     "detail": "disabled",

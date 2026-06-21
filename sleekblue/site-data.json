@@ -725,5 +725,31 @@
     "link": "",
     "color": "#ffffff",
     "bgColor": "#340dc5"
-  }
+  },
+  "blogPosts": [
+    {
+      "id": "POST-1782055488283-Y0MDB",
+      "title": "dvddgd",
+      "slug": "dvddgd",
+      "status": "published",
+      "category": "",
+      "date": "2026-06-21",
+      "excerpt": "summary",
+      "content": "Hi hello",
+      "coverImage": "",
+      "tags": [
+        "stickers"
+      ],
+      "videoUrl": "",
+      "audioUrl": "",
+      "mediaFiles": [],
+      "authorName": "martins",
+      "authorBio": "hi",
+      "publishAt": "",
+      "viewCount": 8,
+      "order": 0,
+      "createdAt": "2026-06-21T15:24:48.283Z",
+      "updatedAt": "2026-06-21T15:24:48.283Z"
+    }
+  ]
 }
