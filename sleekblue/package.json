@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predev": "find src -name '*.js' -o -name '*.jsx' -o -name '*.css' | xargs touch",
     "dev": "vite",
     "server": "node server.js",
     "build": "vite build",
