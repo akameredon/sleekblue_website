@@ -42,25 +42,23 @@ function SocialShare({ url, title }) {
 
   const btn = (bg, text, href, onClick) => (
     href ? (
-      <a href={href} target="_blank" rel="noreferrer"
-        style={{ padding: '7px 14px', background: bg, color: '#fff', borderRadius: '8px', fontSize: '12px', fontWeight: 700, textDecoration: 'none', fontFamily: "'HubotSans',sans-serif", whiteSpace: 'nowrap' }}>
+      <a href={href} target="_blank" rel="noreferrer" className={`inline-flex items-center rounded-2xl px-4 py-3 text-xs font-semibold text-white transition ${bg}`}>
         {text}
       </a>
     ) : (
-      <button onClick={onClick}
-        style={{ padding: '7px 14px', background: bg, color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: "'HubotSans',sans-serif", whiteSpace: 'nowrap' }}>
+      <button type="button" onClick={onClick} className={`inline-flex items-center rounded-2xl px-4 py-3 text-xs font-semibold text-white transition ${bg}`}>
         {text}
       </button>
     )
   )
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-      <span style={{ fontSize: '12px', color: '#888', fontFamily: "'HubotSans',sans-serif", flexShrink: 0 }}>Share:</span>
-      {btn('#25D366', '💬 WhatsApp', `https://wa.me/?text=${enc(title + '\n' + url)}`)}
-      {btn('#1877F2', 'Facebook', `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`)}
-      {btn('#000', 'X / Twitter', `https://x.com/intent/tweet?text=${enc(title)}&url=${enc(url)}`)}
-      {btn(copied ? '#16a34a' : '#555', copied ? '✓ Copied!' : '🔗 Copy Link', null, copy)}
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="text-xs text-slate-500">Share:</span>
+      {btn('bg-[#25D366] hover:bg-[#1ebf5a]', '💬 WhatsApp', `https://wa.me/?text=${enc(`${title}\n${url}`)}`)}
+      {btn('bg-[#1877F2] hover:bg-[#165ecf]', 'Facebook', `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`)}
+      {btn('bg-[#111] hover:bg-slate-800', 'X / Twitter', `https://x.com/intent/tweet?text=${enc(title)}&url=${enc(url)}`)}
+      {btn(copied ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-slate-500 hover:bg-slate-600', copied ? '✓ Copied!' : '🔗 Copy Link', null, copy)}
     </div>
   )
 }
@@ -91,50 +89,61 @@ function CommentsSection({ slug }) {
       if (!res.ok) throw new Error()
       setSubmitted(true)
       setForm({ name: '', comment: '' })
-    } catch { setError('Failed to submit. Please try again.') }
+    } catch {
+      setError('Failed to submit. Please try again.')
+    }
     setSubmitting(false)
   }
 
   const fmt = ts => { try { return new Date(ts).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' }) } catch { return '' } }
 
   return (
-    <div style={{ marginTop: '40px', paddingTop: '32px', borderTop: '1.5px solid #e8e8e8' }}>
-      <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1a1a1a', marginBottom: '20px', fontFamily: "'HubotSans',sans-serif" }}>
-        💬 Comments {comments.length > 0 && `(${comments.length})`}
-      </h3>
-      {comments.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '28px' }}>
+    <div className="mt-16 border-t border-slate-200 pt-10">
+      <h3 className="text-xl font-bold text-slate-900">💬 Comments {comments.length > 0 && `(${comments.length})`}</h3>
+
+      {comments.length > 0 ? (
+        <div className="mt-6 space-y-4">
           {comments.map(c => (
-            <div key={c.id} style={{ background: '#fff', borderRadius: '12px', padding: '16px 18px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                <div style={{ width: 34, height: 34, borderRadius: '50%', background: PRI, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '14px', flexShrink: 0 }}>
-                  {(c.name || '?')[0].toUpperCase()}
-                </div>
-                <div>
-                  <p style={{ fontSize: '13.5px', fontWeight: 700, color: '#1a1a1a', margin: 0 }}>{c.name}</p>
-                  <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>{fmt(c.timestamp)}</p>
+            <div key={c.id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#7B2FBE] text-sm font-black text-white">{(c.name || '?')[0].toUpperCase()}</div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-900">{c.name}</p>
+                  <p className="text-xs text-slate-500">{fmt(c.timestamp)}</p>
                 </div>
               </div>
-              <p style={{ fontSize: '13.5px', color: '#444', margin: 0, lineHeight: 1.6 }}>{c.comment}</p>
+              <p className="mt-4 text-sm leading-7 text-slate-700">{c.comment}</p>
             </div>
           ))}
         </div>
-      )}
-      {comments.length === 0 && <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '20px', fontStyle: 'italic' }}>No comments yet — be the first!</p>}
-      {submitted ? (
-        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '16px 18px', color: '#16a34a', fontWeight: 600, fontSize: '13.5px' }}>
-          ✓ Your comment has been submitted and is awaiting moderation. Thank you!
-        </div>
       ) : (
-        <form onSubmit={handleSubmit} style={{ background: '#fff', borderRadius: '14px', padding: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
-          <p style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 14px' }}>Leave a comment</p>
-          <input placeholder="Your name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-            style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #ddd', borderRadius: '8px', fontSize: '13px', marginBottom: '10px', outline: 'none', boxSizing: 'border-box', fontFamily: "'HubotSans',sans-serif" }} />
-          <textarea placeholder="Write your comment… *" value={form.comment} onChange={e => setForm(f => ({ ...f, comment: e.target.value }))} rows={4}
-            style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #ddd', borderRadius: '8px', fontSize: '13px', marginBottom: '10px', outline: 'none', resize: 'vertical', fontFamily: "'HubotSans',sans-serif", boxSizing: 'border-box' }} />
-          {error && <p style={{ color: '#dc2626', fontSize: '12px', margin: '0 0 10px' }}>{error}</p>}
-          <button type="submit" disabled={submitting}
-            style={{ background: PRI, color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 24px', fontSize: '13.5px', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, fontFamily: "'HubotSans',sans-serif" }}>
+        <p className="mt-6 text-sm italic text-slate-500">No comments yet — be the first!</p>
+      )}
+
+      {submitted ? (
+        <div className="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-sm font-semibold text-emerald-700">✓ Your comment has been submitted and is awaiting moderation. Thank you!</div>
+      ) : (
+        <form onSubmit={handleSubmit} className="mt-8 space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold text-slate-900">Leave a comment</p>
+          <input
+            placeholder="Your name *"
+            value={form.name}
+            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#7B2FBE] focus:ring-2 focus:ring-[#7B2FBE]/20"
+          />
+          <textarea
+            placeholder="Write your comment… *"
+            value={form.comment}
+            onChange={e => setForm(f => ({ ...f, comment: e.target.value }))}
+            rows={4}
+            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#7B2FBE] focus:ring-2 focus:ring-[#7B2FBE]/20 resize-vertical"
+          />
+          {error && <p className="text-sm font-semibold text-rose-600">{error}</p>}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="inline-flex rounded-2xl bg-[#7B2FBE] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#6b23ba] disabled:cursor-not-allowed disabled:opacity-70"
+          >
             {submitting ? '⏳ Submitting…' : '✉️ Submit Comment'}
           </button>
         </form>
@@ -218,18 +227,17 @@ export default function BlogPostPage() {
   }, [post, slug])
 
   if (loading) return (
-    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '36px', height: '36px', borderRadius: '50%', border: '4px solid #e0d6f5', borderTopColor: PRI, animation: 'spin 0.7s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="h-9 w-9 rounded-full border-4 border-slate-200 border-t-[#7B2FBE] animate-spin" />
     </div>
   )
 
   if (notFound) return (
-    <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: "'HubotSans', sans-serif", padding: '24px' }}>
-      <div style={{ fontSize: '48px', marginBottom: '16px' }}>📄</div>
-      <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#1a1a1a', marginBottom: '8px' }}>Post Not Found</h2>
-      <p style={{ color: '#888', marginBottom: '24px' }}>This blog post doesn't exist or has been unpublished.</p>
-      <button onClick={() => navigate('/blog')} style={{ background: PRI, color: '#fff', border: 'none', borderRadius: '8px', padding: '11px 24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: "'HubotSans', sans-serif" }}>← Back to Blog</button>
+    <div className="flex min-h-[60vh] flex-col items-center justify-center bg-[#fafafa] px-6 text-center">
+      <div className="text-6xl mb-4">📄</div>
+      <h2 className="text-2xl font-bold text-slate-900 mb-2">Post Not Found</h2>
+      <p className="text-sm text-slate-500 mb-6">This blog post doesn't exist or has been unpublished.</p>
+      <button onClick={() => navigate('/blog')} className="rounded-2xl bg-[#7B2FBE] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#6b23ba']">← Back to Blog</button>
     </div>
   )
 
@@ -239,153 +247,128 @@ export default function BlogPostPage() {
   const renderedContent = renderContent(post.content || '')
 
   return (
-    <article style={{ background: '#FAF3E8', minHeight: '100vh', padding: '48px 24px 80px', fontFamily: "'HubotSans', sans-serif" }}>
-      <div style={{ maxWidth: '760px', margin: '0 auto' }}>
+    <article className="bg-[#FAF3E8] min-h-screen px-4 py-12 sm:px-6 sm:py-16 font-sans text-slate-900">
+      <div className="mx-auto max-w-5xl">
         <Breadcrumb crumbs={[{ label: 'Home', href: '/' }, { label: 'Blog', href: '/blog' }, { label: post.title }]} />
 
-        {/* Cover image */}
         {post.coverImage && (
-          <div style={{ borderRadius: '14px', overflow: 'hidden', marginBottom: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.12)' }}>
-            <img src={post.coverImage} alt={post.title} style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', display: 'block' }} />
+          <div className="mt-8 overflow-hidden rounded-[28px] bg-white shadow-[0_4px_20px_rgba(0,0,0,0.12)]">
+            <img src={post.coverImage} alt={post.title} className="w-full max-h-[420px] object-cover" />
           </div>
         )}
 
-        {/* Meta bar */}
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
-          {post.category && (
-            <span style={{ background: '#f5f0ff', color: PRI, padding: '4px 12px', borderRadius: '14px', fontSize: '11px', fontWeight: 700 }}>{post.category}</span>
-          )}
-          <span style={{ fontSize: '12px', color: '#999' }}>
-            {post.date ? new Date(post.date).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}
-          </span>
-          <span style={{ fontSize: '12px', color: '#bbb' }}>· {rtMinutes} min read</span>
-          {post.viewCount > 0 && <span style={{ fontSize: '12px', color: '#bbb' }}>· 👁 {post.viewCount} views</span>}
+        <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-slate-600">
+          {post.category && <span className="rounded-full bg-[#f5f0ff] px-3 py-1 font-semibold text-[#7B2FBE]">{post.category}</span>}
+          <span>{post.date ? new Date(post.date).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</span>
+          <span>· {rtMinutes} min read</span>
+          {post.viewCount > 0 && <span>· 👁 {post.viewCount} views</span>}
           {post.tags?.map(tag => (
-            <span key={tag} style={{ background: '#f0f0f0', color: '#666', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>#{tag}</span>
+            <span key={tag} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">#{tag}</span>
           ))}
         </div>
 
-        {/* Title */}
-        <h1 style={{ fontSize: '32px', fontWeight: 800, color: '#1a1a1a', marginBottom: '16px', lineHeight: 1.25 }}>{post.title}</h1>
+        <h1 className="mt-6 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl">{post.title}</h1>
 
-        {/* Author + Share row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '24px', paddingBottom: '18px', borderBottom: '1px solid #e8e8e8' }}>
-          {post.authorName ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: `${PRI}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>✍️</div>
-              <div>
-                <p style={{ fontSize: '13px', fontWeight: 700, color: '#1a1a1a', margin: 0 }}>{post.authorName}</p>
-                {post.authorBio && <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>{post.authorBio}</p>}
-              </div>
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#7B2FBE]/10 text-xl">✍️</div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">{post.authorName || 'Sleekblue Media Houz'}</p>
+              {post.authorBio && <p className="text-xs text-slate-500">{post.authorBio}</p>}
             </div>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '13px', color: '#888' }}>By <strong>Sleekblue Media Houz</strong></span>
-            </div>
-          )}
+          </div>
           <SocialShare url={postUrl} title={post.title} />
         </div>
 
-        {/* Table of Contents */}
         {toc.length >= 2 && (
-          <div style={{ background: '#fff', borderRadius: '12px', padding: '18px 22px', marginBottom: '28px', border: `1.5px solid ${PRI}20`, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-            <p style={{ fontSize: '12px', fontWeight: 800, color: PRI, margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📋 Table of Contents</p>
-            <ol style={{ margin: 0, paddingLeft: '20px' }}>
+          <div className="mt-8 rounded-3xl border border-[#7B2FBE]/15 bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7B2FBE]">📋 Table of Contents</p>
+            <ol className="mt-4 space-y-2 pl-4 text-sm text-slate-600">
               {toc.map(h => (
-                <li key={h.id} style={{ marginBottom: '6px', marginLeft: h.level === 3 ? '16px' : 0 }}>
-                  <a href={`#${h.id}`} style={{ fontSize: '14px', color: '#444', textDecoration: 'none', lineHeight: 1.5 }}
-                    onMouseEnter={e => e.target.style.color = PRI} onMouseLeave={e => e.target.style.color = '#444'}>
-                    {h.text}
-                  </a>
+                <li key={h.id} className={h.level === 3 ? 'ml-4' : ''}>
+                  <a href={`#${h.id}`} className="text-slate-700 transition hover:text-[#7B2FBE]">{h.text}</a>
                 </li>
               ))}
             </ol>
           </div>
         )}
 
-        {/* Excerpt */}
         {post.excerpt && (
-          <p style={{ fontSize: '17px', color: '#555', lineHeight: 1.7, fontWeight: 400, marginBottom: '28px', borderLeft: `4px solid ${PRI}`, paddingLeft: '16px', fontStyle: 'italic' }}>{post.excerpt}</p>
+          <p className="mt-8 rounded-3xl border-l-4 border-[#7B2FBE] bg-white p-6 text-base leading-8 text-slate-700">{post.excerpt}</p>
         )}
 
-        {/* Video */}
         {post.videoUrl && (
-          <div style={{ marginBottom: '28px', borderRadius: '12px', overflow: 'hidden', background: '#000', aspectRatio: '16/9' }}>
+          <div className="mt-8 overflow-hidden rounded-[28px] bg-slate-900 shadow-sm">
             {post.videoUrl.includes('youtube.com') || post.videoUrl.includes('youtu.be') ? (
               <iframe
                 src={post.videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
-                style={{ width: '100%', height: '100%', border: 'none' }}
+                className="h-[360px] w-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen title={post.title}
+                allowFullScreen
+                title={post.title}
               />
             ) : (
-              <video src={post.videoUrl} controls style={{ width: '100%', maxHeight: '400px' }} />
+              <video src={post.videoUrl} controls className="h-[360px] w-full" />
             )}
           </div>
         )}
 
-        {/* Audio */}
         {post.audioUrl && (
-          <div style={{ marginBottom: '28px', background: '#fff', borderRadius: '12px', padding: '18px 20px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-            <p style={{ fontSize: '12px', fontWeight: 700, color: '#888', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🎙️ Listen to this article</p>
-            <audio src={post.audioUrl} controls style={{ width: '100%' }} />
+          <div className="mt-8 rounded-3xl bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">🎙️ Listen to this article</p>
+            <audio src={post.audioUrl} controls className="mt-4 w-full" />
           </div>
         )}
 
-        {/* Content */}
         {post.content && (
-          <div className="blog-content" style={{ fontSize: '15px', color: '#333', lineHeight: 1.85, marginBottom: '28px' }}
-            dangerouslySetInnerHTML={{ __html: renderedContent }}
-          />
+          <div className="blog-content mt-8 rounded-3xl bg-white p-8 shadow-sm prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: renderedContent }} />
         )}
 
-        {/* Media gallery */}
         {post.mediaFiles?.length > 0 && (
-          <div style={{ marginBottom: '28px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#888', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Gallery</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+          <div className="mt-10">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Gallery</h3>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {post.mediaFiles.map((url, i) => (
-                <div key={i} style={{ borderRadius: '10px', overflow: 'hidden', background: '#eee', aspectRatio: '4/3' }}>
-                  <img src={url} alt={`Media ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" />
+                <div key={i} className="aspect-[4/3] overflow-hidden rounded-3xl bg-slate-200">
+                  <img src={url} alt={`Media ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Author bio card (if extended bio) */}
         {post.authorName && post.authorBio && (
-          <div style={{ background: '#fff', borderRadius: '12px', padding: '20px 24px', marginBottom: '28px', border: '1px solid #e8e8e8', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-            <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: `${PRI}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>✍️</div>
-            <div>
-              <p style={{ fontSize: '13px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px' }}>Written by {post.authorName}</p>
-              <p style={{ fontSize: '13px', color: '#666', lineHeight: 1.6, margin: 0 }}>{post.authorBio}</p>
+          <div className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#7B2FBE]/15 text-2xl">✍️</div>
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Written by {post.authorName}</p>
+                <p className="mt-2 text-sm leading-7 text-slate-600">{post.authorBio}</p>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Bottom share */}
-        <div style={{ background: '#fff', borderRadius: '12px', padding: '18px 22px', marginBottom: '32px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-          <p style={{ fontSize: '12px', fontWeight: 700, color: '#888', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Found this helpful? Share it!</p>
-          <SocialShare url={postUrl} title={post.title} />
+        <div className="mt-10 rounded-3xl bg-white p-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Found this helpful? Share it!</p>
+          <div className="mt-4">
+            <SocialShare url={postUrl} title={post.title} />
+          </div>
         </div>
 
-        {/* Related posts */}
         {relatedPosts.length > 0 && (
-          <div style={{ marginBottom: '32px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1a1a1a', marginBottom: '16px' }}>Related Posts</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
+          <div className="mt-10">
+            <h3 className="text-xl font-semibold text-slate-900">Related Posts</h3>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {relatedPosts.map(rp => (
-                <Link key={rp.slug} to={`/blog/${rp.slug}`} style={{ textDecoration: 'none' }}>
-                  <div style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'box-shadow 0.2s' }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 20px rgba(123,47,190,0.13)'}
-                    onMouseLeave={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'}>
-                    {rp.coverImage && <img src={rp.coverImage} alt={rp.title} style={{ width: '100%', height: '140px', objectFit: 'cover', display: 'block' }} loading="lazy" />}
-                    <div style={{ padding: '14px' }}>
-                      {rp.category && <span style={{ fontSize: '10px', fontWeight: 700, color: PRI, background: `${PRI}12`, padding: '2px 8px', borderRadius: '10px' }}>{rp.category}</span>}
-                      <p style={{ fontSize: '13.5px', fontWeight: 700, color: '#1a1a1a', margin: '8px 0 4px', lineHeight: 1.35 }}>{rp.title}</p>
-                      <p style={{ fontSize: '11px', color: '#999', margin: 0 }}>{readingTime(rp.content)} min read</p>
-                    </div>
+                <Link key={rp.slug} to={`/blog/${rp.slug}`} className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                  {rp.coverImage && (
+                    <img src={rp.coverImage} alt={rp.title} className="h-40 w-full object-cover" loading="lazy" />
+                  )}
+                  <div className="p-5">
+                    {rp.category && <span className="rounded-full bg-[#7B2FBE]/10 px-3 py-1 text-xs font-semibold text-[#7B2FBE]">{rp.category}</span>}
+                    <p className="mt-4 text-base font-bold text-slate-900">{rp.title}</p>
+                    <p className="mt-2 text-sm text-slate-500">{readingTime(rp.content)} min read</p>
                   </div>
                 </Link>
               ))}
@@ -393,28 +376,24 @@ export default function BlogPostPage() {
           </div>
         )}
 
-        {/* Comments */}
         <CommentsSection slug={slug} />
 
-        {/* Back */}
-        <div style={{ borderTop: '1px solid #e8e8e8', paddingTop: '24px' }}>
-          <Link to="/blog" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: PRI, fontWeight: 700, textDecoration: 'none', fontSize: '14px' }}>
-            ← Back to Blog
-          </Link>
+        <div className="mt-10 border-t border-slate-200 pt-6">
+          <Link to="/blog" className="inline-flex items-center gap-2 text-sm font-semibold text-[#7B2FBE] transition hover:text-[#6b23ba]">← Back to Blog</Link>
         </div>
       </div>
 
       <style>{`
-        .blog-content h1,.blog-content h2,.blog-content h3 { color:#1a1a1a; font-family:"HubotSans",sans-serif; margin:28px 0 12px; scroll-margin-top:80px; }
-        .blog-content h2 { font-size:22px; font-weight:800; }
-        .blog-content h3 { font-size:18px; font-weight:700; }
-        .blog-content p { margin:0 0 18px; }
-        .blog-content a { color:${PRI}; }
-        .blog-content img { max-width:100%; border-radius:10px; margin:16px 0; }
-        .blog-content ul,.blog-content ol { padding-left:22px; margin:0 0 18px; line-height:1.8; }
-        .blog-content blockquote { border-left:4px solid ${PRI}; padding:12px 16px; margin:20px 0; background:#f9f5ff; border-radius:0 8px 8px 0; color:#555; font-style:italic; }
-        .blog-content pre,.blog-content code { background:#f4f4f4; padding:2px 6px; border-radius:4px; font-size:13px; }
-        .blog-content strong { color:#1a1a1a; }
+        .blog-content h1, .blog-content h2, .blog-content h3 { color: #1a1a1a; font-family: "HubotSans", sans-serif; margin: 1.5rem 0 0.75rem; scroll-margin-top: 5rem; }
+        .blog-content h2 { font-size: 1.75rem; font-weight: 800; }
+        .blog-content h3 { font-size: 1.35rem; font-weight: 700; }
+        .blog-content p { margin: 0 0 1.1rem; }
+        .blog-content a { color: ${PRI}; }
+        .blog-content img { max-width: 100%; border-radius: 1rem; margin: 1.2rem 0; }
+        .blog-content ul, .blog-content ol { padding-left: 1.2rem; margin: 0 0 1.1rem; line-height: 1.8; }
+        .blog-content blockquote { border-left: 0.3rem solid ${PRI}; padding: 1rem 1.2rem; margin: 1.25rem 0; background: #f9f5ff; border-radius: 0 1rem 1rem 0; color: #555; font-style: italic; }
+        .blog-content pre, .blog-content code { background: #f4f4f4; padding: 0.2rem 0.5rem; border-radius: 0.4rem; font-size: 0.95rem; }
+        .blog-content strong { color: #1a1a1a; }
       `}</style>
     </article>
   )

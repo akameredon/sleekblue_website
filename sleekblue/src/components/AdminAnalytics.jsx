@@ -1,78 +1,125 @@
 import { useState, useEffect } from 'react'
 
 const PRI = '#7B2FBE'
-const PRI_LIGHT = '#f0e8ff'
 const ACC = '#FF6B00'
 
-function Card({ children, style }) {
-  return <div style={{ background: '#fff', borderRadius: '12px', padding: '20px 24px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', ...style }}>{children}</div>
+const colorTextClass = {
+  [PRI]: 'text-[#7B2FBE]',
+  [ACC]: 'text-[#FF6B00]',
+  '#2563eb': 'text-[#2563eb]',
+  '#16a34a': 'text-[#16a34a]',
+  '#ec4899': 'text-[#ec4899]',
+  '#f59e0b': 'text-[#f59e0b]',
+  '#92400e': 'text-[#92400e]',
 }
+
+const colorBgClass = {
+  [PRI]: 'bg-[#7B2FBE]/20',
+  [ACC]: 'bg-[#FF6B00]/20',
+  '#2563eb': 'bg-[#2563eb]/20',
+  '#16a34a': 'bg-[#16a34a]/20',
+  '#ec4899': 'bg-[#ec4899]/20',
+  '#f59e0b': 'bg-[#f59e0b]/20',
+}
+
+function getTextClass(color) {
+  return colorTextClass[color] || 'text-slate-900'
+}
+
+function getBgClass(color) {
+  return colorBgClass[color] || 'bg-slate-200'
+}
+
+function Card({ children, className = '' }) {
+  return <div className={`rounded-2xl bg-white p-5 shadow-sm ${className}`}>{children}</div>
+}
+
 function Stat({ label, value, icon, color, sub }) {
+  const textClass = getTextClass(color || PRI)
+  const bgClass = getBgClass(color || PRI)
+
   return (
-    <Card style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-      <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: (color || PRI) + '20', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>{icon}</div>
+    <Card className="flex items-center gap-4">
+      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl text-2xl flex-shrink-0 ${bgClass} ${textClass}`}>
+        {icon}
+      </div>
       <div>
-        <p style={{ fontSize: '26px', fontWeight: 800, color: color || PRI, margin: 0, fontFamily: "'HubotSans',sans-serif" }}>{value}</p>
-        <p style={{ fontSize: '12px', color: '#888', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>{label}</p>
-        {sub && <p style={{ fontSize: '11px', color: '#bbb', margin: '2px 0 0', fontFamily: "'HubotSans',sans-serif" }}>{sub}</p>}
+        <p className={`text-3xl font-extrabold leading-none ${textClass}`}>{value}</p>
+        <p className="text-xs text-slate-500">{label}</p>
+        {sub && <p className="text-[11px] text-slate-400 mt-1">{sub}</p>}
       </div>
     </Card>
   )
 }
+
 function TabBar({ tabs, active, setActive }) {
   return (
-    <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
-      {tabs.map(t => (
-        <button key={t.id} onClick={() => setActive(t.id)}
-          style={{ padding: '9px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: active === t.id ? PRI : '#fff', color: active === t.id ? '#fff' : '#555', fontWeight: active === t.id ? 700 : 500, fontSize: '13px', boxShadow: '0 1px 4px rgba(0,0,0,0.10)', fontFamily: "'HubotSans',sans-serif", transition: 'all 0.15s' }}>
-          {t.label}
+    <div className="flex flex-wrap gap-2 mb-6">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          onClick={() => setActive(tab.id)}
+          className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+            active === tab.id
+              ? 'bg-[#7B2FBE] text-white shadow-sm'
+              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+          }`}>
+          {tab.label}
         </button>
       ))}
     </div>
   )
 }
+
 function BarChart({ data, color, max, label }) {
   const entries = Object.entries(data || {}).sort((a, b) => b[1] - a[1]).slice(0, 12)
-  const maxVal = max || Math.max(...entries.map(e => e[1]), 1)
+  const maxVal = max || Math.max(...entries.map(([, value]) => value), 1)
+  const fillClass = getBgClass(color || PRI).replace('/20', '')
+
+  if (entries.length === 0) {
+    return <p className="text-sm text-slate-400">No data yet.</p>
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      {entries.map(([key, val]) => (
-        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '12px', color: '#555', fontFamily: "'HubotSans',sans-serif", width: '180px', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{key}</span>
-          <div style={{ flex: 1, background: '#f0f0f0', borderRadius: '4px', height: '10px', overflow: 'hidden' }}>
-            <div style={{ width: `${(val / maxVal) * 100}%`, height: '100%', background: color || PRI, borderRadius: '4px', transition: 'width 0.5s' }} />
+    <div className="flex flex-col gap-2">
+      {entries.map(([key, value]) => (
+        <div key={key} className="flex items-center gap-2">
+          <span className="min-w-[140px] text-xs text-slate-600 truncate">{key}</span>
+          <div className="flex-1 overflow-hidden rounded-full bg-slate-200 h-2">
+            <div className={`h-full rounded-full ${fillClass}`} style={{ width: `${(value / maxVal) * 100}%` }} />
           </div>
-          <span style={{ fontSize: '12px', fontWeight: 700, color: color || PRI, fontFamily: "'HubotSans',sans-serif", width: '36px', textAlign: 'right' }}>{val}</span>
-          {label && <span style={{ fontSize: '11px', color: '#aaa', fontFamily: "'HubotSans',sans-serif" }}>{label}</span>}
+          <span className={`w-10 text-right text-xs font-semibold ${getTextClass(color || PRI)}`}>{value}</span>
+          {label && <span className="text-[11px] text-slate-400">{label}</span>}
         </div>
       ))}
-      {entries.length === 0 && <p style={{ color: '#bbb', fontSize: '13px', fontFamily: "'HubotSans',sans-serif" }}>No data yet.</p>}
     </div>
   )
 }
+
 function HourChart({ hourMap }) {
   const hours = Array.from({ length: 24 }, (_, i) => i)
-  const maxVal = Math.max(...hours.map(h => hourMap[h] || 0), 1)
+  const maxVal = Math.max(...hours.map((hour) => hourMap[hour] || 0), 1)
+
   return (
-    <div>
-      <div style={{ display: 'flex', gap: '3px', alignItems: 'flex-end', height: '80px' }}>
-        {hours.map(h => (
-          <div key={h} title={`${h}:00 — ${hourMap[h] || 0} visits`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
-            <div style={{ width: '100%', background: hourMap[h] ? PRI : '#eee', borderRadius: '3px 3px 0 0', height: `${((hourMap[h] || 0) / maxVal) * 68}px`, minHeight: hourMap[h] ? '4px' : '0', transition: 'height 0.4s' }} />
-          </div>
-        ))}
+    <div className="space-y-3">
+      <div className="flex gap-1 items-end h-20">
+        {hours.map((hour) => {
+          const height = ((hourMap[hour] || 0) / maxVal) * 68
+          return (
+            <div key={hour} className="flex-1 flex flex-col items-center gap-1">
+              <div
+                className={`w-full rounded-t-md ${hourMap[hour] ? 'bg-[#7B2FBE]' : 'bg-slate-200'}`}
+                style={{ height: `${Math.max(height, hourMap[hour] ? 4 : 0)}px` }}
+              />
+            </div>
+          )
+        })}
       </div>
-      <div style={{ display: 'flex', gap: '3px', marginTop: '4px' }}>
-        {[0, 3, 6, 9, 12, 15, 18, 21].map(h => (
-          <span key={h} style={{ fontSize: '9px', color: '#bbb', fontFamily: 'monospace', marginLeft: `${(h / 24) * 100}%`, position: h === 0 ? 'relative' : 'absolute' }}>
-            {h === 0 ? '12am' : h === 12 ? '12pm' : h < 12 ? `${h}am` : `${h - 12}pm`}
-          </span>
-        ))}
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
-        {[0, 4, 8, 12, 16, 20, 23].map(h => (
-          <span key={h} style={{ fontSize: '9px', color: '#bbb', fontFamily: 'monospace' }}>
-            {h === 0 ? '12am' : h === 12 ? '12pm' : h < 12 ? `${h}am` : `${h - 12}pm`}
+      <div className="grid grid-cols-7 gap-2 text-[10px] text-slate-400">
+        {[0, 4, 8, 12, 16, 20, 23].map((hour) => (
+          <span key={hour} className="text-center">
+            {hour === 0 ? '12am' : hour === 12 ? '12pm' : hour < 12 ? `${hour}am` : `${hour - 12}pm`}
           </span>
         ))}
       </div>
@@ -91,17 +138,20 @@ function useAnalyticsData(token) {
       const res = await fetch('/api/admin/analytics', { headers: { Authorization: `Bearer ${token}` } })
       if (!res.ok) throw new Error('Failed')
       setData(await res.json())
-    } catch (e) {
+      setError(null)
+    } catch {
       setError('Could not load analytics.')
     }
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [token])
+  useEffect(() => {
+    if (token) load()
+  }, [token])
+
   return { data, loading, error, reload: load }
 }
 
-// ─── Analytics Overview Tab ──────────────────────────────────────────────────
 function OverviewTab({ data }) {
   const topPage = Object.entries(data.pageViews || {}).sort((a, b) => b[1] - a[1])[0]
   const topCountry = Object.entries(data.locationMap || {}).sort((a, b) => b[1] - a[1])[0]
@@ -110,31 +160,35 @@ function OverviewTab({ data }) {
   const pageViewData = Object.fromEntries(
     Object.entries(data.pageViews || {}).sort((a, b) => b[1] - a[1]).slice(0, 10)
   )
-
   const dailyData = Object.entries(data.dailyMap || {}).sort((a, b) => a[0].localeCompare(b[0])).slice(-14)
 
+  function eventBorderClass(type) {
+    if (type === 'cart_add') return 'border-[#FF6B00]'
+    if (type === 'product_view') return 'border-[#2563eb]'
+    return 'border-[#7B2FBE]'
+  }
+
   return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Stat label="Total Page Views" value={(data.totalPageViews || 0).toLocaleString()} icon="👁️" color={PRI} />
         <Stat label="Unique Visitors" value={(data.uniqueVisitors || 0).toLocaleString()} icon="👥" color="#2563eb" />
         <Stat label="Total Events" value={(data.totalEvents || 0).toLocaleString()} icon="📊" color="#16a34a" />
         <Stat label="Most Popular Page" value={topPage ? topPage[0] : '—'} icon="🔥" color={ACC} sub={topPage ? `${topPage[1]} views` : ''} />
         <Stat label="Top Country" value={topCountry ? topCountry[0].split(',').pop().trim() : '—'} icon="🌍" color="#ec4899" sub={topCountry ? `${topCountry[1]} visits` : ''} />
-        <Stat label="Cart Additions" value={Object.values(data.cartAdds || {}).reduce((s, v) => s + v.count, 0)} icon="🛒" color="#f59e0b" />
+        <Stat label="Cart Additions" value={Object.values(data.cartAdds || {}).reduce((sum, item) => sum + item.count, 0)} icon="🛒" color="#f59e0b" />
       </div>
 
-      {/* Daily Trend */}
       {dailyData.length > 1 && (
-        <Card style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>📈 Daily Traffic (Last 14 Days)</h3>
-          <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end', height: '80px' }}>
+        <Card className="space-y-4">
+          <h3 className="text-sm font-semibold text-slate-900">📈 Daily Traffic (Last 14 Days)</h3>
+          <div className="flex gap-1 items-end h-20">
             {dailyData.map(([day, count]) => {
-              const maxD = Math.max(...dailyData.map(d => d[1]), 1)
+              const maxD = Math.max(...dailyData.map(([, value]) => value), 1)
               return (
-                <div key={day} title={`${day}: ${count} views`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
-                  <div style={{ width: '100%', background: PRI, borderRadius: '3px 3px 0 0', height: `${(count / maxD) * 70}px`, minHeight: '3px', transition: 'height 0.4s' }} />
-                  <span style={{ fontSize: '8px', color: '#bbb', fontFamily: 'monospace', transform: 'rotate(-45deg)', whiteSpace: 'nowrap', marginTop: '2px' }}>{day.slice(5)}</span>
+                <div key={day} className="flex-1 flex flex-col items-center gap-1">
+                  <div className="w-full rounded-t-md bg-[#7B2FBE]" style={{ height: `${Math.max((count / maxD) * 70, 3)}px` }} />
+                  <span className="text-[9px] text-slate-400">{day.slice(5)}</span>
                 </div>
               )
             })}
@@ -142,29 +196,38 @@ function OverviewTab({ data }) {
         </Card>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>📄 Page Views Breakdown</h3>
+          <h3 className="mb-4 text-sm font-semibold text-slate-900">📄 Page Views Breakdown</h3>
           <BarChart data={pageViewData} color={PRI} />
         </Card>
         <Card>
-          <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>🕐 Recent Activity</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {recentEvents.map((e, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', background: '#fafafa', borderRadius: '6px', borderLeft: `3px solid ${e.type === 'cart_add' ? ACC : e.type === 'product_view' ? '#2563eb' : PRI}` }}>
-                <span style={{ fontSize: '13px' }}>{e.type === 'cart_add' ? '🛒' : e.type === 'product_view' ? '👁️' : e.type === 'quote_request' ? '📋' : '📄'}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: '11px', fontWeight: 600, color: '#333', fontFamily: "'HubotSans',sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {e.type === 'cart_add' ? `Cart: ${e.name || e.slug}` : e.type === 'product_view' ? `Viewed: ${e.name || e.slug}` : e.page || '/'}
-                  </p>
-                  <p style={{ margin: 0, fontSize: '10px', color: '#bbb', fontFamily: 'monospace' }}>
-                    {e.location?.city ? `${e.location.city}, ${e.location.country}` : e.location?.country || 'Unknown'} · {e.device || '—'}
-                  </p>
+          <h3 className="mb-4 text-sm font-semibold text-slate-900">🕐 Recent Activity</h3>
+          <div className="flex flex-col gap-3">
+            {recentEvents.length > 0 ? (
+              recentEvents.map((event, index) => (
+                <div key={index} className={`flex items-center gap-3 rounded-2xl border-l-4 bg-slate-50 px-3 py-2 ${eventBorderClass(event.type)}`}>
+                  <span className="text-base">
+                    {event.type === 'cart_add' ? '🛒' : event.type === 'product_view' ? '👁️' : event.type === 'quote_request' ? '📋' : '📄'}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[11px] font-semibold text-slate-900">
+                      {event.type === 'cart_add'
+                        ? `Cart: ${event.name || event.slug}`
+                        : event.type === 'product_view'
+                        ? `Viewed: ${event.name || event.slug}`
+                        : event.page || '/'}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      {event.location?.city ? `${event.location.city}, ${event.location.country}` : event.location?.country || 'Unknown'} · {event.device || '—'}
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-slate-400">{new Date(event.timestamp).toLocaleTimeString()}</span>
                 </div>
-                <span style={{ fontSize: '10px', color: '#ccc', fontFamily: 'monospace', flexShrink: 0 }}>{new Date(e.timestamp).toLocaleTimeString()}</span>
-              </div>
-            ))}
-            {recentEvents.length === 0 && <p style={{ color: '#bbb', fontSize: '13px', fontFamily: "'HubotSans',sans-serif" }}>No activity yet. Install the analytics tracker on your website.</p>}
+              ))
+            ) : (
+              <p className="text-sm text-slate-400">No activity yet. Install the analytics tracker on your website.</p>
+            )}
           </div>
         </Card>
       </div>
@@ -172,7 +235,6 @@ function OverviewTab({ data }) {
   )
 }
 
-// ─── Location Tab ─────────────────────────────────────────────────────────────
 function LocationTab({ data }) {
   const locationEntries = Object.entries(data.locationMap || {}).sort((a, b) => b[1] - a[1])
   const countryMap = {}
@@ -180,115 +242,132 @@ function LocationTab({ data }) {
     const country = key.includes(',') ? key.split(',').pop().trim() : key
     countryMap[country] = (countryMap[country] || 0) + count
   })
+  const topCountries = Object.entries(countryMap).sort((a, b) => b[1] - a[1]).slice(0, 6)
+  const topCities = locationEntries.slice(0, 6)
+  const totalVisitors = Object.values(data.locationMap || {}).reduce((sum, n) => sum + n, 0) || 1
 
   return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+    <div className="space-y-6">
+      <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>🌍 Top Countries</h3>
-          <BarChart data={countryMap} color="#2563eb" />
+          <h3 className="mb-4 text-sm font-semibold text-slate-900">🌍 Top Countries</h3>
+          {topCountries.length === 0 ? (
+            <p className="text-sm text-slate-400">No country data available yet.</p>
+          ) : (
+            <ul className="space-y-3">
+              {topCountries.map(([country, count]) => (
+                <li key={country} className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-3 py-2">
+                  <span className="truncate text-sm font-medium text-slate-900">{country}</span>
+                  <span className="text-xs font-semibold text-slate-500">{count}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
         <Card>
-          <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>📍 Top Cities</h3>
-          <BarChart data={Object.fromEntries(locationEntries.slice(0, 12))} color="#ec4899" />
+          <h3 className="mb-4 text-sm font-semibold text-slate-900">📍 Top Cities</h3>
+          {topCities.length === 0 ? (
+            <p className="text-sm text-slate-400">No city data available yet.</p>
+          ) : (
+            <ul className="space-y-3">
+              {topCities.map(([location, count]) => (
+                <li key={location} className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-3 py-2">
+                  <span className="truncate text-sm font-medium text-slate-900">{location}</span>
+                  <span className="text-xs font-semibold text-slate-500">{count}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
       </div>
 
-      <Card style={{ marginTop: '20px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>📋 All Visitor Locations</h3>
+      <Card className="overflow-x-auto">
+        <h3 className="mb-4 text-sm font-semibold text-slate-900">📋 All Visitor Locations</h3>
         {locationEntries.length === 0 ? (
-          <p style={{ color: '#bbb', fontSize: '13px', fontFamily: "'HubotSans',sans-serif" }}>No location data yet. IP geolocation runs in the background as visitors arrive.</p>
+          <p className="text-sm text-slate-400">No location data yet. IP geolocation runs in the background as visitors arrive.</p>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
-              <thead>
-                <tr style={{ background: '#f8f8f8' }}>
-                  {['Location', 'Visits', 'Share'].map(h => (
-                    <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontWeight: 700, color: '#555', fontFamily: "'HubotSans',sans-serif" }}>{h}</th>
-                  ))}
+          <table className="min-w-full text-sm border-collapse">
+            <thead className="bg-slate-100 text-left text-xs uppercase tracking-[0.12em] text-slate-500">
+              <tr>
+                <th className="px-3 py-3">Location</th>
+                <th className="px-3 py-3">Visits</th>
+                <th className="px-3 py-3">Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              {locationEntries.map(([location, count], index) => (
+                <tr key={location} className={index % 2 === 0 ? 'bg-slate-50' : ''}>
+                  <td className="px-3 py-3 font-medium text-slate-900">📍 {location}</td>
+                  <td className="px-3 py-3 text-slate-700">{count}</td>
+                  <td className="px-3 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-200">
+                        <div className="h-full rounded-full bg-[#7B2FBE]" style={{ width: `${(count / totalVisitors) * 100}%` }} />
+                      </div>
+                      <span className="text-[11px] text-slate-500">{((count / totalVisitors) * 100).toFixed(1)}%</span>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {locationEntries.map(([loc, count], i) => {
-                  const total = locationEntries.reduce((s, [, v]) => s + v, 0)
-                  return (
-                    <tr key={i} style={{ borderTop: '1px solid #f0f0f0' }}>
-                      <td style={{ padding: '9px 12px', fontWeight: 600, fontFamily: "'HubotSans',sans-serif" }}>📍 {loc}</td>
-                      <td style={{ padding: '9px 12px', color: PRI, fontWeight: 700 }}>{count}</td>
-                      <td style={{ padding: '9px 12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '80px', background: '#f0f0f0', borderRadius: '4px', height: '8px' }}>
-                            <div style={{ width: `${(count / total) * 100}%`, height: '100%', background: PRI, borderRadius: '4px' }} />
-                          </div>
-                          <span style={{ fontSize: '11px', color: '#888' }}>{((count / total) * 100).toFixed(1)}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         )}
       </Card>
     </div>
   )
 }
 
-// ─── Behavior Tab ─────────────────────────────────────────────────────────────
 function BehaviorTab({ data }) {
   const deviceMap = data.deviceMap || {}
-  const totalDevices = Object.values(deviceMap).reduce((s, v) => s + v, 0)
+  const totalDevices = Object.values(deviceMap).reduce((sum, value) => sum + value, 0)
   const referrers = Object.entries(data.referrerMap || {}).sort((a, b) => b[1] - a[1]).slice(0, 10)
 
   const peakHour = Object.entries(data.hourMap || {}).sort((a, b) => b[1] - a[1])[0]
-  const peakHourLabel = peakHour ? (parseInt(peakHour[0]) < 12 ? `${peakHour[0]}am` : `${parseInt(peakHour[0]) - 12 || 12}pm`) : '—'
+  const peakHourLabel = peakHour ? (parseInt(peakHour[0], 10) < 12 ? `${peakHour[0]}am` : `${parseInt(peakHour[0], 10) - 12 || 12}pm`) : '—'
 
   return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {Object.entries(deviceMap).map(([device, count]) => (
-          <Card key={device} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', marginBottom: '8px' }}>
-              {device === 'mobile' ? '📱' : device === 'tablet' ? '📲' : '💻'}
-            </div>
-            <p style={{ fontSize: '22px', fontWeight: 800, color: PRI, margin: 0, fontFamily: "'HubotSans',sans-serif" }}>{count}</p>
-            <p style={{ fontSize: '12px', color: '#888', margin: '2px 0 0', fontFamily: "'HubotSans',sans-serif", textTransform: 'capitalize' }}>{device}</p>
-            <p style={{ fontSize: '11px', color: '#bbb', margin: '2px 0 0', fontFamily: "'HubotSans',sans-serif" }}>{totalDevices ? ((count / totalDevices) * 100).toFixed(0) : 0}% of visits</p>
+          <Card key={device} className="text-center">
+            <div className="text-3xl mb-2">{device === 'mobile' ? '📱' : device === 'tablet' ? '📲' : '💻'}</div>
+            <p className="text-2xl font-extrabold text-[#7B2FBE]">{count}</p>
+            <p className="text-xs text-slate-500 capitalize mt-1">{device}</p>
+            <p className="text-[11px] text-slate-400 mt-1">{totalDevices ? `${((count / totalDevices) * 100).toFixed(0)}% of visits` : '0% of visits'}</p>
           </Card>
         ))}
         <Stat label="Peak Traffic Hour" value={peakHourLabel} icon="⏰" color="#f59e0b" sub={peakHour ? `${peakHour[1]} visits` : ''} />
       </div>
 
-      <Card style={{ marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '16px', fontFamily: "'HubotSans',sans-serif" }}>🕐 Traffic by Hour of Day</h3>
+      <Card>
+        <h3 className="mb-4 text-sm font-semibold text-slate-900">🕐 Traffic by Hour of Day</h3>
         <HourChart hourMap={data.hourMap || {}} />
-        <p style={{ fontSize: '11px', color: '#bbb', marginTop: '8px', fontFamily: "'HubotSans',sans-serif" }}>Shows when your visitors are most active throughout the day.</p>
+        <p className="mt-3 text-sm text-slate-500">Shows when your visitors are most active throughout the day.</p>
       </Card>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>🔗 Traffic Sources (Referrers)</h3>
+          <h3 className="mb-4 text-sm font-semibold text-slate-900">🔗 Traffic Sources (Referrers)</h3>
           {referrers.length > 0 ? (
             <BarChart data={Object.fromEntries(referrers)} color="#2563eb" />
           ) : (
-            <p style={{ color: '#bbb', fontSize: '13px', fontFamily: "'HubotSans',sans-serif" }}>Most traffic is direct (no referrer) — visitors are typing your URL directly or using bookmarks.</p>
+            <p className="text-sm text-slate-500">Most traffic is direct (no referrer) — visitors are typing your URL directly or using bookmarks.</p>
           )}
         </Card>
         <Card>
-          <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>💡 Behavioral Insights</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <h3 className="mb-4 text-sm font-semibold text-slate-900">💡 Behavioral Insights</h3>
+          <div className="flex flex-col gap-3">
             {[
               { icon: '📱', label: 'Mobile-first', value: deviceMap.mobile > (deviceMap.desktop || 0) ? 'Yes — most visitors use mobile' : 'No — mostly desktop visitors' },
               { icon: '🌙', label: 'Night traffic', value: ((data.hourMap?.[22] || 0) + (data.hourMap?.[23] || 0) + (data.hourMap?.[0] || 0)) > 0 ? 'Active at night' : 'Mostly daytime traffic' },
-              { icon: '🌍', label: 'Nigeria-focused', value: Object.keys(data.locationMap || {}).some(k => k.includes('Nigeria')) ? '✓ Nigerian visitors detected' : 'International traffic mix' },
-              { icon: '🛒', label: 'Cart intent', value: `${Object.values(data.cartAdds || {}).reduce((s, v) => s + v.count, 0)} cart additions tracked` },
-            ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '10px', background: '#fafafa', borderRadius: '8px' }}>
-                <span style={{ fontSize: '18px' }}>{item.icon}</span>
+              { icon: '🌍', label: 'Nigeria-focused', value: Object.keys(data.locationMap || {}).some((key) => key.includes('Nigeria')) ? '✓ Nigerian visitors detected' : 'International traffic mix' },
+              { icon: '🛒', label: 'Cart intent', value: `${Object.values(data.cartAdds || {}).reduce((sum, item) => sum + item.count, 0)} cart additions tracked` },
+            ].map((item, index) => (
+              <div key={index} className="flex gap-3 rounded-2xl bg-slate-50 p-3">
+                <span className="text-xl">{item.icon}</span>
                 <div>
-                  <p style={{ margin: 0, fontSize: '12px', fontWeight: 700, color: '#333', fontFamily: "'HubotSans',sans-serif" }}>{item.label}</p>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#666', fontFamily: "'HubotSans',sans-serif" }}>{item.value}</p>
+                  <p className="text-[12px] font-semibold text-slate-900">{item.label}</p>
+                  <p className="text-[12px] text-slate-500">{item.value}</p>
                 </div>
               </div>
             ))}
@@ -299,7 +378,6 @@ function BehaviorTab({ data }) {
   )
 }
 
-// ─── Security Log Tab ─────────────────────────────────────────────────────────
 function SecurityLogTab({ data, token, reload }) {
   const [clearing, setClearing] = useState(false)
   const events = data.securityEvents || []
@@ -325,17 +403,17 @@ function SecurityLogTab({ data, token, reload }) {
   ]
 
   return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+    <div className="space-y-6">
+      <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#16a34a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>🛡️ Active Security Protections</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {securityHeaders.map((h, i) => (
-              <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center', padding: '8px 10px', background: '#f0fdf4', borderRadius: '7px', border: '1px solid #bbf7d0' }}>
-                <span style={{ color: '#16a34a', fontWeight: 800, fontSize: '14px', flexShrink: 0 }}>{h.status}</span>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: '12px', fontWeight: 700, color: '#333', fontFamily: "'HubotSans',sans-serif" }}>{h.name}</p>
-                  <p style={{ margin: 0, fontSize: '11px', color: '#888', fontFamily: "'HubotSans',sans-serif" }}>{h.desc}</p>
+          <h3 className="mb-4 text-sm font-semibold text-emerald-800">🛡️ Active Security Protections</h3>
+          <div className="flex flex-col gap-3">
+            {securityHeaders.map((header, index) => (
+              <div key={index} className="flex gap-3 items-center rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-3">
+                <span className="text-emerald-700 font-semibold">{header.status}</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 truncate">{header.name}</p>
+                  <p className="text-xs text-slate-500">{header.desc}</p>
                 </div>
               </div>
             ))}
@@ -343,24 +421,30 @@ function SecurityLogTab({ data, token, reload }) {
         </Card>
 
         <Card>
-          <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#dc2626', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>⚠️ Security Events ({events.length})</h3>
+          <h3 className="mb-4 text-sm font-semibold text-rose-700">⚠️ Security Events ({events.length})</h3>
           {events.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center' }}>
-              <p style={{ fontSize: '32px', margin: '0 0 8px' }}>✅</p>
-              <p style={{ fontSize: '13px', color: '#16a34a', fontFamily: "'HubotSans',sans-serif", fontWeight: 700 }}>No security events detected</p>
-              <p style={{ fontSize: '12px', color: '#888', fontFamily: "'HubotSans',sans-serif" }}>Your website is clean. Rate limiting and security headers are active.</p>
+            <div className="rounded-2xl bg-slate-50 p-5 text-center">
+              <p className="text-4xl">✅</p>
+              <p className="mt-2 text-sm font-semibold text-emerald-700">No security events detected</p>
+              <p className="text-sm text-slate-500">Your website is clean. Rate limiting and security headers are active.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '400px', overflowY: 'auto' }}>
-              {events.slice(0, 50).map((e, i) => (
-                <div key={i} style={{ padding: '8px 10px', background: '#fef2f2', borderRadius: '7px', border: '1px solid #fecaca' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <p style={{ margin: 0, fontSize: '12px', fontWeight: 700, color: '#dc2626', fontFamily: "'HubotSans',sans-serif' " }}>
-                      {e.type === 'rate_limit' ? '🚫 Rate Limited' : e.type === 'login_brute_force' ? '🔐 Login Brute Force' : e.type === 'invalid_token' ? '🔑 Invalid Token' : `⚠️ ${e.type}`}
+            <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto">
+              {events.slice(0, 50).map((event, index) => (
+                <div key={index} className="rounded-2xl border border-rose-200 bg-rose-50 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm font-semibold text-rose-700">
+                      {event.type === 'rate_limit'
+                        ? '🚫 Rate Limited'
+                        : event.type === 'login_brute_force'
+                        ? '🔐 Login Brute Force'
+                        : event.type === 'invalid_token'
+                        ? '🔑 Invalid Token'
+                        : `⚠️ ${event.type}`}
                     </p>
-                    <span style={{ fontSize: '10px', color: '#bbb', fontFamily: 'monospace' }}>{new Date(e.timestamp).toLocaleString()}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">{new Date(event.timestamp).toLocaleString()}</span>
                   </div>
-                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#888', fontFamily: 'monospace' }}>IP: {e.ip} · {e.path}</p>
+                  <p className="mt-2 text-xs text-slate-500 font-mono">IP: {event.ip} · {event.path}</p>
                 </div>
               ))}
             </div>
@@ -368,13 +452,17 @@ function SecurityLogTab({ data, token, reload }) {
         </Card>
       </div>
 
-      <Card style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-        <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#92400e', marginBottom: '12px', fontFamily: "'HubotSans',sans-serif" }}>⚠️ Data Management</h3>
-        <p style={{ fontSize: '12px', color: '#78350f', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif", lineHeight: 1.6 }}>
+      <Card className="bg-amber-50 border border-amber-200">
+        <h3 className="mb-3 text-sm font-semibold text-amber-900">⚠️ Data Management</h3>
+        <p className="text-sm text-amber-900 leading-6">
           Analytics data is stored locally in <code>analytics-data.json</code>. Clear it periodically to free up space. The current dataset has <strong>{data.totalEvents || 0}</strong> events.
         </p>
-        <button onClick={clearAnalytics} disabled={clearing}
-          style={{ background: clearing ? '#ccc' : '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 700, cursor: clearing ? 'not-allowed' : 'pointer', fontFamily: "'HubotSans',sans-serif" }}>
+        <button
+          onClick={clearAnalytics}
+          disabled={clearing}
+          className={`mt-4 rounded-2xl px-5 py-3 text-sm font-semibold text-white transition ${
+            clearing ? 'bg-slate-400 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700'
+          }`}>
           {clearing ? 'Clearing…' : '🗑️ Clear All Analytics Data'}
         </button>
       </Card>
@@ -382,132 +470,141 @@ function SecurityLogTab({ data, token, reload }) {
   )
 }
 
-// ─── Analytics View (main export) ────────────────────────────────────────────
 export function AnalyticsView({ token }) {
   const [tab, setTab] = useState('overview')
   const { data, loading, error, reload } = useAnalyticsData(token)
-
   const tabs = [
-    { id: 'overview',  label: '📊 Overview' },
-    { id: 'location',  label: '🌍 Locations' },
-    { id: 'behavior',  label: '🧠 Behavior' },
-    { id: 'security',  label: '🛡️ Security' },
+    { id: 'overview', label: '📊 Overview' },
+    { id: 'location', label: '🌍 Locations' },
+    { id: 'behavior', label: '🧠 Behavior' },
+    { id: 'security', label: '🛡️ Security' },
   ]
 
   return (
-    <div>
-      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px', fontFamily: "'HubotSans',sans-serif" }}>📈 Analytics</h2>
-          <p style={{ color: '#888', fontSize: '13px', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>Visitor tracking, impressions, interactions and geographic data.</p>
+          <h2 className="text-2xl font-extrabold text-slate-900">📈 Analytics</h2>
+          <p className="text-sm text-slate-500">Visitor tracking, impressions, interactions and geographic data.</p>
         </div>
-        <button onClick={reload} style={{ background: '#fff', border: '1.5px solid #ddd', borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: "'HubotSans',sans-serif", color: '#555' }}>
+        <button
+          onClick={reload}
+          className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+        >
           🔄 Refresh
         </button>
       </div>
 
       <TabBar tabs={tabs} active={tab} setActive={setTab} />
 
-      {loading && <div style={{ textAlign: 'center', padding: '60px', color: '#888', fontFamily: "'HubotSans',sans-serif" }}>Loading analytics…</div>}
-      {error && <div style={{ padding: '20px', color: '#dc2626', fontFamily: "'HubotSans',sans-serif" }}>{error}</div>}
+      {loading && <div className="rounded-2xl bg-slate-50 p-12 text-center text-slate-500">Loading analytics…</div>}
+      {error && <div className="rounded-2xl bg-rose-50 p-5 text-sm text-rose-700">{error}</div>}
       {data && !loading && (
         <>
-          {tab === 'overview'  && <OverviewTab data={data} />}
-          {tab === 'location'  && <LocationTab data={data} />}
-          {tab === 'behavior'  && <BehaviorTab data={data} />}
-          {tab === 'security'  && <SecurityLogTab data={data} token={token} reload={reload} />}
+          {tab === 'overview' && <OverviewTab data={data} />}
+          {tab === 'location' && <LocationTab data={data} />}
+          {tab === 'behavior' && <BehaviorTab data={data} />}
+          {tab === 'security' && <SecurityLogTab data={data} token={token} reload={reload} />}
         </>
       )}
     </div>
   )
 }
 
-// ─── Reports View (Financial + Customer Patterns) ─────────────────────────────
+function getBadgeClasses(value) {
+  if (value > 50) return 'rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-700'
+  if (value > 5) return 'rounded-full bg-amber-100 px-2 py-1 text-[11px] font-semibold text-amber-700'
+  return 'rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600'
+}
+
 export function ReportsView({ token }) {
   const [tab, setTab] = useState('financial')
   const { data, loading, error } = useAnalyticsData(token)
-
   const tabs = [
-    { id: 'financial',  label: '💰 Financial Report' },
-    { id: 'products',   label: '🛍️ Product Interest' },
-    { id: 'customers',  label: '👥 Customer Patterns' },
+    { id: 'financial', label: '💰 Financial Report' },
+    { id: 'products', label: '🛍️ Product Interest' },
+    { id: 'customers', label: '👥 Customer Patterns' },
   ]
 
-  if (loading) return (
-    <div>
-      <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', marginBottom: '20px', fontFamily: "'HubotSans',sans-serif" }}>💰 Reports</h2>
-      <div style={{ textAlign: 'center', padding: '60px', color: '#888', fontFamily: "'HubotSans',sans-serif" }}>Loading reports…</div>
-    </div>
-  )
-  if (error || !data) return (
-    <div>
-      <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', marginBottom: '20px', fontFamily: "'HubotSans',sans-serif" }}>💰 Reports</h2>
-      <Card><p style={{ color: '#888', fontFamily: "'HubotSans',sans-serif" }}>Could not load report data. Make sure analytics tracking is running.</p></Card>
-    </div>
-  )
+  const cartAdds = Object.entries(data?.cartAdds || {}).sort((a, b) => b[1].count - a[1].count)
+  const productViews = Object.entries(data?.productViews || {}).sort((a, b) => b[1].count - a[1].count)
+  const quoteRequests = data?.quoteRequests || []
+  const totalCartAdds = cartAdds.reduce((sum, [, item]) => sum + item.count, 0)
+  const totalProductViews = productViews.reduce((sum, [, item]) => sum + item.count, 0)
 
-  const cartAdds = Object.entries(data.cartAdds || {}).sort((a, b) => b[1].count - a[1].count)
-  const productViews = Object.entries(data.productViews || {}).sort((a, b) => b[1].count - a[1].count)
-  const quoteRequests = data.quoteRequests || []
+  if (loading) {
+    return (
+      <div className="space-y-5">
+        <h2 className="text-2xl font-extrabold text-slate-900">💰 Reports</h2>
+        <div className="rounded-2xl bg-slate-50 p-12 text-center text-slate-500">Loading reports…</div>
+      </div>
+    )
+  }
 
-  const totalCartAdds = cartAdds.reduce((s, [, v]) => s + v.count, 0)
-  const totalProductViews = productViews.reduce((s, [, v]) => s + v.count, 0)
+  if (error || !data) {
+    return (
+      <div className="space-y-5">
+        <h2 className="text-2xl font-extrabold text-slate-900">💰 Reports</h2>
+        <Card>
+          <p className="text-sm text-slate-500">Could not load report data. Make sure analytics tracking is running.</p>
+        </Card>
+      </div>
+    )
+  }
 
   return (
-    <div>
-      <div style={{ marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 4px', fontFamily: "'HubotSans',sans-serif" }}>💰 Reports</h2>
-        <p style={{ color: '#888', fontSize: '13px', margin: 0, fontFamily: "'HubotSans',sans-serif" }}>Financial insights, product interest, and customer behavioral patterns.</p>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-extrabold text-slate-900">💰 Reports</h2>
+        <p className="text-sm text-slate-500">Financial insights, product interest, and customer behavioral patterns.</p>
       </div>
 
       <TabBar tabs={tabs} active={tab} setActive={setTab} />
 
       {tab === 'financial' && (
-        <div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+        <div className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <Stat label="Products Cart-Added" value={totalCartAdds} icon="🛒" color={ACC} sub="Total cart additions" />
             <Stat label="Product Page Views" value={totalProductViews} icon="👁️" color={PRI} sub="Product interest signals" />
             <Stat label="Quote Requests" value={quoteRequests.length} icon="📋" color="#16a34a" sub="Direct quote signals" />
             <Stat label="Top Product" value={cartAdds[0]?.[1]?.name || productViews[0]?.[1]?.name || '—'} icon="🏆" color="#f59e0b" sub={cartAdds[0] ? `${cartAdds[0][1].count} cart adds` : ''} />
           </div>
 
-          <Card style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '6px', fontFamily: "'HubotSans',sans-serif" }}>💼 Financial Report — Product Interest Summary</h3>
-            <p style={{ fontSize: '12px', color: '#888', marginBottom: '16px', fontFamily: "'HubotSans',sans-serif" }}>
-              Since Sleekblue orders are completed via WhatsApp, this report shows customer interest signals — cart additions and quote requests — as a proxy for financial demand.
-            </p>
+          <Card>
+            <h3 className="mb-4 text-sm font-semibold text-slate-900">💼 Financial Report — Product Interest Summary</h3>
+            <p className="text-sm text-slate-500 mb-4">Since Sleekblue orders are completed via WhatsApp, this report shows customer interest signals — cart additions and quote requests — as a proxy for financial demand.</p>
             {cartAdds.length === 0 ? (
-              <p style={{ color: '#bbb', fontSize: '13px', fontFamily: "'HubotSans',sans-serif" }}>No cart data yet. Analytics tracking will capture cart additions as customers browse.</p>
+              <p className="text-sm text-slate-500">No cart data yet. Analytics tracking will capture cart additions as customers browse.</p>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                  <thead>
-                    <tr style={{ background: '#f8f8f8' }}>
-                      {['#', 'Product', 'Cart Additions', 'Total Qty', 'Interest Score'].map(h => (
-                        <th key={h} style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700, color: '#555', fontFamily: "'HubotSans',sans-serif" }}>{h}</th>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm border-collapse">
+                  <thead className="bg-slate-100 text-left text-[11px] uppercase tracking-[0.12em] text-slate-500">
+                    <tr>
+                      {['#', 'Product', 'Cart Additions', 'Total Qty', 'Interest Score'].map((header) => (
+                        <th key={header} className="px-3 py-3 font-semibold">{header}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {cartAdds.map(([slug, d], i) => {
-                      const interestScore = Math.min(100, Math.round((d.count / Math.max(totalCartAdds, 1)) * 100 + (d.qty / Math.max(d.count, 1)) * 5))
+                    {cartAdds.map(([slug, item], index) => {
+                      const interestScore = Math.min(100, Math.round((item.count / Math.max(totalCartAdds, 1)) * 100 + (item.qty / Math.max(item.count, 1)) * 5))
                       return (
-                        <tr key={slug} style={{ borderTop: '1px solid #f0f0f0', background: i === 0 ? '#fffbeb' : 'transparent' }}>
-                          <td style={{ padding: '10px 12px', fontWeight: 700, color: i < 3 ? ACC : '#888' }}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
-                          <td style={{ padding: '10px 12px', fontWeight: 600, fontFamily: "'HubotSans',sans-serif" }}>{d.name}</td>
-                          <td style={{ padding: '10px 12px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <div style={{ width: '60px', background: '#f0f0f0', borderRadius: '4px', height: '8px' }}>
-                                <div style={{ width: `${(d.count / (cartAdds[0]?.[1]?.count || 1)) * 100}%`, height: '100%', background: ACC, borderRadius: '4px' }} />
+                        <tr key={slug} className={index % 2 === 0 ? 'bg-slate-50' : ''}>
+                          <td className={`px-3 py-3 font-semibold ${index < 3 ? 'text-[#FF6B00]' : 'text-slate-600'}`}>
+                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
+                          </td>
+                          <td className="px-3 py-3 font-semibold text-slate-900">{item.name}</td>
+                          <td className="px-3 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-16 overflow-hidden rounded-full bg-slate-200">
+                                <div className="h-full rounded-full bg-[#FF6B00]" style={{ width: `${(item.count / (cartAdds[0]?.[1]?.count || 1)) * 100}%` }} />
                               </div>
-                              <span style={{ fontWeight: 700, color: ACC }}>{d.count}</span>
+                              <span className="font-semibold text-[#FF6B00]">{item.count}</span>
                             </div>
                           </td>
-                          <td style={{ padding: '10px 12px', color: '#555' }}>{d.qty}</td>
-                          <td style={{ padding: '10px 12px' }}>
-                            <span style={{ background: interestScore > 50 ? '#fef3c7' : '#f0f0f0', color: interestScore > 50 ? '#92400e' : '#888', borderRadius: '10px', padding: '3px 10px', fontSize: '12px', fontWeight: 700, fontFamily: "'HubotSans',sans-serif" }}>
-                              {interestScore}%
-                            </span>
+                          <td className="px-3 py-3 text-slate-700">{item.qty}</td>
+                          <td className="px-3 py-3">
+                            <span className={getBadgeClasses(interestScore)}>{interestScore}%</span>
                           </td>
                         </tr>
                       )
@@ -520,23 +617,23 @@ export function ReportsView({ token }) {
 
           {quoteRequests.length > 0 && (
             <Card>
-              <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>📋 Quote Requests</h3>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
-                  <thead>
-                    <tr style={{ background: '#f8f8f8' }}>
-                      {['Product', 'Location', 'Device', 'Date'].map(h => (
-                        <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontWeight: 700, color: '#555', fontFamily: "'HubotSans',sans-serif" }}>{h}</th>
+              <h3 className="mb-4 text-sm font-semibold text-slate-900">📋 Quote Requests</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm border-collapse">
+                  <thead className="bg-slate-100 text-left text-[11px] uppercase tracking-[0.12em] text-slate-500">
+                    <tr>
+                      {['Product', 'Location', 'Device', 'Date'].map((header) => (
+                        <th key={header} className="px-3 py-3 font-semibold">{header}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {quoteRequests.slice(0, 50).map((q, i) => (
-                      <tr key={i} style={{ borderTop: '1px solid #f0f0f0' }}>
-                        <td style={{ padding: '9px 12px', fontWeight: 600 }}>{q.slug || '—'}</td>
-                        <td style={{ padding: '9px 12px', color: '#555' }}>{q.location?.city ? `${q.location.city}, ${q.location.country}` : q.location?.country || '—'}</td>
-                        <td style={{ padding: '9px 12px', color: '#888', textTransform: 'capitalize' }}>{q.device || '—'}</td>
-                        <td style={{ padding: '9px 12px', color: '#aaa', whiteSpace: 'nowrap' }}>{new Date(q.timestamp).toLocaleDateString()}</td>
+                    {quoteRequests.slice(0, 50).map((quote, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-slate-50' : ''}>
+                        <td className="px-3 py-3 font-semibold">{quote.slug || '—'}</td>
+                        <td className="px-3 py-3 text-slate-700">{quote.location?.city ? `${quote.location.city}, ${quote.location.country}` : quote.location?.country || '—'}</td>
+                        <td className="px-3 py-3 text-slate-500 capitalize">{quote.device || '—'}</td>
+                        <td className="px-3 py-3 text-slate-400 whitespace-nowrap">{new Date(quote.timestamp).toLocaleDateString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -548,46 +645,44 @@ export function ReportsView({ token }) {
       )}
 
       {tab === 'products' && (
-        <div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        <div className="space-y-6">
+          <div className="grid gap-4 lg:grid-cols-2">
             <Card>
-              <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '6px', fontFamily: "'HubotSans',sans-serif" }}>🛒 Most Cart-Added Products</h3>
-              <p style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>Products customers added to their cart most often.</p>
-              <BarChart data={Object.fromEntries(cartAdds.map(([slug, d]) => [d.name || slug, d.count]))} color={ACC} label="adds" />
+              <h3 className="mb-4 text-sm font-semibold text-slate-900">🛒 Most Cart-Added Products</h3>
+              <p className="text-sm text-slate-500 mb-4">Products customers added to their cart most often.</p>
+              <BarChart data={Object.fromEntries(cartAdds.map(([, item]) => [item.name || 'Unknown', item.count]))} color={ACC} label="adds" />
             </Card>
             <Card>
-              <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '6px', fontFamily: "'HubotSans',sans-serif" }}>👁️ Most Viewed Products</h3>
-              <p style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>Products with the most page view impressions.</p>
-              <BarChart data={Object.fromEntries(productViews.map(([slug, d]) => [d.name || slug, d.count]))} color={PRI} label="views" />
+              <h3 className="mb-4 text-sm font-semibold text-slate-900">👁️ Most Viewed Products</h3>
+              <p className="text-sm text-slate-500 mb-4">Products with the most page view impressions.</p>
+              <BarChart data={Object.fromEntries(productViews.map(([, item]) => [item.name || 'Unknown', item.count]))} color={PRI} label="views" />
             </Card>
           </div>
 
           {productViews.length > 0 && (
-            <Card style={{ marginTop: '20px' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>📊 Product Conversion Signals</h3>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
-                  <thead>
-                    <tr style={{ background: '#f8f8f8' }}>
-                      {['Product', 'Views', 'Cart Adds', 'View→Cart Rate'].map(h => (
-                        <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontWeight: 700, color: '#555', fontFamily: "'HubotSans',sans-serif" }}>{h}</th>
+            <Card>
+              <h3 className="mb-4 text-sm font-semibold text-slate-900">📊 Product Conversion Signals</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm border-collapse">
+                  <thead className="bg-slate-100 text-left text-[11px] uppercase tracking-[0.12em] text-slate-500">
+                    <tr>
+                      {['Product', 'Views', 'Cart Adds', 'View→Cart Rate'].map((header) => (
+                        <th key={header} className="px-3 py-3 font-semibold">{header}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {productViews.map(([slug, pv], i) => {
+                    {productViews.map(([slug, product], index) => {
                       const cartData = data.cartAdds?.[slug]
                       const cartCount = cartData?.count || 0
-                      const rate = pv.count > 0 ? ((cartCount / pv.count) * 100).toFixed(1) : '0.0'
+                      const rate = product.count > 0 ? ((cartCount / product.count) * 100).toFixed(1) : '0.0'
                       return (
-                        <tr key={slug} style={{ borderTop: '1px solid #f0f0f0' }}>
-                          <td style={{ padding: '9px 12px', fontWeight: 600, fontFamily: "'HubotSans',sans-serif" }}>{pv.name}</td>
-                          <td style={{ padding: '9px 12px', color: PRI, fontWeight: 700 }}>{pv.count}</td>
-                          <td style={{ padding: '9px 12px', color: ACC, fontWeight: 700 }}>{cartCount}</td>
-                          <td style={{ padding: '9px 12px' }}>
-                            <span style={{ background: parseFloat(rate) > 20 ? '#dcfce7' : parseFloat(rate) > 5 ? '#fef3c7' : '#f0f0f0', color: parseFloat(rate) > 20 ? '#16a34a' : parseFloat(rate) > 5 ? '#92400e' : '#888', borderRadius: '10px', padding: '2px 9px', fontSize: '11px', fontWeight: 700, fontFamily: "'HubotSans',sans-serif" }}>
-                              {rate}%
-                            </span>
+                        <tr key={slug} className={index % 2 === 0 ? 'bg-slate-50' : ''}>
+                          <td className="px-3 py-3 font-semibold">{product.name}</td>
+                          <td className="px-3 py-3 font-semibold text-[#7B2FBE]">{product.count}</td>
+                          <td className="px-3 py-3 font-semibold text-[#FF6B00]">{cartCount}</td>
+                          <td className="px-3 py-3">
+                            <span className={getBadgeClasses(parseFloat(rate))}>{rate}%</span>
                           </td>
                         </tr>
                       )
@@ -601,46 +696,48 @@ export function ReportsView({ token }) {
       )}
 
       {tab === 'customers' && (
-        <div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+        <div className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <Stat label="Unique Visitors" value={data.uniqueVisitors || 0} icon="👥" color={PRI} />
             <Stat label="Avg Pages/Visit" value={data.uniqueVisitors ? ((data.totalPageViews || 0) / data.uniqueVisitors).toFixed(1) : '—'} icon="📄" color="#2563eb" />
-            <Stat label="Mobile Users" value={`${data.deviceMap?.mobile || 0}`} icon="📱" color="#ec4899" sub={`of ${(data.totalEvents || 0)} events`} />
-            <Stat label="International" value={Object.keys(data.locationMap || {}).filter(k => !k.includes('Nigeria')).length} icon="✈️" color="#f59e0b" sub="non-Nigerian locations" />
+            <Stat label="Mobile Users" value={`${data.deviceMap?.mobile || 0}`} icon="📱" color="#ec4899" sub={`of ${data.totalEvents || 0} events`} />
+            <Stat label="International" value={Object.keys(data.locationMap || {}).filter((key) => !key.includes('Nigeria')).length} icon="✈️" color="#f59e0b" sub="non-Nigerian locations" />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div className="grid gap-4 lg:grid-cols-2">
             <Card>
-              <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>📊 Customer Journey Patterns</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <h3 className="mb-4 text-sm font-semibold text-slate-900">📊 Customer Journey Patterns</h3>
+              <div className="flex flex-col gap-3">
                 {[
                   { label: 'Browse → Product', icon: '🔍→🛍️', val: productViews.length, note: 'Unique products viewed' },
                   { label: 'Product → Cart', icon: '🛍️→🛒', val: totalCartAdds, note: 'Cart additions (purchase intent)' },
                   { label: 'Cart → Quote', icon: '🛒→📋', val: quoteRequests.length, note: 'Quote requests submitted' },
                   { label: 'Most visited page', icon: '🔥', val: Object.entries(data.pageViews || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || '—', note: 'Top landing destination' },
-                ].map((item, i) => (
-                  <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '10px 12px', background: '#fafafa', borderRadius: '8px' }}>
-                    <span style={{ fontSize: '16px' }}>{item.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ margin: 0, fontSize: '12px', fontWeight: 700, color: '#333', fontFamily: "'HubotSans',sans-serif" }}>{item.label}</p>
-                      <p style={{ margin: 0, fontSize: '11px', color: '#888', fontFamily: "'HubotSans',sans-serif" }}>{item.note}</p>
+                ].map((item, index) => (
+                  <div key={index} className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
+                    <span className="text-xl">{item.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-semibold text-slate-900 truncate">{item.label}</p>
+                      <p className="text-[11px] text-slate-500">{item.note}</p>
                     </div>
-                    <span style={{ fontSize: '14px', fontWeight: 800, color: PRI, fontFamily: "'HubotSans',sans-serif" }}>{item.val}</span>
+                    <span className="text-base font-extrabold text-[#7B2FBE]">{item.val}</span>
                   </div>
                 ))}
               </div>
             </Card>
-
             <Card>
-              <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans',sans-serif" }}>🗺️ Where Customers Are</h3>
-              <BarChart data={(() => {
-                const countryMap = {}
-                Object.entries(data.locationMap || {}).forEach(([key, count]) => {
-                  const country = key.includes(',') ? key.split(',').pop().trim() : key
-                  countryMap[country] = (countryMap[country] || 0) + count
-                })
-                return countryMap
-              })()} color="#2563eb" />
+              <h3 className="mb-4 text-sm font-semibold text-slate-900">🗺️ Where Customers Are</h3>
+              <BarChart
+                data={(() => {
+                  const countryMap = {}
+                  Object.entries(data.locationMap || {}).forEach(([key, count]) => {
+                    const country = key.includes(',') ? key.split(',').pop().trim() : key
+                    countryMap[country] = (countryMap[country] || 0) + count
+                  })
+                  return countryMap
+                })()}
+                color="#2563eb"
+              />
             </Card>
           </div>
         </div>

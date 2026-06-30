@@ -30,14 +30,24 @@ export default function CartPage() {
   const { cartItems, updateQuantity, removeItem, subtotal, discount, discountAmount, total } = useCart()
 
   if (cartItems.length === 0) return (
-    <section style={{ background: '#FAF3E8', minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', padding: '40px 24px' }}>
-      <div style={{ fontSize: '56px' }}>🛒</div>
-      <p style={{ fontSize: '22px', fontWeight: 700, color: '#1a1a1a', margin: 0, fontFamily: "'HubotSans', sans-serif" }}>Your cart is empty</p>
-      <p style={{ fontSize: '14px', color: '#888', margin: 0, fontFamily: "'HubotSans', sans-serif" }}>Browse our products and add items to get started</p>
-      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <button onClick={() => navigate('/store')} style={{ background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '24px', padding: '12px 32px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: "'HubotSans', sans-serif" }}>Browse Products</button>
-        <a href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hello Sleekblue! I need help placing an order.')}`} target="_blank" rel="noopener noreferrer"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#25D366', color: '#fff', borderRadius: '24px', padding: '12px 24px', fontSize: '14px', fontWeight: 700, textDecoration: 'none', fontFamily: "'HubotSans', sans-serif" }}>
+    <section className="bg-[#FAF3E8] min-h-[70vh] flex flex-col items-center justify-center gap-6 px-6 py-12 text-center sm:px-8">
+      <div className="text-6xl">🛒</div>
+      <p className="text-2xl font-bold text-slate-900">Your cart is empty</p>
+      <p className="max-w-md text-sm text-slate-500">Browse our products and add items to get started.</p>
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        <button
+          type="button"
+          onClick={() => navigate('/store')}
+          className="rounded-full bg-[#7B2FBE] px-8 py-3 text-sm font-semibold text-white transition hover:bg-[#6b23ba]"
+        >
+          Browse Products
+        </button>
+        <a
+          href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hello Sleekblue! I need help placing an order.')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1ebf5a]"
+        >
           <FaWhatsapp /> Order via WhatsApp
         </a>
       </div>
@@ -47,128 +57,157 @@ export default function CartPage() {
   const waMsg = buildWhatsAppMessage(cartItems, total)
 
   return (
-    <section style={{ background: '#FAF3E8', padding: '32px 16px 60px', minHeight: '100vh', fontFamily: "'HubotSans', sans-serif" }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#1a1a1a', margin: 0 }}>Your Cart</h1>
-          <span style={{ background: '#7B2FBE', color: '#fff', borderRadius: '12px', padding: '2px 10px', fontSize: '13px', fontWeight: 700 }}>{cartItems.length} item{cartItems.length !== 1 ? 's' : ''}</span>
+    <section className="bg-[#FAF3E8] min-h-screen px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 flex flex-wrap items-center gap-3">
+          <h1 className="text-3xl font-black text-slate-900">Your Cart</h1>
+          <span className="rounded-full bg-[#7B2FBE] px-3 py-1 text-sm font-semibold text-white">{cartItems.length} item{cartItems.length !== 1 ? 's' : ''}</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px', alignItems: 'start' }}>
-
-          {/* Items */}
-          <div style={{ background: '#fff', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 8px rgba(0,0,0,0.07)' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a' }}>Order Items</span>
-              <button onClick={() => navigate('/store')} style={{ background: 'none', border: 'none', color: '#7B2FBE', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>+ Add more</button>
+        <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+          <div className="rounded-[28px] bg-white shadow-sm">
+            <div className="flex flex-col gap-4 border-b border-slate-200 p-6 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-sm font-semibold text-slate-900">Order Items</span>
+              <button
+                type="button"
+                onClick={() => navigate('/store')}
+                className="rounded-full border border-[#7B2FBE] px-4 py-2 text-sm font-semibold text-[#7B2FBE] transition hover:bg-[#f5f0ff]"
+              >
+                + Add more
+              </button>
             </div>
 
-            {cartItems.map((item, i) => {
-              const img = getItemImage(item)
-              return (
-                <div key={i} style={{ padding: '16px 20px', borderBottom: i < cartItems.length - 1 ? '1px solid #f5f5f5' : 'none', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                  {/* Product image */}
-                  <div style={{ width: '72px', height: '72px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: '#f0e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {img
-                      ? <img src={img} alt={item.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <FaShoppingBag size={24} color="#7B2FBE" />
-                    }
-                  </div>
+            <div className="divide-y divide-slate-200">
+              {cartItems.map((item, i) => {
+                const img = getItemImage(item)
+                return (
+                  <div key={i} className={`flex flex-col gap-4 p-6 ${i < cartItems.length - 1 ? 'border-b border-slate-200' : ''} sm:flex-row`}>
+                    <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-[#f0e8ff] sm:h-24 sm:w-24">
+                      {img
+                        ? <img src={img} alt={item.name} loading="lazy" className="h-full w-full object-cover" />
+                        : <FaShoppingBag size={28} color="#7B2FBE" />
+                      }
+                    </div>
 
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 4px', lineHeight: 1.3 }}>{item.name}</p>
-                    {item.size && <p style={{ fontSize: '12px', color: '#888', margin: '0 0 10px' }}>Size: {item.size}</p>}
-
-                    {/* Quantity controls */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f5f5f5', borderRadius: '20px', padding: '4px 10px' }}>
-                        <button onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
-                          style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1.5px solid #7B2FBE', background: '#fff', color: '#7B2FBE', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700 }}>−</button>
-                        <span style={{ fontSize: '14px', fontWeight: 700, minWidth: '40px', textAlign: 'center' }}>{item.quantity.toLocaleString()}</span>
-                        <button onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
-                          style={{ width: '24px', height: '24px', borderRadius: '50%', border: 'none', background: '#7B2FBE', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700 }}>+</button>
+                    <div className="flex flex-1 flex-col gap-4">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                        {item.size && <p className="mt-2 text-xs text-slate-500">Size: {item.size}</p>}
                       </div>
-                      <span style={{ fontSize: '11px', color: '#aaa' }}>pcs</span>
+
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                        <div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2">
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
+                            className="grid h-9 w-9 place-items-center rounded-full border border-[#7B2FBE] bg-white text-[#7B2FBE] text-lg font-bold transition hover:bg-[#f5f0ff]"
+                          >
+                            −
+                          </button>
+                          <span className="min-w-[40px] text-center font-semibold">{item.quantity.toLocaleString()}</span>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
+                            className="grid h-9 w-9 place-items-center rounded-full bg-[#7B2FBE] text-white transition hover:bg-[#6b23ba]"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <span className="text-xs text-slate-500">pcs</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-start gap-3 text-right sm:items-end">
+                      <p className="text-base font-bold text-[#7B2FBE]">₦{(item.price * item.quantity).toLocaleString()}</p>
+                      <p className="text-xs text-slate-500">₦{item.price.toLocaleString()} each</p>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.id, item.size)}
+                        className="inline-flex items-center gap-2 rounded-2xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                      >
+                        <FaTrashAlt size={12} /> Remove
+                      </button>
                     </div>
                   </div>
-
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <p style={{ fontSize: '15px', fontWeight: 800, color: '#7B2FBE', margin: '0 0 4px' }}>₦{(item.price * item.quantity).toLocaleString()}</p>
-                    <p style={{ fontSize: '11px', color: '#aaa', margin: '0 0 8px' }}>₦{item.price.toLocaleString()} each</p>
-                    <button onClick={() => removeItem(item.id, item.size)}
-                      style={{ background: '#fee2e2', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600, marginLeft: 'auto' }}>
-                      <FaTrashAlt size={10} /> Remove
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
 
-          {/* Order Summary */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ background: '#fff', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 8px rgba(0,0,0,0.07)' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1a1a1a', marginBottom: '16px', margin: '0 0 16px' }}>Order Summary</h3>
+          <div className="space-y-6">
+            <div className="rounded-[28px] bg-white p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-900">Order Summary</h3>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                  <span style={{ color: '#555' }}>Subtotal ({cartItems.reduce((a, i) => a + i.quantity, 0).toLocaleString()} pcs)</span>
-                  <span style={{ fontWeight: 600 }}>₦{subtotal.toLocaleString()}</span>
+              <div className="mt-6 space-y-4 text-sm text-slate-700">
+                <div className="flex justify-between">
+                  <span>Subtotal ({cartItems.reduce((a, i) => a + i.quantity, 0).toLocaleString()} pcs)</span>
+                  <span className="font-semibold">₦{subtotal.toLocaleString()}</span>
                 </div>
                 {discount > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                    <span style={{ color: '#16a34a', fontWeight: 600 }}>🎉 Bulk Discount ({Math.round(discount * 100)}%)</span>
-                    <span style={{ color: '#16a34a', fontWeight: 700 }}>−₦{discountAmount.toLocaleString()}</span>
+                  <div className="flex justify-between text-green-700">
+                    <span className="font-semibold">🎉 Bulk Discount ({Math.round(discount * 100)}%)</span>
+                    <span className="font-semibold">−₦{discountAmount.toLocaleString()}</span>
                   </div>
                 )}
-                <div style={{ borderTop: '2px solid #f0f0f0', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 800 }}>
+                <div className="flex justify-between border-t border-slate-200 pt-4 text-base font-bold text-slate-900">
                   <span>Total</span>
-                  <span style={{ color: '#7B2FBE' }}>₦{Math.round(total).toLocaleString()}</span>
+                  <span className="text-[#7B2FBE]">₦{Math.round(total).toLocaleString()}</span>
                 </div>
               </div>
 
               {discount === 0 && subtotal < 20000 && (
-                <div style={{ background: '#f5f0ff', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px', fontSize: '12px', color: '#7B2FBE', lineHeight: 1.55 }}>
+                <div className="mt-6 rounded-3xl bg-[#f5f0ff] px-4 py-3 text-sm text-[#7B2FBE]">
                   💡 Spend <strong>₦{(20000 - subtotal).toLocaleString()}</strong> more to unlock a 5% bulk discount!
                 </div>
               )}
 
               {discount > 0 && (
-                <div style={{ background: '#dcfce7', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px', fontSize: '12px', color: '#16a34a', lineHeight: 1.55, fontWeight: 600 }}>
+                <div className="mt-6 rounded-3xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
                   ✅ You saved ₦{discountAmount.toLocaleString()} with bulk pricing!
                 </div>
               )}
 
-              <button onClick={() => navigate('/checkout')}
-                style={{ width: '100%', background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '10px' }}>
+              <button
+                type="button"
+                onClick={() => navigate('/checkout')}
+                className="mt-6 w-full rounded-3xl bg-[#7B2FBE] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#6b23ba]"
+              >
                 Proceed to Checkout →
               </button>
 
-              {/* WhatsApp order option */}
-              <a href={`https://wa.me/${WHATSAPP}?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', background: '#25D366', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '10px', textDecoration: 'none', boxSizing: 'border-box' }}>
+              <a
+                href={`https://wa.me/${WHATSAPP}?text=${waMsg}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-[#25D366] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1ebf5a]"
+              >
                 <FaWhatsapp size={16} /> Order via WhatsApp
               </a>
 
-              <button onClick={() => navigate('/store')}
-                style={{ width: '100%', background: '#fff', color: '#555', border: '1.5px solid #ddd', borderRadius: '10px', padding: '11px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
+              <button
+                type="button"
+                onClick={() => navigate('/store')}
+                className="mt-3 w-full rounded-3xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
                 ← Continue Shopping
               </button>
             </div>
 
-            {/* Need help box */}
-            <div style={{ background: '#fff', borderRadius: '14px', padding: '16px 18px', boxShadow: '0 1px 8px rgba(0,0,0,0.07)', textAlign: 'center' }}>
-              <p style={{ fontSize: '13px', fontWeight: 700, color: '#1a1a1a', marginBottom: '6px' }}>Need help with your order?</p>
-              <p style={{ fontSize: '12px', color: '#888', marginBottom: '12px', lineHeight: 1.5 }}>Chat us on WhatsApp — we respond fast!</p>
-              <a href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hello Sleekblue! I need help with my order.')}`} target="_blank" rel="noopener noreferrer"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#25D366', color: '#fff', borderRadius: '20px', padding: '8px 18px', fontSize: '12px', fontWeight: 700, textDecoration: 'none' }}>
-                <FaWhatsapp size={12} /> Chat Support
+            <div className="rounded-[28px] bg-white p-6 text-center shadow-sm">
+              <p className="text-sm font-bold text-slate-900">Need help with your order?</p>
+              <p className="mt-2 text-sm leading-6 text-slate-500">Chat us on WhatsApp — we respond fast!</p>
+              <a
+                href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hello Sleekblue! I need help with my order.')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1ebf5a]"
+              >
+                <FaWhatsapp size={14} /> Chat Support
               </a>
             </div>
           </div>
         </div>
       </div>
-      <style>{`@media(max-width:700px){ .product-cart-grid { grid-template-columns: 1fr !important; } }`}</style>
     </section>
   )
 }

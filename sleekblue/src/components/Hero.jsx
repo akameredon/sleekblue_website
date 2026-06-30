@@ -99,78 +99,81 @@ export default function Hero() {
   const btn2Label = heroData.btn2 || 'Print Flex'
 
   return (
-    <section style={{ position: 'relative', overflow: 'hidden', lineHeight: 0 }}>
+    <section className="relative overflow-hidden">
       {slides.map((slide, i) => (
-        <div key={i} style={{ display: current === i ? 'block' : 'none', lineHeight: 0, position: 'relative' }}>
+        <div key={i} className={`${current === i ? 'block' : 'hidden'} relative`}>
           <img
             src={slide}
             alt={`Slide ${i + 1}`}
             loading={i === 0 ? 'eager' : 'lazy'}
             decoding="async"
             fetchPriority={i === 0 ? 'high' : 'auto'}
-            style={{ width: '100%', display: 'block', objectFit: 'cover', maxHeight: '520px' }}
+            className="block w-full object-cover max-h-[520px]"
           />
 
-          {/* TEXT OVERLAY MODE — admin has set a custom headline/subheadline */}
           {hasText && (
-            <div style={{
-              position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 5,
-            }}>
+            <div className="absolute inset-0 bg-slate-950/40">
               <HeroCanvas />
-              <div style={{
-                position: 'absolute', top: '14%', left: '5%', maxWidth: '44%',
-              }}>
+              <div className="absolute left-5 top-10 max-w-[90%] md:left-16 md:top-28 md:max-w-[44%]">
                 {heroData.headline && (
-                  <h1 style={{ color: '#fff', fontSize: 'clamp(20px, 3.5vw, 48px)', fontWeight: 900, margin: '0 0 10px', fontFamily: "'HubotSans', sans-serif", lineHeight: 1.1, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                  <h1 className="text-3xl font-black leading-tight text-white drop-shadow-[0_8px_30px_rgba(0,0,0,0.35)] sm:text-5xl">
                     {heroData.headline}
                   </h1>
                 )}
                 {heroData.subheadline && (
-                  <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: 'clamp(12px, 1.5vw, 18px)', margin: '0 0 20px', fontFamily: "'HubotSans', sans-serif", lineHeight: 1.5 }}>
+                  <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-100 sm:text-base">
                     {heroData.subheadline}
                   </p>
                 )}
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <button onClick={() => navigate('/store/die-cut-stickers')} style={BTN_STICKER}>{btn1Label}</button>
-                  <button onClick={() => navigate('/store/flex-banner')} style={BTN_FLEX}>{btn2Label}</button>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/store/die-cut-stickers')}
+                    className="rounded-full bg-amber-300 px-6 py-3 text-sm font-extrabold text-slate-950 transition hover:bg-amber-400 sm:text-base"
+                  >
+                    {btn1Label}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/store/flex-banner')}
+                    className="rounded-full border-2 border-slate-300 bg-white px-6 py-3 text-sm font-extrabold text-slate-950 transition hover:border-violet-500 hover:bg-slate-50 sm:text-base"
+                  >
+                    {btn2Label}
+                  </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* NO-TEXT MODE */}
           {!hasText && (
             <>
-              {/* Visually-hidden H1 for SEO */}
               {i === 0 && (
-                <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+                <h1 className="sr-only">
                   Sleekblue Media Houz — Premium Printing &amp; Corporate Branding in Nigeria
                 </h1>
               )}
-
               {usingCustom ? (
-                /* Custom slides have no baked-in buttons — render visible styled buttons */
                 <>
-                  <div style={{
-                    position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none',
-                    background: 'linear-gradient(to right, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.10) 45%, transparent 65%)',
-                  }} />
-                  <div style={{
-                    position: 'absolute', bottom: '30%', left: '5%',
-                    display: 'flex', gap: '12px', flexWrap: 'wrap', zIndex: 5,
-                  }}>
-                    <button onClick={() => navigate('/store/die-cut-stickers')} style={BTN_STICKER}>{btn1Label}</button>
-                    <button onClick={() => navigate('/store/flex-banner')} style={BTN_FLEX}>{btn2Label}</button>
+                  <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-slate-950/40 via-slate-950/10 to-transparent" />
+                  <div className="absolute bottom-28 left-5 flex flex-wrap gap-3 z-10 md:left-16">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/store/die-cut-stickers')}
+                      className="rounded-full bg-amber-300 px-6 py-3 text-sm font-extrabold text-slate-950 transition hover:bg-amber-400 sm:text-base"
+                    >
+                      {btn1Label}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/store/flex-banner')}
+                      className="rounded-full border-2 border-slate-300 bg-white px-6 py-3 text-sm font-extrabold text-slate-950 transition hover:border-violet-500 hover:bg-slate-50 sm:text-base"
+                    >
+                      {btn2Label}
+                    </button>
                   </div>
                 </>
               ) : (
-                /* Default slides already have buttons baked into the image pixels.
-                   Render invisible click-target overlays at the same position so
-                   the baked-in image buttons remain the only visible UI. */
-                <div style={{
-                  position: 'absolute', bottom: '30%', left: '5%',
-                  display: 'flex', gap: '12px', flexWrap: 'wrap', zIndex: 5,
-                }}>
+                <div className="absolute bottom-28 left-5 flex flex-wrap gap-3 z-10 md:left-16">
                   <button onClick={() => navigate('/store/die-cut-stickers')} style={BTN_INVISIBLE} aria-label="Print Sticker" />
                   <button onClick={() => navigate('/store/flex-banner')} style={BTN_INVISIBLE} aria-label="Print Flex" />
                 </div>
@@ -180,12 +183,15 @@ export default function Hero() {
         </div>
       ))}
 
-      {/* Slide dot indicators */}
       {slides.length > 1 && (
-        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 10 }}>
+        <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2 z-20">
           {slides.map((_, i) => (
-            <button key={i} onClick={() => setCurrent(i)}
-              style={{ width: current === i ? '24px' : '8px', height: '8px', borderRadius: '4px', border: 'none', background: current === i ? '#fff' : 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: 0, transition: 'width 0.3s' }} />
+            <button
+              key={i}
+              type="button"
+              onClick={() => setCurrent(i)}
+              className={`h-2 rounded-full transition ${current === i ? 'w-6 bg-white' : 'w-2 bg-white/50'}`}
+            />
           ))}
         </div>
       )}

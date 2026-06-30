@@ -30,7 +30,7 @@ export default function BlogPage() {
 
   useEffect(() => {
     fetch('/api/blog')
-      .then(r => r.ok ? r.json() : [])
+      .then(r => (r.ok ? r.json() : []))
       .then(d => { setPosts(d); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
@@ -43,8 +43,8 @@ export default function BlogPage() {
     return Object.entries(tagMap).sort((a, b) => b[1] - a[1]).slice(0, 20)
   }, [posts])
 
-  const popularPosts = useMemo(() =>
-    [...posts].filter(p => p.viewCount > 0).sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 5),
+  const popularPosts = useMemo(
+    () => [...posts].filter(p => p.viewCount > 0).sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 5),
     [posts]
   )
 
@@ -64,249 +64,208 @@ export default function BlogPage() {
   }, [posts, activeCategory, activeTag, search])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE))
-  const pagePosts  = filtered.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE)
+  const pagePosts = filtered.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE)
 
   function changeCategory(cat) { setActiveCategory(cat); setActiveTag(null); setPage(1) }
   function changeTag(tag) { setActiveTag(t => t === tag ? null : tag); setActiveCategory('All'); setPage(1) }
   function changeSearch(val) { setSearch(val); setPage(1) }
 
   return (
-    <section style={{ background: '#FAF3E8', minHeight: '100vh', padding: '48px 24px 80px' }}>
-      <div style={{ maxWidth: '1160px', margin: '0 auto' }}>
+    <section className="bg-[#FAF3E8] min-h-screen px-4 py-12 sm:px-6 sm:py-16">
+      <div className="mx-auto max-w-6xl">
         <Breadcrumb crumbs={[{ label: 'Home', href: '/' }, { label: 'Blog' }]} />
 
-        {/* Header + Search */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '12px' }}>
+        <div className="mt-10 flex flex-col gap-6 rounded-[28px] bg-white p-6 shadow-sm sm:flex-row sm:items-end sm:justify-between sm:p-8">
           <div>
-            <h1 style={{ fontSize: '32px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 6px', fontFamily: "'HubotSans', sans-serif" }}>Blog</h1>
-            <p style={{ fontSize: '14px', color: '#777', margin: 0, fontFamily: "'HubotSans', sans-serif" }}>Tips, guides and insights from the Sleekblue team</p>
+            <h1 className="text-3xl font-black text-slate-900">Blog</h1>
+            <p className="mt-2 text-sm text-slate-500">Tips, guides and insights from the Sleekblue team</p>
           </div>
-          <div style={{ position: 'relative', minWidth: '220px' }}>
-            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '15px', color: '#aaa' }}>🔍</span>
+          <div className="relative w-full max-w-sm">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-slate-400">🔍</span>
             <input
               type="search"
               value={search}
               onChange={e => changeSearch(e.target.value)}
               placeholder="Search posts…"
-              style={{ padding: '9px 14px 9px 36px', borderRadius: '10px', border: '1.5px solid #ddd', fontSize: '13px', fontFamily: "'HubotSans', sans-serif", outline: 'none', background: '#fff', width: '100%', boxSizing: 'border-box' }}
+              className="w-full rounded-2xl border border-slate-300 bg-slate-50 py-3 pl-12 pr-4 text-sm text-slate-900 outline-none transition focus:border-[#7B2FBE] focus:ring-2 focus:ring-[#7B2FBE]/20"
             />
           </div>
         </div>
 
-        {/* Category filters */}
         {categories.length > 1 && (
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '28px', marginTop: '16px' }}>
+          <div className="mt-8 flex flex-wrap gap-2">
             {categories.map(cat => (
-              <button key={cat} onClick={() => changeCategory(cat)}
-                style={{ padding: '6px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', background: activeCategory === cat && !activeTag ? PRI : '#fff', color: activeCategory === cat && !activeTag ? '#fff' : '#555', fontWeight: activeCategory === cat && !activeTag ? 700 : 500, fontSize: '13px', fontFamily: "'HubotSans', sans-serif", boxShadow: '0 1px 4px rgba(0,0,0,0.08)', transition: 'all 0.15s' }}>
+              <button
+                key={cat}
+                type="button"
+                onClick={() => changeCategory(cat)}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${activeCategory === cat && !activeTag ? 'bg-[#7B2FBE] text-white' : 'bg-white text-slate-700 shadow-sm hover:bg-slate-100'}`}
+              >
                 {cat}
               </button>
             ))}
           </div>
         )}
 
-        {/* Two-column layout: posts + sidebar */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 280px', gap: '32px', alignItems: 'start' }}
-          className="blog-grid">
-
-          {/* Main posts column */}
-          <div>
+        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="space-y-6">
             {loading && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="space-y-6">
                 {[1, 2, 3].map(i => <BlogPostSkeleton key={i} />)}
               </div>
             )}
 
             {!loading && filtered.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '60px 24px', background: '#fff', borderRadius: '16px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-                <div style={{ fontSize: '40px', marginBottom: '16px' }}>{search || activeTag ? '🔍' : '✍️'}</div>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#1a1a1a', marginBottom: '8px', fontFamily: "'HubotSans', sans-serif" }}>
+              <div className="rounded-[28px] bg-white p-10 text-center shadow-sm">
+                <div className="text-6xl mb-4">{search || activeTag ? '🔍' : '✍️'}</div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">
                   {search ? `No posts found for "${search}"` : activeTag ? `No posts tagged "#${activeTag}"` : 'No posts yet'}
                 </h3>
-                <p style={{ fontSize: '14px', color: '#888', fontFamily: "'HubotSans', sans-serif" }}>
+                <p className="text-sm text-slate-500">
                   {search || activeTag ? 'Try a different search term or browse all categories.' : 'Check back soon for tips, guides, and insights.'}
                 </p>
                 {(search || activeTag) && (
-                  <button onClick={() => { changeSearch(''); setActiveTag(null) }}
-                    style={{ marginTop: '16px', padding: '9px 20px', background: PRI, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', fontFamily: "'HubotSans', sans-serif" }}>
+                  <button
+                    type="button"
+                    onClick={() => { changeSearch(''); setActiveTag(null) }}
+                    className="mt-4 rounded-2xl bg-[#7B2FBE] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#6b23ba]"
+                  >
                     Clear Filters
                   </button>
                 )}
               </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div className="space-y-6">
               {pagePosts.map((post, i) => (
-                <article key={post.id || i}
+                <article
+                  key={post.id || i}
                   onClick={() => navigate(`/blog/${post.slug}`)}
-                  style={{ background: '#fff', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.06)', cursor: 'pointer', display: 'flex', flexDirection: post.coverImage ? 'row' : 'column', borderLeft: !post.coverImage ? `4px solid ${PRI}` : 'none', transition: 'box-shadow 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 20px rgba(123,47,190,0.13)'}
-                  onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 6px rgba(0,0,0,0.06)'}
+                  className={`group cursor-pointer overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-xl ${post.coverImage ? 'flex flex-col gap-0 sm:flex-row' : 'border-l-4 border-[#7B2FBE]'}`}
                 >
                   {post.coverImage && (
-                    <div style={{ width: '220px', flexShrink: 0 }}>
-                      <img src={post.coverImage} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', minHeight: '150px', maxHeight: '210px' }} loading="lazy" />
+                    <div className="h-56 w-full overflow-hidden sm:h-auto sm:w-[220px] flex-shrink-0">
+                      <img src={post.coverImage} alt={post.title} className="h-full w-full object-cover" loading="lazy" />
                     </div>
                   )}
-                  <div style={{ padding: '22px', flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                      {post.category && (
-                        <span style={{ background: '#f5f0ff', color: PRI, padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, fontFamily: "'HubotSans', sans-serif" }}>{post.category}</span>
-                      )}
-                      <span style={{ fontSize: '12px', color: '#999', fontFamily: "'HubotSans', sans-serif" }}>
-                        {post.date ? new Date(post.date).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}
-                      </span>
-                      <span style={{ fontSize: '11px', color: '#bbb', fontFamily: "'HubotSans', sans-serif" }}>
-                        · {readingTime(post.content)} min read
-                      </span>
-                      {post.viewCount > 0 && (
-                        <span style={{ fontSize: '11px', color: '#bbb', fontFamily: "'HubotSans', sans-serif" }}>· 👁 {post.viewCount}</span>
-                      )}
+                  <div className="flex flex-1 flex-col justify-between gap-4 p-6">
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                      {post.category && <span className="rounded-full bg-[#f5f0ff] px-3 py-1 font-semibold text-[#7B2FBE]">{post.category}</span>}
+                      <span>{post.date ? new Date(post.date).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</span>
+                      <span>· {readingTime(post.content)} min read</span>
+                      {post.viewCount > 0 && <span>· 👁 {post.viewCount}</span>}
                     </div>
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#1a1a1a', marginBottom: '8px', fontFamily: "'HubotSans', sans-serif", lineHeight: 1.35 }}>{post.title}</h2>
-                    {post.excerpt && (
-                      <p style={{ fontSize: '13px', color: '#666', lineHeight: 1.65, margin: '0 0 12px', fontFamily: "'HubotSans', sans-serif" }}>{post.excerpt}</p>
-                    )}
-                    {post.tags?.length > 0 && (
-                      <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                        {post.tags.map(tag => (
-                          <span key={tag} onClick={e => { e.stopPropagation(); changeTag(tag) }}
-                            style={{ background: activeTag === tag ? PRI : '#f0f0f0', color: activeTag === tag ? '#fff' : '#666', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontFamily: "'HubotSans', sans-serif", cursor: 'pointer', transition: 'all 0.15s' }}>
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      {post.authorName && (
-                        <span style={{ fontSize: '12px', color: '#888', fontFamily: "'HubotSans', sans-serif" }}>By <strong>{post.authorName}</strong></span>
-                      )}
-                      <span style={{ fontSize: '13px', color: PRI, fontWeight: 700, fontFamily: "'HubotSans', sans-serif" }}>Read more →</span>
+                    <div>
+                      <h2 className="text-xl font-bold text-slate-900 leading-tight">{post.title}</h2>
+                      {post.excerpt && <p className="mt-3 text-sm leading-7 text-slate-600">{post.excerpt}</p>}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {post.tags?.map(tag => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={e => { e.stopPropagation(); changeTag(tag) }}
+                          className={`rounded-full px-3 py-1 text-xs font-semibold transition ${activeTag === tag ? 'bg-[#7B2FBE] text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                        >
+                          #{tag}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-[#7B2FBE] font-semibold">
+                      {post.authorName && <span>By {post.authorName}</span>}
+                      <span>Read more →</span>
                     </div>
                   </div>
                 </article>
               ))}
             </div>
 
-            {/* Pagination */}
             {!loading && totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '40px', flexWrap: 'wrap' }}>
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                  style={{ padding: '8px 16px', borderRadius: '8px', border: '1.5px solid #ddd', background: '#fff', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, fontWeight: 700, fontSize: '13px', fontFamily: "'HubotSans', sans-serif" }}>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+                >
                   ← Prev
                 </button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                  <button key={p} onClick={() => setPage(p)}
-                    style={{ width: '38px', height: '38px', borderRadius: '8px', border: 'none', background: p === page ? PRI : '#fff', color: p === page ? '#fff' : '#555', cursor: 'pointer', fontWeight: p === page ? 700 : 500, fontSize: '13px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', fontFamily: "'HubotSans', sans-serif" }}>
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPage(p)}
+                    className={`flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-semibold transition ${p === page ? 'bg-[#7B2FBE] text-white' : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300'}`}
+                  >
                     {p}
                   </button>
                 ))}
-                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                  style={{ padding: '8px 16px', borderRadius: '8px', border: '1.5px solid #ddd', background: '#fff', cursor: page === totalPages ? 'not-allowed' : 'pointer', opacity: page === totalPages ? 0.4 : 1, fontWeight: 700, fontSize: '13px', fontFamily: "'HubotSans', sans-serif" }}>
+                <button
+                  type="button"
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+                >
                   Next →
                 </button>
               </div>
             )}
 
-            <div style={{ textAlign: 'center', marginTop: '32px' }}>
-              <a href="/feed.xml" style={{ fontSize: '12px', color: '#aaa', textDecoration: 'none', fontFamily: "'HubotSans', sans-serif" }}>
-                🔶 Subscribe via RSS
-              </a>
+            <div className="text-center text-sm text-slate-500">
+              <a href="/feed.xml" className="text-slate-500 hover:text-[#7B2FBE]">🔶 Subscribe via RSS</a>
             </div>
           </div>
 
-          {/* Sidebar */}
-          <aside style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {/* Popular Posts */}
+          <aside className="space-y-6">
             {popularPosts.length > 0 && (
-              <div style={{ background: '#fff', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-                <h3 style={{ fontSize: '13px', fontWeight: 800, color: '#1a1a1a', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px', fontFamily: "'HubotSans', sans-serif" }}>
-                  🔥 Popular Posts
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <section className="rounded-[28px] bg-white p-6 shadow-sm">
+                <h3 className="text-xs font-bold uppercase tracking-[0.25em] text-slate-900">🔥 Popular Posts</h3>
+                <div className="mt-5 space-y-4">
                   {popularPosts.map((post, i) => (
-                    <div key={post.id || i} onClick={() => navigate(`/blog/${post.slug}`)}
-                      style={{ cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <span style={{ flexShrink: 0, width: '24px', height: '24px', background: i === 0 ? PRI : '#f0eaf8', color: i === 0 ? '#fff' : PRI, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, fontFamily: "'HubotSans', sans-serif", marginTop: '1px' }}>
-                        {i + 1}
-                      </span>
+                    <div
+                      key={post.id || i}
+                      onClick={() => navigate(`/blog/${post.slug}`)}
+                      className="flex cursor-pointer items-start gap-3 transition hover:text-[#7B2FBE]"
+                    >
+                      <span className={`grid h-9 w-9 place-items-center rounded-full text-[11px] font-black ${i === 0 ? 'bg-[#7B2FBE] text-white' : 'bg-[#f0eaf8] text-[#7B2FBE]'}`}>{i + 1}</span>
                       <div>
-                        <p style={{ fontSize: '13px', fontWeight: 600, color: '#1a1a1a', margin: '0 0 3px', lineHeight: 1.4, fontFamily: "'HubotSans', sans-serif" }}
-                          onMouseEnter={e => e.currentTarget.style.color = PRI}
-                          onMouseLeave={e => e.currentTarget.style.color = '#1a1a1a'}>
-                          {post.title}
-                        </p>
-                        <p style={{ fontSize: '11px', color: '#aaa', margin: 0, fontFamily: "'HubotSans', sans-serif" }}>
-                          👁 {post.viewCount} views · {readingTime(post.content)} min
-                        </p>
+                        <p className="text-sm font-semibold leading-tight">{post.title}</p>
+                        <p className="mt-1 text-xs text-slate-400">👁 {post.viewCount} views · {readingTime(post.content)} min</p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
             )}
 
-            {/* Tag Cloud */}
             {allTags.length > 0 && (
-              <div style={{ background: '#fff', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-                <h3 style={{ fontSize: '13px', fontWeight: 800, color: '#1a1a1a', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 14px', fontFamily: "'HubotSans', sans-serif" }}>
-                  🏷️ Tags
-                </h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+              <section className="rounded-[28px] bg-white p-6 shadow-sm">
+                <h3 className="text-xs font-bold uppercase tracking-[0.25em] text-slate-900">🏷️ Tags</h3>
+                <div className="mt-4 flex flex-wrap gap-2">
                   {allTags.map(([tag, count]) => (
-                    <button key={tag} onClick={() => changeTag(tag)}
-                      style={{ padding: '5px 12px', borderRadius: '20px', border: 'none', cursor: 'pointer', background: activeTag === tag ? PRI : '#f5f0ff', color: activeTag === tag ? '#fff' : PRI, fontSize: '12px', fontWeight: 600, fontFamily: "'HubotSans', sans-serif", transition: 'all 0.15s' }}>
-                      #{tag} <span style={{ opacity: 0.65, fontSize: '10px' }}>({count})</span>
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => changeTag(tag)}
+                      className={`rounded-full px-3 py-2 text-xs font-semibold transition ${activeTag === tag ? 'bg-[#7B2FBE] text-white' : 'bg-[#f5f0ff] text-[#7B2FBE] hover:bg-[#e9dbff]'}`}
+                    >
+                      #{tag} <span className="text-[10px] opacity-70">({count})</span>
                     </button>
                   ))}
                 </div>
-                {activeTag && (
-                  <button onClick={() => setActiveTag(null)}
-                    style={{ marginTop: '12px', fontSize: '11px', color: '#888', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'HubotSans', sans-serif", textDecoration: 'underline' }}>
-                    × Clear tag filter
-                  </button>
-                )}
-              </div>
+              </section>
             )}
 
-            {/* Categories widget */}
-            {categories.length > 2 && (
-              <div style={{ background: '#fff', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-                <h3 style={{ fontSize: '13px', fontWeight: 800, color: '#1a1a1a', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 14px', fontFamily: "'HubotSans', sans-serif" }}>
-                  📂 Categories
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {categories.map(cat => {
-                    const count = cat === 'All' ? posts.length : posts.filter(p => p.category === cat).length
-                    return (
-                      <button key={cat} onClick={() => changeCategory(cat)}
-                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: activeCategory === cat && !activeTag ? '#f5f0ff' : 'transparent', color: '#333', fontFamily: "'HubotSans', sans-serif", fontSize: '13px', fontWeight: activeCategory === cat && !activeTag ? 700 : 500, transition: 'all 0.15s', textAlign: 'left' }}>
-                        <span>{cat}</span>
-                        <span style={{ background: '#f0eaf8', color: PRI, fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '10px' }}>{count}</span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* CTA */}
-            <div style={{ background: 'linear-gradient(135deg,#7B2FBE,#5B1F9E)', borderRadius: '14px', padding: '22px', textAlign: 'center' }}>
-              <p style={{ fontSize: '14px', fontWeight: 800, color: '#fff', margin: '0 0 6px', fontFamily: "'HubotSans', sans-serif" }}>Need a print quote?</p>
-              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', margin: '0 0 14px', fontFamily: "'HubotSans', sans-serif" }}>Get a fast quote from our team</p>
-              <a href="/quote" style={{ display: 'inline-block', background: '#fff', color: PRI, padding: '9px 20px', borderRadius: '20px', fontWeight: 700, fontSize: '12px', textDecoration: 'none', fontFamily: "'HubotSans', sans-serif" }}>
+            <section className="rounded-[28px] bg-gradient-to-br from-[#7B2FBE] to-[#5B1F9E] p-6 text-center text-white shadow-sm">
+              <p className="text-sm font-bold">Need a print quote?</p>
+              <p className="mt-2 text-xs text-white/80">Get a fast quote from our team</p>
+              <a href="/quote" className="mt-4 inline-block rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#7B2FBE] transition hover:bg-slate-100">
                 Get a Quote →
               </a>
-            </div>
+            </section>
           </aside>
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .blog-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </section>
   )
 }

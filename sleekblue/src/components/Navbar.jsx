@@ -50,207 +50,197 @@ export default function Navbar() {
   }, [])
 
   return (
-    <header style={{ background: '#fff', borderBottom: '1px solid #e5e5e5', position: 'sticky', top: 0, zIndex: 1000 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px', maxWidth: '1280px', margin: '0 auto', gap: '12px' }}>
-
-        {/* Logo */}
-        <div style={{ flexShrink: 0, cursor: 'pointer' }} onClick={() => { navigate('/'); setMobileOpen(false) }}>
-          <img src={sleekblueLogo} alt="Sleekblue Media Houz" style={{ height: '50px', width: 'auto', objectFit: 'contain', display: 'block' }} />
+    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:px-6">
+        <div className="flex-shrink-0 cursor-pointer" onClick={() => { navigate('/'); setMobileOpen(false) }}>
+          <img src={sleekblueLogo} alt="Sleekblue Media Houz" className="h-12 w-auto object-contain" />
         </div>
 
-        {/* Search — hidden on mobile */}
-        <div ref={searchRef} className="search-box" style={{ flex: 1, maxWidth: '380px', position: 'relative' }}>
-          <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #ddd', borderRadius: '24px', background: '#fff' }}>
+        <div ref={searchRef} className="hidden flex-1 max-w-md md:block relative">
+          <div className="flex items-center overflow-hidden rounded-full border border-slate-300 bg-white shadow-sm">
             <input
               type="text"
               placeholder="Search products..."
               value={searchQuery}
               onChange={e => handleSearch(e.target.value)}
               onFocus={() => searchResults.length > 0 && setShowSearch(true)}
-              style={{ flex: 1, padding: '8px 16px', border: 'none', outline: 'none', fontSize: '13px', color: '#555', background: 'transparent', borderRadius: '24px' }}
+              className="flex-1 border-none bg-transparent px-4 py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400"
             />
-            <button onClick={() => handleSearch(searchQuery)} style={{ background: '#fff', border: 'none', padding: '8px 14px', cursor: 'pointer', color: '#888', display: 'flex', alignItems: 'center', borderRadius: '24px' }}>
+            <button type="button" onClick={() => handleSearch(searchQuery)} className="px-4 py-2 text-slate-500 transition hover:text-slate-900">
               <FaSearch size={14} />
             </button>
           </div>
+
           {showSearch && (searchResults.length > 0 || blogResults.length > 0) && (
-            <div style={{ position: 'absolute', top: '110%', left: 0, right: 0, background: '#fff', border: '1px solid #e5e5e5', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 2000, maxHeight: '360px', overflowY: 'auto' }}>
+            <div className="absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.15)] z-50">
               {searchResults.length > 0 && (
-                <>
-                  <div style={{ padding: '7px 16px 4px', fontSize: '10px', fontWeight: 700, color: '#aaa', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Products</div>
+                <div className="divide-y divide-slate-200">
+                  <div className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500">Products</div>
                   {searchResults.map(p => (
-                    <div key={p.id} onClick={() => { navigate(`/store/${p.slug}`); setShowSearch(false); setSearchQuery('') }}
-                      style={{ padding: '9px 16px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0', fontSize: '13px', color: '#333', display: 'flex', alignItems: 'center', gap: '8px' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#f5f0ff'}
-                      onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
-                      <span style={{ fontSize: '16px' }}>🛍️</span>
-                      <div><span style={{ fontWeight: 600, color: '#7B2FBE' }}>{p.name}</span><span style={{ color: '#999', marginLeft: '6px', fontSize: '11px' }}>{p.category}</span></div>
-                    </div>
+                    <button key={p.id} type="button" onClick={() => { navigate(`/store/${p.slug}`); setShowSearch(false); setSearchQuery('') }} className="w-full px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg">🛍️</span>
+                        <div>
+                          <div className="font-semibold text-violet-700">{p.name}</div>
+                          <div className="text-[11px] text-slate-500">{p.category}</div>
+                        </div>
+                      </div>
+                    </button>
                   ))}
-                </>
+                </div>
               )}
               {blogResults.length > 0 && (
-                <>
-                  <div style={{ padding: '7px 16px 4px', fontSize: '10px', fontWeight: 700, color: '#aaa', letterSpacing: '0.5px', textTransform: 'uppercase', borderTop: searchResults.length > 0 ? '1px solid #f0f0f0' : 'none' }}>Blog Posts</div>
+                <div className={searchResults.length > 0 ? 'divide-y divide-slate-200' : ''}>
+                  <div className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500">Blog Posts</div>
                   {blogResults.map(p => (
-                    <div key={p.slug} onClick={() => { navigate(`/blog/${p.slug}`); setShowSearch(false); setSearchQuery('') }}
-                      style={{ padding: '9px 16px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0', fontSize: '13px', color: '#333', display: 'flex', alignItems: 'center', gap: '8px' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#f5f0ff'}
-                      onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
-                      <span style={{ fontSize: '16px' }}>✍️</span>
-                      <div><span style={{ fontWeight: 600, color: '#1a1a1a' }}>{p.title}</span>{p.category && <span style={{ color: '#999', marginLeft: '6px', fontSize: '11px' }}>{p.category}</span>}</div>
-                    </div>
+                    <button key={p.slug} type="button" onClick={() => { navigate(`/blog/${p.slug}`); setShowSearch(false); setSearchQuery('') }} className="w-full px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg">✍️</span>
+                        <div>
+                          <div className="font-semibold">{p.title}</div>
+                          {p.category && <div className="text-[11px] text-slate-500">{p.category}</div>}
+                        </div>
+                      </div>
+                    </button>
                   ))}
-                </>
+                </div>
               )}
             </div>
           )}
+
           {showSearch && searchResults.length === 0 && blogResults.length === 0 && searchQuery.length >= 2 && (
-            <div style={{ position: 'absolute', top: '110%', left: 0, right: 0, background: '#fff', border: '1px solid #e5e5e5', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 2000, padding: '14px 16px', fontSize: '13px', color: '#888' }}>
+            <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500 shadow-[0_18px_60px_rgba(15,23,42,0.15)] z-50">
               No results for "{searchQuery}"
             </div>
           )}
         </div>
 
-        {/* Desktop right */}
-        <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
-          <a href="tel:+2348065275264" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#333', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-            <FaPhoneAlt size={12} color="#7B2FBE" />
-            <span style={{ color: '#555' }}>Customer care:</span>
-            <span style={{ fontWeight: 700, color: '#1a1a1a' }}>+234 806 527 5264</span>
+        <div className="hidden items-center gap-4 md:flex">
+          <a href="tel:+2348065275264" className="flex items-center gap-2 text-[13px] text-slate-700 whitespace-nowrap transition hover:text-violet-700">
+            <FaPhoneAlt size={12} className="text-violet-700" />
+            <span className="text-slate-500">Customer care:</span>
+            <span className="font-semibold text-slate-900">+234 806 527 5264</span>
           </a>
-          <span onClick={() => navigate('/store')} style={{ fontSize: '14px', fontWeight: 600, color: '#1a1a1a', cursor: 'pointer' }}>Store</span>
-          <span onClick={() => navigate('/blog')} style={{ fontSize: '14px', fontWeight: 600, color: '#1a1a1a', cursor: 'pointer' }}>Blog</span>
-          <span onClick={() => navigate('/cart')} style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 600, color: '#1a1a1a' }}>
-            <FaShoppingCart size={18} color="#7B2FBE" />
+          <button type="button" onClick={() => navigate('/store')} className="text-sm font-semibold text-slate-900 transition hover:text-violet-700">Store</button>
+          <button type="button" onClick={() => navigate('/blog')} className="text-sm font-semibold text-slate-900 transition hover:text-violet-700">Blog</button>
+          <button type="button" onClick={() => navigate('/cart')} className="relative flex items-center gap-2 text-sm font-semibold text-slate-900 transition hover:text-violet-700">
+            <FaShoppingCart size={18} className="text-violet-700" />
             {totalItems > 0 && (
-              <span style={{ position: 'absolute', top: '-8px', right: '-10px', background: '#7B2FBE', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>{totalItems}</span>
+              <span className="absolute -top-2 -right-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-violet-700 px-1.5 text-[10px] font-bold text-white">{totalItems}</span>
             )}
-          </span>
+          </button>
         </div>
 
-        {/* Mobile right */}
-        <div className="mobile-nav" style={{ display: 'none', alignItems: 'center', gap: '14px' }}>
-          <span onClick={() => navigate('/cart')} style={{ position: 'relative', cursor: 'pointer' }}>
-            <FaShoppingCart size={20} color="#7B2FBE" />
+        <div className="flex items-center gap-3 md:hidden">
+          <button type="button" onClick={() => navigate('/cart')} className="relative text-slate-900 transition hover:text-violet-700">
+            <FaShoppingCart size={20} className="text-violet-700" />
             {totalItems > 0 && (
-              <span style={{ position: 'absolute', top: '-6px', right: '-8px', background: '#7B2FBE', color: '#fff', borderRadius: '50%', width: '16px', height: '16px', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>{totalItems}</span>
+              <span className="absolute -top-1 -right-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-violet-700 text-[9px] font-bold text-white">{totalItems}</span>
             )}
-          </span>
-          <button onClick={() => setMobileOpen(!mobileOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#333', display: 'flex', alignItems: 'center' }}>
+          </button>
+          <button type="button" onClick={() => setMobileOpen(!mobileOpen)} className="text-slate-900 transition hover:text-violet-700">
             {mobileOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
           </button>
         </div>
       </div>
 
-      {/* Desktop sub-nav */}
-      <div className="desktop-subnav" style={{ borderTop: '1px solid #eee', background: '#fff' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', maxWidth: '1280px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="hidden border-t border-slate-200 bg-white md:block">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 md:px-6">
+          <div className="flex flex-wrap items-center gap-2">
             {Object.entries(NAV_MENUS).map(([label, items]) => (
-              <div key={label} style={{ position: 'relative' }}
-                onMouseEnter={() => setOpenMenu(label)} onMouseLeave={() => setOpenMenu(null)}>
-                <div style={{ padding: '11px 14px', fontSize: '13px', fontWeight: 500, color: '#1a1a1a', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap', borderBottom: openMenu === label ? '2px solid #7B2FBE' : '2px solid transparent' }}>
-                  {label} <span style={{ fontSize: '10px' }}>▾</span>
-                </div>
+              <div key={label} className="relative" onMouseEnter={() => setOpenMenu(label)} onMouseLeave={() => setOpenMenu(null)}>
+                <button type="button" className={`inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold transition ${openMenu === label ? 'border-b-2 border-violet-700 text-violet-700' : 'border-b-2 border-transparent text-slate-900 hover:text-violet-700'}`}>
+                  {label} <span className="text-[10px]">▾</span>
+                </button>
                 {openMenu === label && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, background: '#fff', border: '1px solid #e5e5e5', borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 999, minWidth: '220px', padding: '8px 0' }}>
+                  <div className="absolute left-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.15)]">
                     {items.map(item => (
-                      <div key={item.slug} onClick={() => { navigate(`/store/${item.slug}`); setOpenMenu(null) }}
-                        style={{ padding: '9px 18px', fontSize: '13px', color: '#333', cursor: 'pointer' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#f5f0ff'; e.currentTarget.style.color = '#7B2FBE' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#333' }}
-                      >{item.name}</div>
+                      <button key={item.slug} type="button" onClick={() => { navigate(`/store/${item.slug}`); setOpenMenu(null) }} className="w-full px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">
+                        {item.name}
+                      </button>
                     ))}
                   </div>
                 )}
               </div>
             ))}
-            <div style={{ position: 'relative' }} onMouseEnter={() => setOpenMenu('all')} onMouseLeave={() => setOpenMenu(null)}>
-              <div style={{ padding: '11px 14px', fontSize: '13px', fontWeight: 500, color: '#1a1a1a', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap', borderBottom: openMenu === 'all' ? '2px solid #7B2FBE' : '2px solid transparent' }}>
-                All Product & Services <span style={{ fontSize: '10px' }}>▾</span>
-              </div>
+            <div className="relative" onMouseEnter={() => setOpenMenu('all')} onMouseLeave={() => setOpenMenu(null)}>
+              <button type="button" className={`inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold transition ${openMenu === 'all' ? 'border-b-2 border-violet-700 text-violet-700' : 'border-b-2 border-transparent text-slate-900 hover:text-violet-700'}`}>
+                All Product & Services <span className="text-[10px]">▾</span>
+              </button>
               {openMenu === 'all' && (
-                <div style={{ position: 'absolute', top: '100%', left: 0, background: '#fff', border: '1px solid #e5e5e5', borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 999, minWidth: '260px', padding: '8px 0', maxHeight: '400px', overflowY: 'auto' }}>
+                <div className="absolute left-0 top-full z-50 mt-2 max-h-96 w-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.15)]">
                   {allMenuItems.map((item, i) => (
-                    <div key={i} onClick={() => { navigate(`/store/${item.slug}`); setOpenMenu(null) }}
-                      style={{ padding: '9px 18px', fontSize: '13px', color: '#333', cursor: 'pointer' }}
-                      onMouseEnter={e => { e.currentTarget.style.background = '#f5f0ff'; e.currentTarget.style.color = '#7B2FBE' }}
-                      onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#333' }}
-                    >{item.name}</div>
+                    <button key={i} type="button" onClick={() => { navigate(`/store/${item.slug}`); setOpenMenu(null) }} className="w-full px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">
+                      {item.name}
+                    </button>
                   ))}
                 </div>
               )}
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span onClick={() => navigate('/quote')} style={{ fontSize: '13.5px', fontWeight: 700, color: '#1a1a1a', cursor: 'pointer', padding: '11px 0', whiteSpace: 'nowrap' }}>Request Quote</span>
-          </div>
+          <button type="button" onClick={() => navigate('/quote')} className="rounded-full px-4 py-2 text-sm font-semibold text-slate-900 transition hover:text-violet-700">
+            Request Quote
+          </button>
         </div>
       </div>
 
-      {/* Mobile menu overlay */}
       {mobileOpen && (
-        <div className="mobile-menu" style={{ background: '#fff', borderTop: '1px solid #eee', padding: '8px 0 16px' }}>
-          {/* Mobile search */}
-          <div style={{ padding: '10px 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #ddd', borderRadius: '24px', background: '#fff' }}>
+        <div className="border-t border-slate-200 bg-white px-4 pb-4 pt-3 shadow-sm md:hidden">
+          <div className="mb-4">
+            <div className="flex items-center overflow-hidden rounded-full border border-slate-300 bg-white shadow-sm">
               <input
                 type="text"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={e => handleSearch(e.target.value)}
-                style={{ flex: 1, padding: '8px 16px', border: 'none', outline: 'none', fontSize: '13px', background: 'transparent' }}
+                className="flex-1 border-none bg-transparent px-4 py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400"
               />
-              <FaSearch size={14} style={{ marginRight: '14px', color: '#888' }} />
+              <FaSearch size={14} className="mr-4 text-slate-500" />
             </div>
             {showSearch && searchResults.length > 0 && (
-              <div style={{ background: '#fff', border: '1px solid #e5e5e5', borderRadius: '8px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', marginTop: '4px', maxHeight: '220px', overflowY: 'auto' }}>
+              <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
                 {searchResults.map(p => (
-                  <div key={p.id} onClick={() => { navigate(`/store/${p.slug}`); setShowSearch(false); setSearchQuery(''); setMobileOpen(false) }}
-                    style={{ padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0', fontSize: '13px', color: '#333' }}>
-                    <span style={{ fontWeight: 600, color: '#7B2FBE' }}>{p.name}</span>
-                  </div>
+                  <button key={p.id} type="button" onClick={() => { navigate(`/store/${p.slug}`); setShowSearch(false); setSearchQuery(''); setMobileOpen(false) }} className="w-full px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">
+                    {p.name}
+                  </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Mobile nav links */}
-          {[{ label: 'Home', path: '/' }, { label: 'Store', path: '/store' }, { label: 'Blog', path: '/blog' }, { label: 'About', path: '/about' }, { label: 'Request Quote', path: '/quote' }].map(link => (
-            <div key={link.path} onClick={() => { navigate(link.path); setMobileOpen(false) }}
-              style={{ padding: '13px 20px', fontSize: '14px', fontWeight: 600, color: '#1a1a1a', cursor: 'pointer', borderBottom: '1px solid #f5f5f5' }}>
-              {link.label}
-            </div>
-          ))}
-          {Object.entries(NAV_MENUS).map(([label, items]) => (
-            <div key={label}>
-              <div onClick={() => setMobileExpanded(mobileExpanded === label ? null : label)}
-                style={{ padding: '13px 20px', fontSize: '14px', fontWeight: 600, color: '#555', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f5f5f5' }}>
-                {label} <span style={{ fontSize: '12px' }}>{mobileExpanded === label ? '▲' : '▾'}</span>
+          <div className="space-y-2">
+            {[{ label: 'Home', path: '/' }, { label: 'Store', path: '/store' }, { label: 'Blog', path: '/blog' }, { label: 'About', path: '/about' }, { label: 'Request Quote', path: '/quote' }].map(link => (
+              <button key={link.path} type="button" onClick={() => { navigate(link.path); setMobileOpen(false) }} className="w-full rounded-3xl bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-900 transition hover:bg-slate-100">
+                {link.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-3 space-y-2">
+            {Object.entries(NAV_MENUS).map(([label, items]) => (
+              <div key={label} className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+                <button type="button" onClick={() => setMobileExpanded(mobileExpanded === label ? null : label)} className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-slate-900">
+                  <span>{label}</span>
+                  <span>{mobileExpanded === label ? '▲' : '▾'}</span>
+                </button>
+                {mobileExpanded === label && (
+                  <div className="space-y-1 border-t border-slate-200 bg-white">
+                    {items.map(item => (
+                      <button key={item.slug} type="button" onClick={() => { navigate(`/store/${item.slug}`); setMobileOpen(false) }} className="w-full px-5 py-3 text-left text-sm font-semibold text-violet-700 transition hover:bg-violet-50">
+                        {item.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              {mobileExpanded === label && items.map(item => (
-                <div key={item.slug} onClick={() => { navigate(`/store/${item.slug}`); setMobileOpen(false) }}
-                  style={{ padding: '10px 32px', fontSize: '13px', color: '#7B2FBE', cursor: 'pointer', borderBottom: '1px solid #fafafa', background: '#faf8ff' }}>
-                  {item.name}
-                </div>
-              ))}
-            </div>
-          ))}
-          <a href="tel:+2348065275264" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '13px 20px', fontSize: '14px', fontWeight: 600, color: '#1a1a1a', textDecoration: 'none' }}>
-            <FaPhoneAlt size={13} color="#7B2FBE" /> +234 806 527 5264
+            ))}
+          </div>
+
+          <a href="tel:+2348065275264" className="mt-3 inline-flex w-full items-center justify-center gap-3 rounded-3xl bg-violet-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-800">
+            <FaPhoneAlt size={14} /> +234 806 527 5264
           </a>
         </div>
       )}
-
-      <style>{`
-        @media (max-width: 768px) {
-          .search-box { display: none !important; }
-          .desktop-nav { display: none !important; }
-          .desktop-subnav { display: none !important; }
-          .mobile-nav { display: flex !important; }
-        }
-      `}</style>
     </header>
   )
 }

@@ -1,5 +1,5 @@
-import { Cn as Selection$1, Dn as Fragment, En as dropPoint, Nt as isNodeEmpty, On as Slice, Pt as isNodeSelection, Sn as PluginKey, Tn as Mapping, Z as getExtensionField, _n as keydownHandler, bn as NodeSelection, i as Extension, k as createStyleTag, v as callOrReturn, vn as Decoration, wn as TextSelection, xn as Plugin, yn as DecorationSet } from "./dist-ECFAqqoL.js";
-//#region node_modules/prosemirror-dropcursor/dist/index.js
+import { Cn as Selection$1, Dn as Fragment, En as dropPoint, Nt as isNodeEmpty, On as Slice, Pt as isNodeSelection, Sn as PluginKey, Tn as Mapping, Z as getExtensionField, _n as keydownHandler, bn as NodeSelection, i as Extension, k as createStyleTag, v as callOrReturn, vn as Decoration, wn as TextSelection, xn as Plugin, yn as DecorationSet } from "./dist-qUbT3S_Z.js";
+//#region node_modules/.pnpm/prosemirror-dropcursor@1.8.2/node_modules/prosemirror-dropcursor/dist/index.js
 /**
 Create a plugin that, when added to a ProseMirror instance,
 causes a decoration to show up at the drop position when something
@@ -147,7 +147,7 @@ var DropCursorView = class {
 	}
 };
 //#endregion
-//#region node_modules/prosemirror-gapcursor/dist/index.js
+//#region node_modules/.pnpm/prosemirror-gapcursor@1.4.1/node_modules/prosemirror-gapcursor/dist/index.js
 /**
 Gap cursor selections are represented using this class. Its
 `$anchor` and `$head` properties both point at the cursor position.
@@ -354,7 +354,7 @@ function drawGapCursor(state) {
 	return DecorationSet.create(state.doc, [Decoration.widget(state.selection.head, node, { key: "gapcursor" })]);
 }
 //#endregion
-//#region node_modules/rope-sequence/dist/index.js
+//#region node_modules/.pnpm/rope-sequence@1.3.4/node_modules/rope-sequence/dist/index.js
 var GOOD_LEAF_SIZE = 200;
 var RopeSequence = function RopeSequence() {};
 RopeSequence.prototype.append = function append(other) {
@@ -491,7 +491,7 @@ var Append = /* @__PURE__ */ function(RopeSequence) {
 	return Append;
 }(RopeSequence);
 //#endregion
-//#region node_modules/prosemirror-history/dist/index.js
+//#region node_modules/.pnpm/prosemirror-history@1.5.0/node_modules/prosemirror-history/dist/index.js
 var max_empty_items = 500;
 var Branch = class Branch {
 	constructor(items, eventCount) {
@@ -1295,5 +1295,3 @@ var UndoRedo = Extension.create({
 });
 //#endregion
 export { UndoRedo as a, TrailingNode as i, Gapcursor as n, Placeholder as r, Dropcursor as t };
-
-//# sourceMappingURL=dist-c8jb4AtO.js.map

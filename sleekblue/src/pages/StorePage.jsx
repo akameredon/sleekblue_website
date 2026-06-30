@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ALL_PRODUCTS } from '../data/products'
 import { PRODUCT_IMAGES } from '../data/productImages'
@@ -8,10 +8,10 @@ import Breadcrumb from '../components/Breadcrumb'
 const PRI = '#7B2FBE'
 
 const CATEGORIES = [
-  { key: 'all',       label: 'All Products' },
+  { key: 'all', label: 'All Products' },
   { key: 'Flex Printing/Large Format', label: 'Flex & Large Format' },
-  { key: 'Label Stickers',             label: 'Label Stickers' },
-  { key: 'Corporate Branding',         label: 'Corporate Branding' },
+  { key: 'Label Stickers', label: 'Label Stickers' },
+  { key: 'Corporate Branding', label: 'Corporate Branding' },
 ]
 
 function useWishlist() {
@@ -31,7 +31,10 @@ function useWishlist() {
 
 export default function StorePage() {
   const navigate = useNavigate()
-  useSEO('store', { title: 'Our Store — Sleekblue Media Houz', description: 'Shop all our printing and branding products — die-cut stickers, flex banners, business cards, t-shirts and more. Fast delivery across Nigeria.' })
+  useSEO('store', {
+    title: 'Our Store — Sleekblue Media Houz',
+    description: 'Shop all our printing and branding products — die-cut stickers, flex banners, business cards and more. Fast delivery across Nigeria.',
+  })
 
   const [activeCat, setActiveCat] = useState('all')
   const [search, setSearch] = useState('')
@@ -49,57 +52,65 @@ export default function StorePage() {
     : [activeCat]
 
   return (
-    <section style={{ background: '#FAF3E8', padding: '32px 16px 60px', minHeight: '100vh' }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+    <section className="bg-[#FAF3E8] min-h-screen px-4 py-10 sm:px-6 sm:py-14">
+      <div className="mx-auto max-w-[1280px]">
         <Breadcrumb crumbs={[{ label: 'Home', href: '/' }, { label: 'Store' }]} />
-        <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#1a1a1a', textTransform: 'uppercase', marginBottom: '6px', fontFamily: "'HubotSans', sans-serif" }}>Our Store</h1>
-        <p style={{ fontSize: '13px', color: '#777', marginBottom: '20px', fontWeight: 400 }}>Browse all our printing and branding products</p>
+        <h1 className="mt-8 text-3xl font-extrabold uppercase text-[#1a1a1a] sm:text-4xl">Our Store</h1>
+        <p className="mt-2 text-sm text-slate-600">Browse all our printing and branding products</p>
 
-        {/* Filter bar */}
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div className="mt-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap gap-2">
             {CATEGORIES.map(c => (
-              <button key={c.key} onClick={() => setActiveCat(c.key)}
-                style={{ padding: '8px 18px', borderRadius: '20px', border: `1.5px solid ${activeCat === c.key ? PRI : '#ddd'}`,
-                  background: activeCat === c.key ? PRI : '#fff', color: activeCat === c.key ? '#fff' : '#555',
-                  fontWeight: 600, fontSize: '12.5px', cursor: 'pointer', fontFamily: "'HubotSans', sans-serif",
-                  transition: 'all 0.15s' }}>
+              <button
+                key={c.key}
+                onClick={() => setActiveCat(c.key)}
+                type="button"
+                className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${activeCat === c.key ? 'border-[#7B2FBE] bg-[#7B2FBE] text-white' : 'border-slate-300 bg-white text-slate-600 hover:border-[#7B2FBE] hover:text-[#7B2FBE]'}`}
+              >
                 {c.label}
               </button>
             ))}
           </div>
-          <div style={{ flex: 1, minWidth: 180, maxWidth: 300, position: 'relative' }}>
+
+          <div className="relative w-full max-w-[340px]">
             <input
-              value={search} onChange={e => setSearch(e.target.value)}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
               placeholder="🔍 Search products…"
-              style={{ width: '100%', padding: '8px 14px', border: '1.5px solid #ddd', borderRadius: '20px',
-                fontSize: '13px', outline: 'none', fontFamily: "'HubotSans', sans-serif", boxSizing: 'border-box' }}
+              className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm text-slate-600 outline-none transition focus:border-[#7B2FBE] focus:ring-2 focus:ring-[#7B2FBE]/20"
             />
             {search && (
-              <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#aaa', fontSize: '16px' }}>×</button>
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-lg text-slate-400 transition hover:text-slate-600"
+              >
+                ×
+              </button>
             )}
           </div>
+
           {wishlist.length > 0 && (
-            <div style={{ fontSize: '12px', color: '#e53e3e', fontWeight: 600 }}>
-              ❤️ {wishlist.length} saved
-            </div>
+            <div className="text-sm font-semibold text-rose-600">❤️ {wishlist.length} saved</div>
           )}
         </div>
 
-        {/* Results count */}
         {search && (
-          <p style={{ fontSize: '13px', color: '#888', marginBottom: '16px' }}>
-            {filtered.length} result{filtered.length !== 1 ? 's' : ''} for "<strong>{search}</strong>"
+          <p className="mt-4 text-sm text-slate-500">
+            {filtered.length} result{filtered.length !== 1 ? 's' : ''} for "<strong className="font-semibold text-slate-800">{search}</strong>"
           </p>
         )}
 
         {filtered.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#aaa' }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px' }}>🔍</div>
-            <p style={{ fontSize: '15px', fontWeight: 600, color: '#555' }}>No products found</p>
-            <p style={{ fontSize: '13px' }}>Try a different search or category</p>
-            <button onClick={() => { setSearch(''); setActiveCat('all') }}
-              style={{ marginTop: '12px', padding: '9px 22px', background: PRI, color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 600 }}>
+          <div className="mt-10 rounded-[28px] bg-white p-10 text-center text-slate-600 shadow-sm">
+            <div className="text-5xl mb-3">🔍</div>
+            <p className="text-base font-semibold text-slate-700">No products found</p>
+            <p className="mt-2 text-sm">Try a different search or category</p>
+            <button
+              type="button"
+              onClick={() => { setSearch(''); setActiveCat('all') }}
+              className="mt-5 inline-flex rounded-full bg-[#7B2FBE] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#6b23ba]"
+            >
               Clear filters
             </button>
           </div>
@@ -109,45 +120,52 @@ export default function StorePage() {
           const items = filtered.filter(p => p.category === cat)
           if (items.length === 0) return null
           return (
-            <div key={cat} style={{ marginBottom: '44px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '18px' }}>
-                <h2 style={{ fontSize: '17px', fontWeight: 700, color: PRI, fontFamily: "'HubotSans', sans-serif" }}>{cat}</h2>
-                <div style={{ flex: 1, height: '1px', background: '#e0d6f5' }} />
-                <span style={{ fontSize: '12px', color: '#aaa' }}>{items.length} item{items.length !== 1 ? 's' : ''}</span>
+            <div key={cat} className="mt-12">
+              <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <h2 className="text-lg font-bold tracking-tight text-[#7B2FBE]">{cat}</h2>
+                <div className="flex-1 h-px bg-[#e0d6f5]" />
+                <span className="text-xs text-slate-500">{items.length} item{items.length !== 1 ? 's' : ''}</span>
               </div>
-              <div className="store-grid-5" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '14px' }}>
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                 {items.map(product => {
                   const imgs = PRODUCT_IMAGES[product.slug] || []
                   const inWishlist = wishlist.includes(product.slug)
                   return (
-                    <div key={product.id} style={{ background: '#fff', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', border: '1px solid #eee', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', cursor: 'pointer', transition: 'box-shadow 0.2s', position: 'relative' }}
+                    <div
+                      key={product.id}
                       onClick={() => navigate(`/store/${product.slug}`)}
-                      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 18px rgba(123,47,190,0.13)'}
-                      onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'}>
-
-                      {/* Wishlist heart */}
+                      className="group relative flex cursor-pointer flex-col gap-3 overflow-hidden rounded-[24px] border border-slate-200 bg-white p-4 text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg"
+                    >
                       <button
+                        type="button"
                         onClick={e => { e.stopPropagation(); toggle(product.slug) }}
                         title={inWishlist ? 'Remove from saved' : 'Save for later'}
-                        style={{ position: 'absolute', top: 8, right: 8, background: inWishlist ? '#fef2f2' : 'rgba(255,255,255,0.9)', border: `1px solid ${inWishlist ? '#fca5a5' : '#eee'}`, borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', zIndex: 2, transition: 'all 0.15s' }}>
+                        className={`absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border text-sm transition ${inWishlist ? 'border-red-200 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-500 hover:border-[#7B2FBE] hover:text-[#7B2FBE]'}`}
+                      >
                         {inWishlist ? '❤️' : '🤍'}
                       </button>
 
-                      <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: '8px', overflow: 'hidden', background: '#C8C8C8' }}>
+                      <div className="aspect-[3/4] overflow-hidden rounded-3xl bg-slate-200">
                         {imgs[0] ? (
-                          <img src={imgs[0]} alt={product.name} loading="lazy" decoding="async"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
-                            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
-                            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'} />
+                          <img
+                            src={imgs[0]}
+                            alt={product.name}
+                            loading="lazy"
+                            decoding="async"
+                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                          />
                         ) : (
-                          <div style={{ width: '100%', height: '100%', background: '#C8C8C8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>🖨️</div>
+                          <div className="flex h-full items-center justify-center text-3xl">🖨️</div>
                         )}
                       </div>
-                      <p style={{ fontSize: '12.5px', fontWeight: 700, color: '#1a1a1a', textAlign: 'center', fontFamily: "'HubotSans', sans-serif", margin: 0 }}>{product.name}</p>
-                      <p style={{ fontSize: '12px', color: PRI, fontWeight: 600, margin: 0 }}>From ₦{product.price.toLocaleString()}</p>
+
+                      <p className="text-sm font-semibold text-slate-900">{product.name}</p>
+                      <p className="text-sm font-semibold text-[#7B2FBE]">From ₦{product.price.toLocaleString()}</p>
                       <button
-                        style={{ background: PRI, color: '#fff', border: 'none', borderRadius: '20px', padding: '7px 0', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer', width: '85%', fontFamily: "'HubotSans', sans-serif" }}
-                        onClick={e => { e.stopPropagation(); navigate(`/store/${product.slug}`) }}>
+                        type="button"
+                        onClick={e => { e.stopPropagation(); navigate(`/store/${product.slug}`) }}
+                        className="mt-auto rounded-full bg-[#7B2FBE] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#6b23ba]"
+                      >
                         Shop Now
                       </button>
                     </div>
@@ -158,21 +176,33 @@ export default function StorePage() {
           )
         })}
 
-        {/* Wishlist panel */}
         {wishlist.length > 0 && (
-          <div style={{ background: '#fff', borderRadius: '14px', padding: '20px 24px', boxShadow: '0 2px 12px rgba(123,47,190,0.10)', border: '1.5px solid #e0d6f5', marginTop: '20px' }}>
-            <h3 style={{ fontSize: '15px', fontWeight: 700, color: PRI, margin: '0 0 14px', fontFamily: "'HubotSans', sans-serif" }}>❤️ Your Saved Items ({wishlist.length})</h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          <div className="mt-10 rounded-[28px] border border-[#e0d6f5] bg-white p-6 shadow-sm">
+            <h3 className="mb-4 text-lg font-semibold text-[#7B2FBE]">❤️ Your Saved Items ({wishlist.length})</h3>
+            <div className="flex flex-wrap gap-3">
               {wishlist.map(slug => {
                 const p = ALL_PRODUCTS.find(x => x.slug === slug)
                 if (!p) return null
                 return (
-                  <div key={slug} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f9f5ff', border: '1px solid #e0d6f5', borderRadius: '20px', padding: '6px 12px 6px 6px' }}>
-                    <div style={{ width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', background: '#e0d6f5' }}>
-                      {PRODUCT_IMAGES[slug]?.[0] && <img src={PRODUCT_IMAGES[slug][0]} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                  <div key={slug} className="flex items-center gap-3 rounded-2xl border border-[#e0d6f5] bg-[#f9f5ff] px-3 py-2">
+                    <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#e0d6f5]">
+                      {PRODUCT_IMAGES[slug]?.[0] && (
+                        <img src={PRODUCT_IMAGES[slug][0]} alt={p.name} className="h-full w-full object-cover" />
+                      )}
                     </div>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#374151', cursor: 'pointer' }} onClick={() => navigate(`/store/${slug}`)}>{p.name}</span>
-                    <button onClick={() => toggle(slug)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: 0, lineHeight: 1 }}>×</button>
+                    <span
+                      className="cursor-pointer text-sm font-semibold text-slate-800 hover:text-[#7B2FBE]"
+                      onClick={() => navigate(`/store/${slug}`)}
+                    >
+                      {p.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => toggle(slug)}
+                      className="text-lg leading-none text-rose-600"
+                    >
+                      ×
+                    </button>
                   </div>
                 )
               })}
@@ -180,12 +210,6 @@ export default function StorePage() {
           </div>
         )}
       </div>
-
-      <style>{`
-        @media (max-width: 1024px) { .store-grid-5 { grid-template-columns: repeat(4, 1fr) !important; } }
-        @media (max-width: 768px)  { .store-grid-5 { grid-template-columns: repeat(3, 1fr) !important; } }
-        @media (max-width: 480px)  { .store-grid-5 { grid-template-columns: repeat(2, 1fr) !important; } }
-      `}</style>
     </section>
   )
 }

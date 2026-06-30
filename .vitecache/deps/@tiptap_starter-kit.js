@@ -1,7 +1,7 @@
-import { Cn as Selection$1, Ct as isAtEndOfNode, Dn as Fragment$1, Mt as isNodeActive, Pt as isNodeSelection, Sn as PluginKey, Ut as markInputRule, Wt as markPasteRule, Xt as nodeInputRule, at as getNodeType, bn as NodeSelection$1, c as Mark$1, en as parseIndentedBlocks, gn as wrappingInputRule, i as Extension, in as renderNestedMarkdownContent, mn as textblockTypeInputRule, ot as getRenderedAttributes, qt as mergeAttributes, rt as getNodeAtPosition, u as Node3, wn as TextSelection$1, wt as isAtStartOfNode, xn as Plugin, y as canInsertNode } from "./dist-ECFAqqoL.js";
-import { t as Link } from "./dist-BkUtPnr8.js";
-import { a as UndoRedo, i as TrailingNode, n as Gapcursor, t as Dropcursor } from "./dist-c8jb4AtO.js";
-//#region node_modules/@tiptap/core/dist/jsx-runtime/jsx-runtime.js
+import { Cn as Selection$1, Ct as isAtEndOfNode, Dn as Fragment$1, Mt as isNodeActive, Pt as isNodeSelection, Sn as PluginKey, Ut as markInputRule, Wt as markPasteRule, Xt as nodeInputRule, at as getNodeType, bn as NodeSelection$1, c as Mark$1, en as parseIndentedBlocks, gn as wrappingInputRule, i as Extension, in as renderNestedMarkdownContent, mn as textblockTypeInputRule, ot as getRenderedAttributes, qt as mergeAttributes, rt as getNodeAtPosition, u as Node3, wn as TextSelection$1, wt as isAtStartOfNode, xn as Plugin, y as canInsertNode } from "./dist-qUbT3S_Z.js";
+import { t as Link } from "./dist-V793YTe_.js";
+import { a as UndoRedo, i as TrailingNode, n as Gapcursor, t as Dropcursor } from "./dist-BdKi9BqS.js";
+//#region node_modules/.pnpm/@tiptap+core@3.27.1_@tiptap+pm@3.27.1/node_modules/@tiptap/core/dist/jsx-runtime/jsx-runtime.js
 var h = (tag, attributes) => {
 	if (tag === "slot") return 0;
 	if (tag instanceof Function) return tag(attributes);
@@ -14,7 +14,7 @@ var h = (tag, attributes) => {
 	];
 };
 //#endregion
-//#region node_modules/@tiptap/extension-blockquote/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-blockquote@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1_/node_modules/@tiptap/extension-blockquote/dist/index.js
 function findDiffStart(a, b, pos) {
 	for (let i = 0;; i++) {
 		if (i == a.childCount || i == b.childCount) return a.childCount == b.childCount ? null : pos;
@@ -2918,7 +2918,7 @@ ${prefix}
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-bold/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-bold@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1_/node_modules/@tiptap/extension-bold/dist/index.js
 var starInputRegex$1 = /(?:^|\s)(\*\*(?!\s+\*\*)((?:[^*]+))\*\*(?!\s+\*\*))$/;
 var starPasteRegex$1 = /(?:^|\s)(\*\*(?!\s+\*\*)((?:[^*]+))\*\*(?!\s+\*\*))/g;
 var underscoreInputRegex$1 = /(?:^|\s)(__(?!\s+__)((?:[^_]+))__(?!\s+__))$/;
@@ -3001,7 +3001,7 @@ var Bold = Mark$1.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-code/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-code@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1_/node_modules/@tiptap/extension-code/dist/index.js
 var inputRegexMatch = (text) => {
 	const match = /`([^`]+)`(?!`)$/.exec(text);
 	if (!match) return null;
@@ -3085,7 +3085,7 @@ var Code = Mark$1.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-code-block/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-code-block@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1__@tiptap+pm@3.27.1/node_modules/@tiptap/extension-code-block/dist/index.js
 var DEFAULT_TAB_SIZE = 4;
 var backtickInputRegex = /^```([a-z]+)?[\s\n]$/;
 var tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/;
@@ -3305,7 +3305,7 @@ var CodeBlock = Node3.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-document/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-document@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1_/node_modules/@tiptap/extension-document/dist/index.js
 var Document = Node3.create({
 	name: "doc",
 	topNode: true,
@@ -3316,7 +3316,7 @@ var Document = Node3.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-hard-break/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-hard-break@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1_/node_modules/@tiptap/extension-hard-break/dist/index.js
 var HardBreak = Node3.create({
 	name: "hardBreak",
 	markdownTokenName: "br",
@@ -3370,7 +3370,7 @@ var HardBreak = Node3.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-heading/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-heading@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1_/node_modules/@tiptap/extension-heading/dist/index.js
 var Heading = Node3.create({
 	name: "heading",
 	addOptions() {
@@ -3447,7 +3447,7 @@ var Heading = Node3.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-horizontal-rule/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-horizontal-rule@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1__@tiptap+pm@3.27.1/node_modules/@tiptap/extension-horizontal-rule/dist/index.js
 var HorizontalRule = Node3.create({
 	name: "horizontalRule",
 	addOptions() {
@@ -3507,7 +3507,7 @@ var HorizontalRule = Node3.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-italic/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-italic@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1_/node_modules/@tiptap/extension-italic/dist/index.js
 var starInputRegex = /(?:^|\s)(\*(?!\s+\*)((?:[^*]+))\*(?!\s+\*))$/;
 var starPasteRegex = /(?:^|\s)(\*(?!\s+\*)((?:[^*]+))\*(?!\s+\*))/g;
 var underscoreInputRegex = /(?:^|\s)(_(?!\s+_)((?:[^_]+))_(?!\s+_))$/;
@@ -3588,7 +3588,7 @@ var Italic = Mark$1.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-list/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-list@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1__@tiptap+pm@3.27.1/node_modules/@tiptap/extension-list/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
 	for (var name in all) __defProp(target, name, {
@@ -4762,7 +4762,7 @@ Extension.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-paragraph/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-paragraph@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1_/node_modules/@tiptap/extension-paragraph/dist/index.js
 var EMPTY_PARAGRAPH_MARKDOWN = "&nbsp;";
 var NBSP_CHAR = "\xA0";
 var Paragraph = Node3.create({
@@ -4810,7 +4810,7 @@ var Paragraph = Node3.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-strike/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-strike@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1_/node_modules/@tiptap/extension-strike/dist/index.js
 var inputRegex = /(?:^|\s)(~~(?!\s+~~)((?:[^~]+))~~(?!\s+~~))$/;
 var pasteRegex = /(?:^|\s)(~~(?!\s+~~)((?:[^~]+))~~(?!\s+~~))/g;
 var Strike = Mark$1.create({
@@ -4874,7 +4874,7 @@ var Strike = Mark$1.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/extension-text/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-text@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1_/node_modules/@tiptap/extension-text/dist/index.js
 var Text = Node3.create({
 	name: "text",
 	group: "inline",
@@ -4887,7 +4887,7 @@ var Text = Node3.create({
 	renderMarkdown: (node) => node.text || ""
 });
 //#endregion
-//#region node_modules/@tiptap/extension-underline/dist/index.js
+//#region node_modules/.pnpm/@tiptap+extension-underline@3.27.1_@tiptap+core@3.27.1_@tiptap+pm@3.27.1_/node_modules/@tiptap/extension-underline/dist/index.js
 var Underline = Mark$1.create({
 	name: "underline",
 	addOptions() {
@@ -4952,7 +4952,7 @@ var Underline = Mark$1.create({
 	}
 });
 //#endregion
-//#region node_modules/@tiptap/starter-kit/dist/index.js
+//#region node_modules/.pnpm/@tiptap+starter-kit@3.27.1/node_modules/@tiptap/starter-kit/dist/index.js
 var StarterKit = Extension.create({
 	name: "starterKit",
 	addExtensions() {
@@ -4986,5 +4986,3 @@ var StarterKit = Extension.create({
 var index_default = StarterKit;
 //#endregion
 export { StarterKit, index_default as default };
-
-//# sourceMappingURL=@tiptap_starter-kit.js.map
