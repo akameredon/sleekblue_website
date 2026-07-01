@@ -32,10 +32,10 @@ function validateFullName(v) {
   return parts.length >= 2 && parts.every(p => p.length >= 2)
 }
 function validateEmail(v) {
-  return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(v.trim())
+  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v.trim())
 }
 function validatePhone(v) {
-  const digits = v.replace(/[\s\-\(\)\+\.]/g, '')
+  const digits = v.replace(/[\s\-()+.]/g, '')
   return /^\d{10,15}$/.test(digits)
 }
 
@@ -57,6 +57,7 @@ export default function TermsModal() {
 
   useEffect(() => {
     if (!localStorage.getItem(LS_KEY)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShow(true)
       setDeclined(false)
     }

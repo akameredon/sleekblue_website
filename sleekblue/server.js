@@ -59,7 +59,7 @@ function getClientIP(req) {
 
 // ── Analytics helpers ─────────────────────────────────────────────────────────
 function readAnalytics() { return readJSON(ANALYTICS_FILE, { events: [], securityEvents: [] }) }
-function writeAnalytics(data) { try { writeJSON(ANALYTICS_FILE, data) } catch {} }
+function writeAnalytics(data) { try { writeJSON(ANALYTICS_FILE, data) } catch { /* empty */ } }
 
 function logSecurityEvent(type, req) {
   try {
@@ -76,7 +76,7 @@ function logSecurityEvent(type, req) {
     })
     data.securityEvents = data.securityEvents.slice(0, 500)
     writeAnalytics(data)
-  } catch {}
+  } catch { /* empty */ }
 }
 
 // IP Geolocation — ip-api.com free tier (no key required)
@@ -98,7 +98,7 @@ async function geolocateIP(ip) {
       geoCache[ip] = loc
       return loc
     }
-  } catch {}
+  } catch { /* empty */ }
   return { country: 'Unknown', city: '', region: '', lat: 0, lon: 0 }
 }
 
@@ -203,6 +203,71 @@ function requireAuth(req, res, next) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CART API (in-memory, for load testing & future server-side validation)
+// ─────────────────────────────────────────────────────────────────────────────
+const cartStore = new Map()
+
+// Auto-expire carts after 30 minutes to prevent memory leaks
+setInterval(() => {
+  const now = Date.now()
+  for (const [token, cart] of cartStore) {
+    if (now - cart.updatedAt > 30 * 60 * 1000) cartStore.delete(token)
+  }
+}, 5 * 60 * 1000)
+
+function getCartToken(req) {
+  return req.headers['x-cart-token'] || 'anonymous'
+}
+
+// GET /api/cart — retrieve current cart
+app.get('/api/cart', (req, res) => {
+  const token = getCartToken(req)
+  const cart = cartStore.get(token) || { items: [], updatedAt: Date.now() }
+  res.json({ items: cart.items, totalItems: cart.items.reduce((s, i) => s + i.quantity, 0) })
+})
+
+// POST /api/cart — add item to cart
+app.post('/api/cart', (req, res) => {
+  const token = getCartToken(req)
+  const { productId, quantity, size } = req.body || {}
+
+  if (!productId || !quantity) {
+    return res.status(400).json({ error: 'productId and quantity are required' })
+  }
+
+  const cart = cartStore.get(token) || { items: [], updatedAt: Date.now() }
+
+  const existing = cart.items.find(i => i.productId === productId && i.size === size)
+  if (existing) {
+    existing.quantity += Number(quantity)
+  } else {
+    cart.items.push({
+      id: generateId('CART'),
+      productId: String(productId),
+      quantity: Number(quantity),
+      size: size || '',
+      addedAt: new Date().toISOString(),
+    })
+  }
+
+  cart.updatedAt = Date.now()
+  cartStore.set(token, cart)
+  res.json({ items: cart.items, totalItems: cart.items.reduce((s, i) => s + i.quantity, 0) })
+})
+
+// DELETE /api/cart/:itemId — remove item from cart
+app.delete('/api/cart/:itemId', (req, res) => {
+  const token = getCartToken(req)
+  const cart = cartStore.get(token)
+  if (!cart) return res.status(404).json({ error: 'Cart not found' })
+
+  cart.items = cart.items.filter(i => i.id !== req.params.itemId)
+  cart.updatedAt = Date.now()
+  cartStore.set(token, cart)
+  res.json({ items: cart.items, totalItems: cart.items.reduce((s, i) => s + i.quantity, 0) })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
 // PUBLIC ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -303,9 +368,9 @@ app.post('/api/analytics/track', (req, res) => {
         const d = readAnalytics()
         const idx = (d.events || []).findIndex(e => e.id === eventData.id)
         if (idx !== -1) { d.events[idx].location = location; writeAnalytics(d) }
-      } catch {}
+      } catch { /* empty */ }
     }).catch(() => {})
-  } catch {}
+  } catch { /* empty */ }
   res.json({ ok: true })
 })
 
@@ -502,7 +567,7 @@ app.delete('/api/admin/upload/hero', requireAuth, (req, res) => {
   data.hero = data.hero || {}
   data.hero.customSlides = (data.hero.customSlides || []).filter(u => u !== url)
   writeJSON(SITE_DATA_FILE, data)
-  try { const filename = url.replace('/uploads/hero/', ''); unlinkSync(join(UPLOADS_DIR, 'hero', filename)) } catch {}
+  try { const filename = url.replace('/uploads/hero/', ''); unlinkSync(join(UPLOADS_DIR, 'hero', filename)) } catch { /* empty */ }
   res.json({ ok: true })
 })
 
@@ -537,7 +602,7 @@ app.delete('/api/admin/upload/hero/extra-default', requireAuth, (req, res) => {
   data.hero.extraDefaultSlides = (data.hero.extraDefaultSlides || []).filter(u => u !== url)
   data.hero.hiddenExtraDefaultSlides = (data.hero.hiddenExtraDefaultSlides || []).filter(u => u !== url)
   writeJSON(SITE_DATA_FILE, data)
-  try { const filename = url.replace('/uploads/hero/', ''); unlinkSync(join(UPLOADS_DIR, 'hero', filename)) } catch {}
+  try { const filename = url.replace('/uploads/hero/', ''); unlinkSync(join(UPLOADS_DIR, 'hero', filename)) } catch { /* empty */ }
   res.json({ ok: true })
 })
 
@@ -585,7 +650,7 @@ app.delete('/api/admin/upload/product/:slug', requireAuth, (req, res) => {
   data.productImages = data.productImages || {}
   data.productImages[slug] = (data.productImages[slug] || []).filter(u => u !== url)
   writeJSON(SITE_DATA_FILE, data)
-  try { const filename = url.replace('/uploads/products/', ''); unlinkSync(join(UPLOADS_DIR, 'products', filename)) } catch {}
+  try { const filename = url.replace('/uploads/products/', ''); unlinkSync(join(UPLOADS_DIR, 'products', filename)) } catch { /* empty */ }
   res.json({ ok: true })
 })
 
@@ -611,7 +676,7 @@ app.delete('/api/admin/sticker-image', requireAuth, (req, res) => {
   data.stickerImages = data.stickerImages || {}
   data.stickerImages[size] = (data.stickerImages[size] || []).filter(u => u !== url)
   writeJSON(SITE_DATA_FILE, data)
-  try { const filename = url.replace('/uploads/products/', ''); unlinkSync(join(UPLOADS_DIR, 'products', filename)) } catch {}
+  try { const filename = url.replace('/uploads/products/', ''); unlinkSync(join(UPLOADS_DIR, 'products', filename)) } catch { /* empty */ }
   res.json({ ok: true })
 })
 
@@ -641,7 +706,7 @@ app.delete('/api/admin/upload/product-variant/:slug', requireAuth, (req, res) =>
   data.productVariantImages[slug] = data.productVariantImages[slug] || {}
   data.productVariantImages[slug][variant] = (data.productVariantImages[slug][variant] || []).filter(u => u !== url)
   writeJSON(SITE_DATA_FILE, data)
-  try { const filename = url.replace('/uploads/products/', ''); unlinkSync(join(UPLOADS_DIR, 'products', filename)) } catch {}
+  try { const filename = url.replace('/uploads/products/', ''); unlinkSync(join(UPLOADS_DIR, 'products', filename)) } catch { /* empty */ }
   res.json({ ok: true })
 })
 
@@ -778,12 +843,12 @@ app.get('/api/admin/analytics', requireAuth, (req, res) => {
       try {
         const hostname = new URL(e.referrer).hostname
         if (hostname) referrerMap[hostname] = (referrerMap[hostname] || 0) + 1
-      } catch {}
+      } catch { /* empty */ }
     }
     try {
       const hour = new Date(e.timestamp).getHours()
       if (!isNaN(hour)) hourMap[hour] = (hourMap[hour] || 0) + 1
-    } catch {}
+    } catch { /* empty */ }
     const day = (e.timestamp || '').slice(0, 10)
     if (day) dailyMap[day] = (dailyMap[day] || 0) + 1
     if (e.location?.country && e.location.country !== 'Unknown' && e.location.country !== 'Local') {
@@ -939,7 +1004,7 @@ function logActivity(action, detail, user = 'admin') {
     const log = readJSON(ACTIVITY_FILE, [])
     log.unshift({ id: generateId('ACT'), action, detail, user, timestamp: new Date().toISOString() })
     writeJSON(ACTIVITY_FILE, log.slice(0, 500))
-  } catch {}
+  } catch { /* empty */ }
 }
 
 // ── Artwork upload (public — customers send print files) ───────────────────────

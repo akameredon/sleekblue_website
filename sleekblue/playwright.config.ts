@@ -6,23 +6,33 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
   workers: 1,
-  reporter: 'html',
+  reporter: [
+    ['list'],
+    ['html', { open: 'never' }],
+  ],
   timeout: 30000,
+
   use: {
-    baseURL: 'http://localhost:5000',
+    baseURL: 'http://127.0.0.1:3001',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     headless: true,
-    launchOptions: {
-      executablePath: process.env.CHROMIUM_PATH ||
-        '/nix/store/qa9cnw4v5xkxyip6mb9kxqfq1z4x2dx1-chromium-138.0.7204.100/bin/chromium',
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-    },
   },
+
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'iPhone 14',
+      use: {
+        ...devices['iPhone 14'],
+        hasTouch: true,
+      },
+    },
+    {
+      name: 'Pixel 7',
+      use: {
+        ...devices['Pixel 7'],
+        hasTouch: true,
+      },
     },
   ],
 })

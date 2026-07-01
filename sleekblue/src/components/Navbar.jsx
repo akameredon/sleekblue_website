@@ -123,19 +123,19 @@ export default function Navbar() {
           </a>
           <button type="button" onClick={() => navigate('/store')} className="text-sm font-semibold text-slate-900 transition hover:text-violet-700">Store</button>
           <button type="button" onClick={() => navigate('/blog')} className="text-sm font-semibold text-slate-900 transition hover:text-violet-700">Blog</button>
-          <button type="button" onClick={() => navigate('/cart')} className="relative flex items-center gap-2 text-sm font-semibold text-slate-900 transition hover:text-violet-700">
+          <button type="button" data-testid="cart-button" onClick={() => navigate('/cart')} className="relative flex items-center gap-2 text-sm font-semibold text-slate-900 transition hover:text-violet-700">
             <FaShoppingCart size={18} className="text-violet-700" />
             {totalItems > 0 && (
-              <span className="absolute -top-2 -right-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-violet-700 px-1.5 text-[10px] font-bold text-white">{totalItems}</span>
+              <span data-testid="cart-badge" className="absolute -top-2 -right-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-violet-700 px-1.5 text-[10px] font-bold text-white">{totalItems}</span>
             )}
           </button>
         </div>
 
         <div className="flex items-center gap-3 md:hidden">
-          <button type="button" onClick={() => navigate('/cart')} className="relative text-slate-900 transition hover:text-violet-700">
+          <button type="button" data-testid="cart-button-mobile" onClick={() => navigate('/cart')} className="relative text-slate-900 transition hover:text-violet-700">
             <FaShoppingCart size={20} className="text-violet-700" />
             {totalItems > 0 && (
-              <span className="absolute -top-1 -right-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-violet-700 text-[9px] font-bold text-white">{totalItems}</span>
+              <span data-testid="cart-badge-mobile" className="absolute -top-1 -right-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-violet-700 text-[9px] font-bold text-white">{totalItems}</span>
             )}
           </button>
           <button type="button" onClick={() => setMobileOpen(!mobileOpen)} className="text-slate-900 transition hover:text-violet-700">

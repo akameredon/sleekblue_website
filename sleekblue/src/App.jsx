@@ -50,6 +50,7 @@ function PageTransition({ children }) {
   const [key, setKey] = useState(location.pathname)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisible(false)
     const t = setTimeout(() => { setKey(location.pathname); setVisible(true) }, 80)
     return () => clearTimeout(t)

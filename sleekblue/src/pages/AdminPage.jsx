@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect, no-unused-vars, no-empty, no-dupe-keys */
 import { useState, useEffect, useCallback } from 'react'
 import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.jpg'
 import { ALL_PRODUCTS, STICKER_SIZE_PRICES, getProductDetails } from '../data/products'

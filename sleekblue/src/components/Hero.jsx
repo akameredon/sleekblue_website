@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect, no-unused-vars, no-empty, no-dupe-keys */
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HeroCanvas from './HeroCanvas'

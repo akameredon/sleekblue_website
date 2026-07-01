@@ -165,6 +165,7 @@ export default function ChatWidget() {
       const response = match || FALLBACK
       setMessages(prev => [...prev, { from: 'bot', text: response.answer, quick: response.quick }])
       setTyping(false)
+      // eslint-disable-next-line react-hooks/purity
     }, 600 + Math.random() * 400)
   }
 

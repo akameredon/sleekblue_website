@@ -13,6 +13,12 @@ export default function WhatsAppLeadPopup() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  const show = () => {
+    const state = localStorage.getItem(STORAGE_KEY)
+    if (state === 'dismissed' || state === 'subscribed') return
+    setVisible(true)
+  }
+
   useEffect(() => {
     if (HIDE_PATHS.some(p => location.pathname.startsWith(p))) return
     const state = localStorage.getItem(STORAGE_KEY)
@@ -28,11 +34,7 @@ export default function WhatsAppLeadPopup() {
     return () => { clearTimeout(timer); window.removeEventListener('scroll', onScroll) }
   }, [location.pathname])
 
-  function show() {
-    const state = localStorage.getItem(STORAGE_KEY)
-    if (state === 'dismissed' || state === 'subscribed') return
-    setVisible(true)
-  }
+
 
   function dismiss() {
     setVisible(false)
