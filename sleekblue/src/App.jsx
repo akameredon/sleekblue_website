@@ -7,7 +7,6 @@ import SocialSidebar from './components/SocialSidebar'
 import ChatWidget from './components/ChatWidget'
 import WhatsAppFloat from './components/WhatsAppFloat'
 import WhatsAppLeadPopup from './components/WhatsAppLeadPopup'
-import TermsModal from './components/TermsModal'
 import Footer from './components/Footer'
 import BackToTop from './components/BackToTop'
 import CookieBanner from './components/CookieBanner'
@@ -41,6 +40,14 @@ function PageLoader() {
 function PageTracker() {
   const location = useLocation()
   useEffect(() => { trackPageView(location.pathname) }, [location.pathname])
+  return null
+}
+
+function ScrollToTop() {
+  const location = useLocation()
+  useEffect(() => {
+    try { window.scrollTo({ top: 0, left: 0 }) } catch (e) { window.scrollTo(0, 0) }
+  }, [location.pathname])
   return null
 }
 
@@ -94,10 +101,10 @@ function TrackingInjector() {
 function MainSite() {
   return (
     <CartProvider>
+      <ScrollToTop />
       <PageTracker />
       <TrackingInjector />
       <PromoBanner />
-      <TermsModal />
       <Navbar />
       <SocialSidebar />
       <main>

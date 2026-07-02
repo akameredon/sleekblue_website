@@ -1,6 +1,20 @@
+import { useState, useEffect } from 'react'
 import { FaWhatsapp } from 'react-icons/fa'
 
 export default function WhatsAppFloat() {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    function update() {
+      setVisible(window.innerWidth >= 768) // show only on tablet+ and desktop
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  if (!visible) return null
+
   return (
     <a
       href="https://wa.me/2348065275264"

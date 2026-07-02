@@ -1,7 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useSEO } from '../hooks/useSEO'
+import TermsModal from '../components/TermsModal'
+
+const PAYMENT_METHODS = [
+  { id: 'bank', label: 'Bank Transfer' },
+  { id: 'paystack', label: 'Pay with Card (Paystack)' },
+  { id: 'whatsapp', label: 'WhatsApp Order' },
+]
 
 export default function CheckoutPage() {
   useSEO('checkout', { title: 'Checkout — Sleekblue Media Houz', description: 'Complete your printing order with Sleekblue Media Houz. Fast, secure checkout with WhatsApp confirmation.' })
@@ -9,6 +16,42 @@ export default function CheckoutPage() {
   const { cartItems, total, discountAmount, discount, clearCart } = useCart()
   const [form, setForm] = useState({ name: '', phone: '', email: '', address: '', city: '', notes: '' })
   const [errors, setErrors] = useState({})
+  const [settings, setSettings] = useState({})
+  const [paymentMethod, setPaymentMethod] = useState('bank')
+  const [message, setMessage] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [showTermsModal, setShowTermsModal] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.ok ? r.json() : {})
+      .then(data => setSettings(data || {}))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (settings.paystackPublicKey) {
+      const script = document.createElement('script')
+      script.src = 'https://js.paystack.co/v1/inline.js'
+      script.async = true
+      document.body.appendChild(script)
+      return () => {
+        document.body.removeChild(script)
+      }
+    }
+  }, [settings.paystackPublicKey])
+
+  useEffect(() => {
+    if (cartItems.length === 0) {
+      navigate('/store')
+    }
+  }, [cartItems.length, navigate])
+
+  useEffect(() => {
+    if (!localStorage.getItem('sbm_terms_v2026')) {
+      setShowTermsModal(true)
+    }
+  }, [])
 
   function validate() {
     const e = {}
@@ -16,6 +59,11 @@ export default function CheckoutPage() {
     if (!form.phone.trim()) e.phone = 'Phone number is required'
     if (!form.address.trim()) e.address = 'Delivery address is required'
     if (!form.city.trim()) e.city = 'City is required'
+    if (paymentMethod === 'paystack' && !settings.paystackPublicKey) e.paymentMethod = 'Paystack is not configured. Choose another payment method.'
+    if (!localStorage.getItem('sbm_terms_v2026')) {
+      e.terms = 'Please read and accept the terms before placing this order.'
+      setShowTermsModal(true)
+    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -33,91 +81,265 @@ export default function CheckoutPage() {
       `${form.notes ? `Notes: ${form.notes}\n` : ''}` +
       `\n*Order Items:*\n${items}${disc}\n\n` +
       `*ORDER TOTAL: ₦${Math.round(total).toLocaleString()}*\n\n` +
+      `Preferred payment: ${paymentMethod === 'bank' ? 'Bank Transfer' : paymentMethod === 'paystack' ? 'Card / Paystack' : 'WhatsApp Order'}\n\n` +
       `Please confirm and process this order. Thank you!`
     )
   }
 
-  function handleSubmit(e) {
+  function startPaystackPayment() {
+    if (!settings.paystackPublicKey) {
+      setMessage('Paystack is not configured. Please choose another payment option.')
+      return
+    }
+    if (!window.PaystackPop) {
+      setMessage('Paystack is still loading. Please wait a moment and try again.')
+      return
+    }
+
+    const handler = window.PaystackPop.setup({
+      key: settings.paystackPublicKey,
+      email: form.email || 'customer@example.com',
+      amount: Math.round(total) * 100,
+      currency: 'NGN',
+      ref: `SBM-${Date.now()}`,
+      metadata: {
+        custom_fields: [
+          { display_name: 'Customer Name', variable_name: 'customer_name', value: form.name },
+          { display_name: 'Phone', variable_name: 'phone', value: form.phone },
+        ],
+      },
+      callback() {
+        clearCart()
+        setMessage('Payment completed successfully. Thank you!')
+        setTimeout(() => navigate('/'), 1400)
+      },
+      onClose() {
+        setMessage('Paystack payment was not completed.')
+      },
+    })
+    handler.openIframe()
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault()
+    setMessage('')
     if (!validate()) return
+    setSubmitting(true)
+
+    if (paymentMethod === 'paystack') {
+      startPaystackPayment()
+      setSubmitting(false)
+      return
+    }
+
     const msg = buildWhatsAppMessage()
     clearCart()
     window.open(`https://wa.me/2348065275264?text=${msg}`, '_blank')
+    setSubmitting(false)
     navigate('/')
   }
 
-  if (cartItems.length === 0) {
-    navigate('/store')
-    return null
-  }
-
-  const inputStyle = (field) => ({
-    width: '100%', padding: '10px 14px', border: `1.5px solid ${errors[field] ? '#e74c3c' : '#ddd'}`, borderRadius: '8px', fontSize: '13.5px', fontFamily: "'HubotSans', sans-serif", outline: 'none', color: '#222',
-  })
+  const handleInputChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
 
   return (
-    <section style={{ background: '#FAF3E8', padding: '32px 24px 60px', minHeight: '100vh' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#1a1a1a', marginBottom: '24px', fontFamily: "'HubotSans', sans-serif" }}>Checkout</h1>
+    <section className="bg-slate-50 py-10 min-h-screen">
+      <TermsModal open={showTermsModal} onClose={() => setShowTermsModal(false)} onAccepted={() => setShowTermsModal(false)} />
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="mb-8 rounded-3xl bg-white p-6 shadow-sm sm:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-violet-700">Checkout</p>
+          <h1 className="mt-3 text-3xl font-black text-slate-900 sm:text-4xl">Complete your order</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">Choose how you want to pay, provide delivery details, and accept the terms before placing your order.</p>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px', alignItems: 'start' }}>
-          {/* Form */}
-          <form onSubmit={handleSubmit}>
-            <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#7B2FBE', marginBottom: '16px', fontFamily: "'HubotSans', sans-serif" }}>Delivery Information</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                <div>
-                  <label style={{ fontSize: '12.5px', fontWeight: 600, color: '#333', display: 'block', marginBottom: '6px', fontFamily: "'HubotSans', sans-serif" }}>Full Name *</label>
-                  <input style={inputStyle('name')} value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Your full name" />
-                  {errors.name && <p style={{ fontSize: '11px', color: '#e74c3c', marginTop: '4px' }}>{errors.name}</p>}
-                </div>
-                <div>
-                  <label style={{ fontSize: '12.5px', fontWeight: 600, color: '#333', display: 'block', marginBottom: '6px', fontFamily: "'HubotSans', sans-serif" }}>Phone Number *</label>
-                  <input style={inputStyle('phone')} value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="+234 800 000 0000" />
-                  {errors.phone && <p style={{ fontSize: '11px', color: '#e74c3c', marginTop: '4px' }}>{errors.phone}</p>}
-                </div>
-                <div>
-                  <label style={{ fontSize: '12.5px', fontWeight: 600, color: '#333', display: 'block', marginBottom: '6px', fontFamily: "'HubotSans', sans-serif" }}>Email Address</label>
-                  <input style={inputStyle('email')} value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="your@email.com" type="email" />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12.5px', fontWeight: 600, color: '#333', display: 'block', marginBottom: '6px', fontFamily: "'HubotSans', sans-serif" }}>City *</label>
-                  <input style={inputStyle('city')} value={form.city} onChange={e => setForm({...form, city: e.target.value})} placeholder="Your city" />
-                  {errors.city && <p style={{ fontSize: '11px', color: '#e74c3c', marginTop: '4px' }}>{errors.city}</p>}
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ fontSize: '12.5px', fontWeight: 600, color: '#333', display: 'block', marginBottom: '6px', fontFamily: "'HubotSans', sans-serif" }}>Delivery Address *</label>
-                  <input style={inputStyle('address')} value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder="Street address, area" />
-                  {errors.address && <p style={{ fontSize: '11px', color: '#e74c3c', marginTop: '4px' }}>{errors.address}</p>}
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ fontSize: '12.5px', fontWeight: 600, color: '#333', display: 'block', marginBottom: '6px', fontFamily: "'HubotSans', sans-serif" }}>Additional Notes</label>
-                  <textarea style={{ ...inputStyle('notes'), resize: 'vertical', minHeight: '80px' }} value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder="Any special instructions for your order..." />
-                </div>
+        <div className="grid gap-6 lg:grid-cols-[1.7fr_1fr]">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="rounded-3xl bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900">Delivery information</h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-slate-700">Full Name *</span>
+                  <input
+                    value={form.name}
+                    onChange={e => handleInputChange('name', e.target.value)}
+                    className={`w-full rounded-3xl border px-4 py-3 text-sm text-slate-900 outline-none transition ${errors.name ? 'border-rose-400 bg-rose-50' : 'border-slate-200 bg-white'}`}
+                    placeholder="John Doe"
+                  />
+                  {errors.name && <span className="text-xs text-rose-600">{errors.name}</span>}
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-slate-700">Phone Number *</span>
+                  <input
+                    value={form.phone}
+                    onChange={e => handleInputChange('phone', e.target.value)}
+                    className={`w-full rounded-3xl border px-4 py-3 text-sm text-slate-900 outline-none transition ${errors.phone ? 'border-rose-400 bg-rose-50' : 'border-slate-200 bg-white'}`}
+                    placeholder="+234 812 345 6789"
+                  />
+                  {errors.phone && <span className="text-xs text-rose-600">{errors.phone}</span>}
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-slate-700">Email Address</span>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={e => handleInputChange('email', e.target.value)}
+                    className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition"
+                    placeholder="you@example.com"
+                  />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-slate-700">City *</span>
+                  <input
+                    value={form.city}
+                    onChange={e => handleInputChange('city', e.target.value)}
+                    className={`w-full rounded-3xl border px-4 py-3 text-sm text-slate-900 outline-none transition ${errors.city ? 'border-rose-400 bg-rose-50' : 'border-slate-200 bg-white'}`}
+                    placeholder="Lagos"
+                  />
+                  {errors.city && <span className="text-xs text-rose-600">{errors.city}</span>}
+                </label>
+                <label className="sm:col-span-2 space-y-2">
+                  <span className="text-sm font-semibold text-slate-700">Delivery Address *</span>
+                  <input
+                    value={form.address}
+                    onChange={e => handleInputChange('address', e.target.value)}
+                    className={`w-full rounded-3xl border px-4 py-3 text-sm text-slate-900 outline-none transition ${errors.address ? 'border-rose-400 bg-rose-50' : 'border-slate-200 bg-white'}`}
+                    placeholder="Street, area, landmark"
+                  />
+                  {errors.address && <span className="text-xs text-rose-600">{errors.address}</span>}
+                </label>
+                <label className="sm:col-span-2 space-y-2">
+                  <span className="text-sm font-semibold text-slate-700">Order notes</span>
+                  <textarea
+                    value={form.notes}
+                    onChange={e => handleInputChange('notes', e.target.value)}
+                    className="min-h-[110px] w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition resize-none"
+                    placeholder="Any special delivery or design notes"
+                  />
+                </label>
               </div>
             </div>
-            <button type="submit" style={{ width: '100%', background: '#25D366', color: '#fff', border: 'none', borderRadius: '10px', padding: '14px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontFamily: "'HubotSans', sans-serif" }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              Confirm Order via WhatsApp
-            </button>
+
+            <div className="rounded-3xl bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900">Payment method</h2>
+              <div className="mt-5 space-y-3">
+                {PAYMENT_METHODS.map(method => (
+                  <label key={method.id} className={`flex cursor-pointer items-center justify-between rounded-3xl border px-4 py-4 transition ${paymentMethod === method.id ? 'border-violet-500 bg-violet-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                    <div>
+                      <div className="text-sm font-semibold text-slate-900">{method.label}</div>
+                      <p className="text-sm text-slate-500">
+                        {method.id === 'bank' ? 'Use bank transfer instructions set in admin settings.' : method.id === 'paystack' ? 'Pay securely with Visa, Mastercard, or local cards.' : 'Send your order details to WhatsApp for confirmation.'}
+                      </p>
+                    </div>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value={method.id}
+                      checked={paymentMethod === method.id}
+                      onChange={() => setPaymentMethod(method.id)}
+                      className="h-4 w-4 text-violet-700 accent-violet-600"
+                    />
+                  </label>
+                ))}
+                {errors.paymentMethod && <div className="text-xs text-rose-600">{errors.paymentMethod}</div>}
+              </div>
+
+              {paymentMethod === 'bank' && (
+                <div className="mt-5 rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                  <p className="font-semibold text-slate-900 mb-2">Bank transfer details</p>
+                  <p>{settings.bankName || 'Bank name not set yet'}</p>
+                  <p>{settings.accountName || 'Account name not set yet'}</p>
+                  <p>{settings.accountNumber || 'Account number not set yet'}</p>
+                  <p className="mt-3 text-slate-500">After transfer, message us on WhatsApp with your order details and payment screenshot to confirm.</p>
+                </div>
+              )}
+
+              {paymentMethod === 'paystack' && !settings.paystackPublicKey && (
+                <div className="mt-5 rounded-3xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+                  Paystack is not configured yet. Choose bank transfer or WhatsApp order instead.
+                </div>
+              )}
+
+              {paymentMethod === 'whatsapp' && (
+                <div className="mt-5 rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                  Your order will be sent to WhatsApp for confirmation and payment instructions.
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-3xl bg-white p-6 shadow-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(localStorage.getItem('sbm_terms_v2026'))}
+                    readOnly
+                    className="mt-1 h-4 w-4 accent-violet-600"
+                  />
+                  <div className="text-sm leading-6 text-slate-700">
+                    I have read and accepted the{' '}
+                    <button type="button" onClick={() => setShowTermsModal(true)} className="font-semibold text-slate-900 underline underline-offset-2 transition hover:text-violet-700">
+                      Terms & Conditions
+                    </button>.
+                  </div>
+                </div>
+                <div className="text-sm text-slate-500">
+                  If the checkbox is not checked yet, open the terms above and agree before placing your order.
+                </div>
+              </div>
+              {errors.terms && <div className="mt-3 text-xs text-rose-600">{errors.terms}</div>}
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex items-center justify-center rounded-3xl bg-violet-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {paymentMethod === 'paystack' ? 'Pay with Paystack' : paymentMethod === 'bank' ? 'Confirm Bank Transfer' : 'Send Order via WhatsApp'}
+                </button>
+                {message && <p className="text-sm text-slate-600">{message}</p>}
+              </div>
+            </div>
           </form>
 
-          {/* Order summary */}
-          <div style={{ background: '#fff', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-            <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1a1a1a', marginBottom: '14px', fontFamily: "'HubotSans', sans-serif" }}>Order Summary</h3>
-            {cartItems.map((item, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
-                <span style={{ color: '#333' }}>{item.name} x{item.quantity}</span>
-                <span style={{ fontWeight: 600 }}>₦{(item.price * item.quantity).toLocaleString()}</span>
+          <aside className="space-y-6">
+            <div className="rounded-3xl bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900">Order summary</h2>
+              <div className="mt-5 space-y-4">
+                {cartItems.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
+                    <div>
+                      <p className="font-semibold text-slate-900">{item.name}</p>
+                      <p className="text-sm text-slate-500">Qty {item.quantity} · {item.size || 'Standard'}</p>
+                    </div>
+                    <p className="font-semibold text-slate-900">₦{(item.price * item.quantity).toLocaleString()}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-            <div style={{ borderTop: '1px solid #eee', paddingTop: '12px', marginTop: '4px' }}>
-              {discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#28a745', marginBottom: '8px' }}><span>Bulk Discount</span><span>−₦{discountAmount.toLocaleString()}</span></div>}
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 800, color: '#7B2FBE' }}>
-                <span>Total</span><span>₦{Math.round(total).toLocaleString()}</span>
+              <div className="mt-5 space-y-2 text-sm text-slate-700">
+                {discount > 0 && (
+                  <div className="flex items-center justify-between text-emerald-700">
+                    <span>Bulk discount</span>
+                    <span>−₦{discountAmount.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between border-t border-slate-200 pt-3 font-bold text-slate-900">
+                  <span>Total</span>
+                  <span>₦{Math.round(total).toLocaleString()}</span>
+                </div>
               </div>
             </div>
-          </div>
+
+            <div className="rounded-3xl bg-violet-950/95 p-6 text-white shadow-sm">
+              <h3 className="text-lg font-bold">Need help?</h3>
+              <p className="mt-3 text-sm leading-6 text-white/80">Chat with us on WhatsApp if you need help with your artwork, delivery details, or payment.</p>
+              <a
+                href="https://wa.me/2348065275264"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-flex rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-violet-950 transition hover:bg-slate-100"
+              >
+                Message us on WhatsApp
+              </a>
+            </div>
+          </aside>
         </div>
       </div>
     </section>

@@ -55,15 +55,15 @@ export default function ComparisonPage() {
 
   if (slugs.length === 0) {
     return (
-      <section style={{ background: '#FAF3E8', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'HubotSans', sans-serif", padding: '40px 24px' }}>
-        <div style={{ textAlign: 'center', maxWidth: '480px' }}>
-          <div style={{ fontSize: '56px', marginBottom: '20px' }}>📊</div>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#1a1a1a', marginBottom: '12px' }}>No products to compare</h1>
-          <p style={{ color: '#888', fontSize: '14px', marginBottom: '28px', lineHeight: 1.6 }}>
+      <section className="bg-slate-50 min-h-screen flex items-center justify-center font-[HubotSans] px-4 py-16">
+        <div className="mx-auto max-w-xl text-center">
+          <div className="text-[56px] mb-5">📊</div>
+          <h1 className="text-2xl font-black text-slate-900 mb-3">No products to compare</h1>
+          <p className="text-sm text-slate-500 leading-7 mb-8">
             Browse our store and click the <strong>Compare</strong> button on products to add them here. You can compare up to 4 products at once.
           </p>
           <button onClick={() => navigate('/store')}
-            style={{ background: PRI, color: '#fff', border: 'none', borderRadius: '10px', padding: '12px 28px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>
+            className="rounded-2xl bg-violet-700 px-7 py-3 text-sm font-bold text-white transition hover:bg-violet-800">
             Browse Store
           </button>
         </div>
@@ -72,48 +72,49 @@ export default function ComparisonPage() {
   }
 
   return (
-    <section style={{ background: '#FAF3E8', minHeight: '100vh', padding: '40px 24px 80px', fontFamily: "'HubotSans', sans-serif" }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
+    <section className="bg-slate-50 min-h-screen py-10 font-[HubotSans] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1100px]">
+        <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#1a1a1a', margin: '0 0 6px' }}>Product Comparison</h1>
-            <p style={{ fontSize: '13px', color: '#888', margin: 0 }}>Comparing {products.length} product{products.length !== 1 ? 's' : ''} — up to 4 allowed</p>
+            <h1 className="text-3xl font-black text-slate-900">Product Comparison</h1>
+            <p className="text-sm text-slate-500 mt-2">Comparing {products.length} product{products.length !== 1 ? 's' : ''} — up to 4 allowed</p>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="flex flex-wrap gap-3">
             <button onClick={() => navigate('/store')}
-              style={{ padding: '9px 20px', background: '#fff', border: `1.5px solid ${PRI}`, borderRadius: '8px', color: PRI, fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
+              className="rounded-2xl border border-violet-700 bg-white px-5 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-50">
               + Add More
             </button>
             <button onClick={() => { localStorage.setItem(COMPARE_KEY, '[]'); setSlugs([]) }}
-              style={{ padding: '9px 20px', background: '#fef2f2', border: '1.5px solid #fca5a5', borderRadius: '8px', color: '#dc2626', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
+              className="rounded-2xl border border-rose-300 bg-rose-50 px-5 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-100">
               Clear All
             </button>
           </div>
         </div>
 
-        <div style={{ overflowX: 'auto', borderRadius: '16px', boxShadow: '0 2px 16px rgba(0,0,0,0.08)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', minWidth: '600px' }}>
-            {/* Product header row */}
+        <div className="overflow-x-auto rounded-3xl shadow-[0_2px_16px_rgba(0,0,0,0.08)]">
+          <table className="min-w-[600px] w-full border-collapse bg-white text-sm">
             <thead>
               <tr>
-                <th style={{ width: '180px', padding: '20px 18px', background: '#f9f5ff', borderRight: '1px solid #f0f0f0', textAlign: 'left', fontSize: '12px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>
+                <th className="w-[180px] px-5 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-500 bg-violet-50 border-r border-slate-200">
                   Feature
                 </th>
                 {products.map(p => (
-                  <th key={p.slug} style={{ padding: '20px 18px', background: '#f9f5ff', borderRight: '1px solid #f0f0f0', textAlign: 'center', minWidth: '200px' }}>
-                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <th key={p.slug} className="min-w-[200px] px-5 py-4 text-center bg-violet-50 border-r border-slate-200">
+                    <div className="relative inline-block">
                       <button onClick={() => { const next = slugs.filter(s => s !== p.slug); localStorage.setItem(COMPARE_KEY, JSON.stringify(next)); setSlugs(next) }}
                         title="Remove from comparison"
-                        style={{ position: 'absolute', top: -8, right: -8, width: 22, height: 22, borderRadius: '50%', border: 'none', background: '#fef2f2', color: '#dc2626', cursor: 'pointer', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>×</button>
-                      <div style={{ width: '90px', height: '90px', borderRadius: '10px', overflow: 'hidden', background: '#f0e8ff', margin: '0 auto 10px' }}>
+                        className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-rose-50 text-rose-600 text-xs font-bold shadow-sm">
+                        ×
+                      </button>
+                      <div className="mx-auto mb-2 h-[90px] w-[90px] overflow-hidden rounded-2xl bg-violet-100">
                         {PRODUCT_IMAGES[p.slug]?.[0]
-                          ? <img src={PRODUCT_IMAGES[p.slug][0]} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>🖨️</div>
+                          ? <img src={PRODUCT_IMAGES[p.slug][0]} alt={p.name} className="h-full w-full object-cover" />
+                          : <div className="flex h-full w-full items-center justify-center text-2xl">🖨️</div>
                         }
                       </div>
-                      <p style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 4px' }}>{p.name}</p>
+                      <p className="text-sm font-bold text-slate-900 mb-2">{p.name}</p>
                       <button onClick={() => navigate(`/store/${p.slug}`)}
-                        style={{ background: PRI, color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', marginTop: '4px' }}>
+                        className="rounded-2xl bg-violet-700 px-3 py-2 text-[11px] font-bold text-white transition hover:bg-violet-800">
                         View Product →
                       </button>
                     </div>
@@ -123,32 +124,31 @@ export default function ComparisonPage() {
             </thead>
             <tbody>
               {ATTR_ROWS.map((row, ri) => (
-                <tr key={row.key} style={{ background: ri % 2 === 0 ? '#fff' : '#faf5ff' }}>
-                  <td style={{ padding: '14px 18px', fontSize: '13px', fontWeight: 700, color: '#555', borderRight: '1px solid #f0f0f0', borderTop: '1px solid #f0f0f0' }}>
+                <tr key={row.key} className={ri % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                  <td className="px-5 py-4 text-left font-semibold text-slate-700 border-r border-slate-200">
                     {row.label}
                   </td>
                   {products.map(p => {
                     const val = p[row.key]
                     const display = row.fmt ? (val != null ? row.fmt(val) : '—') : (val || '—')
                     return (
-                      <td key={p.slug} style={{ padding: '14px 18px', fontSize: '13.5px', color: '#333', textAlign: 'center', borderRight: '1px solid #f0f0f0', borderTop: '1px solid #f0f0f0', lineHeight: 1.5 }}>
+                      <td key={p.slug} className="px-5 py-4 text-center text-slate-700 border-r border-slate-200 leading-6">
                         {display}
                       </td>
                     )
                   })}
                 </tr>
               ))}
-              {/* Action row */}
-              <tr style={{ borderTop: '2px solid #e0d6f5' }}>
-                <td style={{ padding: '18px', background: '#f9f5ff', borderRight: '1px solid #f0f0f0' }} />
+              <tr className="border-t border-slate-200 bg-violet-50">
+                <td className="px-5 py-4 border-r border-slate-200" />
                 {products.map(p => (
-                  <td key={p.slug} style={{ padding: '18px', textAlign: 'center', background: '#f9f5ff', borderRight: '1px solid #f0f0f0' }}>
+                  <td key={p.slug} className="px-5 py-4 text-center border-r border-slate-200 space-y-3">
                     <button onClick={() => navigate(`/store/${p.slug}`)}
-                      style={{ background: PRI, color: '#fff', border: 'none', borderRadius: '8px', padding: '11px 22px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', width: '100%' }}>
+                      className="w-full rounded-2xl bg-violet-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-violet-800">
                       Order Now
                     </button>
                     <button onClick={() => navigate('/quote')}
-                      style={{ background: '#fff', color: PRI, border: `1.5px solid ${PRI}`, borderRadius: '8px', padding: '9px 22px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', width: '100%', marginTop: '8px' }}>
+                      className="w-full rounded-2xl border border-violet-700 bg-white px-4 py-3 text-sm font-bold text-violet-700 transition hover:bg-violet-50">
                       Get Quote
                     </button>
                   </td>
@@ -158,8 +158,8 @@ export default function ComparisonPage() {
           </table>
         </div>
 
-        <p style={{ textAlign: 'center', color: '#aaa', fontSize: '12px', marginTop: '24px' }}>
-          Can't decide? <a href="/quote" style={{ color: PRI, fontWeight: 600, textDecoration: 'none' }}>Request a custom quote</a> and our team will help you choose the right product.
+        <p className="mt-6 text-center text-xs text-slate-500">
+          Can't decide? <a href="/quote" className="font-semibold text-violet-700">Request a custom quote</a> and our team will help you choose the right product.
         </p>
       </div>
     </section>

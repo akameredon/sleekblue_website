@@ -31,44 +31,39 @@ export default function PriceListPage() {
   function handlePrint() { window.print() }
 
   return (
-    <div style={{ background: '#f9f8ff', minHeight: '100vh', fontFamily: "'HubotSans',sans-serif" }}>
-      <div className="no-print" style={{ padding: '18px 0 0', maxWidth: '1100px', margin: '0 auto', paddingInline: '20px' }}>
-        <Breadcrumb crumbs={crumbs} />
+    <div className="bg-slate-50 min-h-screen font-[HubotSans]">
+      <div className="no-print px-4 pt-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1100px]">
+          <Breadcrumb crumbs={crumbs} />
+        </div>
       </div>
 
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 20px 60px' }}>
-        {/* Header */}
-        <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 0 20px', flexWrap: 'wrap', gap: '12px' }}>
+      <div className="mx-auto max-w-[1100px] px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="no-print mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 style={{ fontSize: '28px', fontWeight: 900, color: '#1a1a1a', margin: '0 0 6px' }}>
-              Price List
-            </h1>
-            <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>
-              All prices shown are starting prices. Final quote depends on quantity, size, and finishes.
-            </p>
+            <h1 className="text-3xl font-black text-slate-900">Price List</h1>
+            <p className="text-sm text-slate-600 mt-2">All prices shown are starting prices. Final quote depends on quantity, size, and finishes.</p>
           </div>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="flex flex-wrap gap-3">
             <button onClick={handlePrint}
-              style={{ padding: '11px 22px', background: PRI, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '14px', fontFamily: "'HubotSans',sans-serif" }}>
+              className="rounded-2xl bg-violet-700 px-6 py-3 text-sm font-bold text-white transition hover:bg-violet-800">
               🖨️ Print / Save PDF
             </button>
             <Link to="/quote"
-              style={{ padding: '11px 22px', background: '#FF6B00', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '14px', textDecoration: 'none', fontFamily: "'HubotSans',sans-serif" }}>
+              className="rounded-2xl bg-orange-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-orange-600">
               Get Custom Quote →
             </Link>
           </div>
         </div>
 
-        {/* Print header */}
-        <div className="print-only" style={{ display: 'none', textAlign: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: '2px solid #7B2FBE' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#7B2FBE', margin: '0 0 4px' }}>Sleekblue Media Houz</h1>
-          <p style={{ color: '#666', fontSize: '13px', margin: '0 0 2px' }}>Premium Printing & Branding | Lagos, Nigeria</p>
-          <p style={{ color: '#888', fontSize: '12px', margin: 0 }}>📞 +234 806 527 5264 | sleekbluemediahouz.com</p>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#1a1a1a', margin: '16px 0 0' }}>PRICE LIST {new Date().getFullYear()}</h2>
-          <p style={{ color: '#888', fontSize: '11px', margin: '4px 0 0' }}>Prices are starting from. Final price depends on quantity, size, and specification.</p>
+        <div className="print-only hidden text-center mb-6 border-b border-violet-500 pb-4">
+          <h1 className="text-2xl font-black text-violet-700 mb-1">Sleekblue Media Houz</h1>
+          <p className="text-sm text-slate-600 mb-1">Premium Printing & Branding | Lagos, Nigeria</p>
+          <p className="text-xs text-slate-500 mb-3">📞 +234 806 527 5264 | sleekbluemediahouz.com</p>
+          <h2 className="text-lg font-bold text-slate-900">PRICE LIST {new Date().getFullYear()}</h2>
+          <p className="text-xs text-slate-500 mt-2">Prices are starting from. Final price depends on quantity, size, and specification.</p>
         </div>
 
-        {/* Category tables */}
         {PRODUCT_CATEGORIES.map(cat => {
           const products = cat.slugs
             .map(slug => ALL_PRODUCTS.find(p => p.slug === slug))
@@ -76,19 +71,19 @@ export default function PriceListPage() {
           if (!products.length) return null
 
           return (
-            <div key={cat.label} style={{ marginBottom: '32px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: 800, color: PRI, margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.5px', borderLeft: `4px solid ${PRI}`, paddingLeft: '12px' }}>
+            <div key={cat.label} className="mb-8">
+              <h2 className="text-sm font-bold uppercase tracking-[0.28em] text-violet-700 mb-3 border-l-4 border-violet-700 pl-3">
                 {cat.label}
               </h2>
-              <div style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #ede9f8' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <div className="overflow-hidden rounded-[1rem] border border-slate-200 bg-white shadow-sm">
+                <table className="w-full border-collapse text-sm">
                   <thead>
-                    <tr style={{ background: `${PRI}10` }}>
-                      <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 700, color: '#1a1a1a', fontFamily: "'HubotSans',sans-serif" }}>Product</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 700, color: '#555' }}>Min Qty</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: '#555' }}>Starting From</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: '#555' }}>Unit Price (at min)</th>
-                      <th className="no-print" style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 700, color: '#555' }}>Order</th>
+                    <tr className="bg-violet-50">
+                      <th className="px-4 py-3 text-left font-semibold text-slate-900">Product</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-700">Min Qty</th>
+                      <th className="px-4 py-3 text-right font-semibold text-slate-700">Starting From</th>
+                      <th className="px-4 py-3 text-right font-semibold text-slate-700">Unit Price (at min)</th>
+                      <th className="no-print px-4 py-3 text-center font-semibold text-slate-700">Order</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -99,26 +94,17 @@ export default function PriceListPage() {
                       const minQty = firstTier?.qty || 1
 
                       return (
-                        <tr key={product.slug} style={{ borderTop: i > 0 ? '1px solid #f0f0f0' : 'none' }}
-                          onMouseEnter={e => e.currentTarget.style.background = '#faf8ff'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                        >
-                          <td style={{ padding: '13px 16px' }}>
-                            <div style={{ fontWeight: 700, color: '#1a1a1a', marginBottom: '2px', fontFamily: "'HubotSans',sans-serif" }}>{product.name}</div>
-                            {product.tagline && <div style={{ fontSize: '11px', color: '#888', fontFamily: "'HubotSans',sans-serif" }}>{product.tagline}</div>}
+                        <tr key={product.slug} className={i > 0 ? 'border-t border-slate-200' : ''}>
+                          <td className="px-4 py-4">
+                            <div className="font-semibold text-slate-900">{product.name}</div>
+                            {product.tagline && <div className="text-xs text-slate-500">{product.tagline}</div>}
                           </td>
-                          <td style={{ padding: '13px 16px', textAlign: 'center', color: '#666' }}>
-                            {minQty > 1 ? `${minQty} pcs` : '1 pc'}
-                          </td>
-                          <td style={{ padding: '13px 16px', textAlign: 'right', fontWeight: 800, color: PRI, fontSize: '14px', fontFamily: "'HubotSans',sans-serif" }}>
-                            {startPrice > 0 ? formatPrice(startPrice) : 'Get Quote'}
-                          </td>
-                          <td style={{ padding: '13px 16px', textAlign: 'right', color: '#666', fontSize: '12px' }}>
-                            {unitPrice > 0 ? `${formatPrice(unitPrice)} / pc` : '—'}
-                          </td>
-                          <td className="no-print" style={{ padding: '13px 16px', textAlign: 'center' }}>
+                          <td className="px-4 py-4 text-center text-slate-600">{minQty > 1 ? `${minQty} pcs` : '1 pc'}</td>
+                          <td className="px-4 py-4 text-right font-bold text-violet-700">{startPrice > 0 ? formatPrice(startPrice) : 'Get Quote'}</td>
+                          <td className="px-4 py-4 text-right text-slate-600 text-xs">{unitPrice > 0 ? `${formatPrice(unitPrice)} / pc` : '—'}</td>
+                          <td className="no-print px-4 py-4 text-center">
                             <Link to={`/store/${product.slug}`}
-                              style={{ padding: '7px 14px', background: `${PRI}10`, color: PRI, borderRadius: '7px', fontWeight: 700, fontSize: '12px', textDecoration: 'none', border: `1px solid ${PRI}30`, whiteSpace: 'nowrap', fontFamily: "'HubotSans',sans-serif", display: 'inline-block' }}>
+                              className="inline-flex rounded-2xl border border-violet-200 bg-violet-50 px-4 py-2 text-[12px] font-bold text-violet-700 transition hover:bg-violet-100">
                               Order →
                             </Link>
                           </td>
@@ -132,22 +118,20 @@ export default function PriceListPage() {
           )
         })}
 
-        {/* Bulk discount notice */}
-        <div style={{ background: `${PRI}08`, border: `1.5px solid ${PRI}20`, borderRadius: '12px', padding: '20px 24px', marginTop: '8px', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-          <span style={{ fontSize: '28px' }}>💡</span>
-          <div>
-            <h3 style={{ fontSize: '15px', fontWeight: 800, color: PRI, margin: '0 0 6px', fontFamily: "'HubotSans',sans-serif" }}>Bulk Discounts Available</h3>
-            <p style={{ fontSize: '13px', color: '#555', margin: '0 0 10px', lineHeight: 1.6, fontFamily: "'HubotSans',sans-serif" }}>
-              The more you order, the lower the unit price. All prices shown are starting (minimum quantity) prices. 
-              For large orders, corporate packages, or custom quotes contact us directly.
+        <div className="rounded-[1rem] border border-violet-200 bg-violet-50 p-6 shadow-sm flex flex-col gap-5 md:flex-row md:items-start">
+          <span className="text-3xl">💡</span>
+          <div className="space-y-4">
+            <h3 className="text-base font-bold text-violet-800">Bulk Discounts Available</h3>
+            <p className="text-sm leading-7 text-slate-600">
+              The more you order, the lower the unit price. All prices shown are starting (minimum quantity) prices. For large orders, corporate packages, or custom quotes contact us directly.
             </p>
-            <div className="no-print" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div className="no-print flex flex-wrap gap-3">
               <a href="https://wa.me/2348065275264?text=Hi%20Sleekblue%2C%20I%20need%20a%20bulk%20quote" target="_blank" rel="noreferrer"
-                style={{ padding: '9px 18px', background: '#25D366', color: '#fff', borderRadius: '8px', fontWeight: 700, fontSize: '13px', textDecoration: 'none', fontFamily: "'HubotSans',sans-serif" }}>
+                className="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-700">
                 💬 WhatsApp for Bulk Quote
               </a>
               <Link to="/quote"
-                style={{ padding: '9px 18px', background: PRI, color: '#fff', borderRadius: '8px', fontWeight: 700, fontSize: '13px', textDecoration: 'none', fontFamily: "'HubotSans',sans-serif" }}>
+                className="rounded-2xl bg-violet-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-violet-800">
                 📝 Submit a Quote Request
               </Link>
             </div>

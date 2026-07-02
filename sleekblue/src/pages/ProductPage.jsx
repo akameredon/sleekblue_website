@@ -266,19 +266,25 @@ export default function ProductPage() {
   }
 
   return (
-    <section style={{ background: '#FAF3E8', padding: '28px 16px 50px', minHeight: '100vh' }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+    <section className="bg-slate-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1280px] space-y-6">
 
         <Breadcrumb crumbs={[{ label: 'Home', href: '/' }, { label: 'Store', href: '/store' }, { label: product.name }]} />
 
-        <div className="product-layout" style={{ display: 'grid', gridTemplateColumns: '240px 1fr 280px', gap: '20px', marginBottom: '40px', alignItems: 'start' }}>
+        <div className="grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)_300px]">
 
           {/* LEFT — image gallery */}
-          <div>
-            <div style={{ background: displayImgs ? 'transparent' : thumbColors[selectedThumb], borderRadius: '12px', border: '3px solid #7B2FBE', width: '100%', aspectRatio: '3/4', marginBottom: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: displayImgs ? 'flex-start' : 'flex-end', paddingBottom: displayImgs ? 0 : '16px', position: 'relative', overflow: 'hidden' }}>
+          <div className="space-y-3">
+            <div
+              className={`relative flex flex-col items-center overflow-hidden rounded-[1rem] border-4 border-violet-700 ${displayImgs ? 'justify-start pb-0 bg-transparent' : 'justify-end pb-4'} aspect-[3/4]`}
+              style={{ background: displayImgs ? 'transparent' : thumbColors[selectedThumb] }}
+            >
               {details.badge && (
-                <div style={{ position: 'absolute', top: '12px', left: '12px', background: '#7B2FBE', color: '#fff', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, fontFamily: "'HubotSans', sans-serif", zIndex: 2 }}>{details.badge}</div>
+                <div className="absolute left-3 top-3 rounded-full bg-violet-700 px-3 py-1 text-[11px] font-bold text-white">
+                  {details.badge}
+                </div>
               )}
+
               {displayImgs ? (
                 <img
                   key={selectedThumb}
@@ -286,106 +292,103 @@ export default function ProductPage() {
                   alt={product.name}
                   loading="lazy"
                   decoding="async"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '9px' }}
+                  className="h-full w-full object-cover rounded-[0.55rem]"
                 />
               ) : (
-                <div style={{ textAlign: 'center', padding: '0 12px' }}>
-                  <p style={{ fontWeight: 700, fontSize: '14px', color: '#1a1a1a', fontFamily: "'HubotSans', sans-serif" }}>{product.name}</p>
-                  <p style={{ fontWeight: 700, fontSize: '15px', color: '#7B2FBE', fontFamily: "'HubotSans', sans-serif" }}>{fmt(currentTotal)}</p>
-                  <p style={{ fontSize: '11px', color: '#555' }}>for {customQty.toLocaleString()} pcs</p>
+                <div className="flex h-full w-full items-end justify-center px-3 pb-3 text-center">
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{product.name}</p>
+                    <p className="text-sm font-bold text-violet-700">{fmt(currentTotal)}</p>
+                    <p className="text-xs text-slate-600">for {customQty.toLocaleString()} pcs</p>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Thumbnails */}
             {displayImgs ? (
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+              <div className="flex flex-wrap gap-2 mt-2">
                 {displayImgs.map((img, i) => {
-                  const thumbSize = displayImgs.length > 4 ? '44px' : displayImgs.length > 3 ? '52px' : '70px'
+                  const sizeClass = displayImgs.length > 4 ? 'h-11 w-11' : displayImgs.length > 3 ? 'h-14 w-14' : 'h-16 w-16'
                   return (
-                    <div key={i} onClick={() => setSelectedThumb(i)}
-                      style={{ width: thumbSize, height: thumbSize, borderRadius: '6px', border: selectedThumb === i ? '2.5px solid #7B2FBE' : '1.5px solid #ddd', cursor: 'pointer', overflow: 'hidden', background: '#ddd', flexShrink: 0 }}>
-                      <img src={img} alt={`View ${i + 1}`} loading="lazy" decoding="async"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    </div>
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setSelectedThumb(i)}
+                      className={`${sizeClass} overflow-hidden rounded-xl ${selectedThumb === i ? 'ring-2 ring-violet-600' : 'border border-slate-300'} bg-slate-200`}>
+                      <img src={img} alt={`View ${i + 1}`} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                    </button>
                   )
                 })}
               </div>
             ) : (
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="flex gap-2">
                 {thumbColors.map((color, i) => (
-                  <div key={i} onClick={() => setSelectedThumb(i)}
-                    style={{ flex: 1, aspectRatio: '1', background: color, borderRadius: '6px', border: selectedThumb === i ? '2.5px solid #7B2FBE' : '1px solid #ddd', cursor: 'pointer' }} />
+                  <button key={i} type="button" onClick={() => setSelectedThumb(i)} className={`flex-1 aspect-square rounded-xl border ${selectedThumb === i ? 'border-violet-600' : 'border-slate-300'}`} style={{ background: color }} />
                 ))}
               </div>
             )}
 
-            {/* Product video */}
             {adminOverride?.videoUrl && (
-              <div style={{ marginTop: '10px', borderRadius: '10px', overflow: 'hidden' }}>
-                {(adminOverride.videoUrl.includes('youtube') || adminOverride.videoUrl.includes('youtu.be')) ? (
-                  <iframe src={`https://www.youtube.com/embed/${getYoutubeId(adminOverride.videoUrl)}`}
+              <div className="overflow-hidden rounded-[1rem] mt-3">
+                {adminOverride.videoUrl.includes('youtube') || adminOverride.videoUrl.includes('youtu.be') ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${getYoutubeId(adminOverride.videoUrl)}`}
                     title="Product video"
-                    style={{ width: '100%', aspectRatio: '16/9', border: 'none', borderRadius: '10px', display: 'block' }}
-                    allowFullScreen />
+                    className="h-full w-full min-h-[220px]"
+                    allowFullScreen
+                  />
                 ) : (
-                  <video src={adminOverride.videoUrl} controls
-                    style={{ width: '100%', borderRadius: '10px', display: 'block' }} />
+                  <video src={adminOverride.videoUrl} controls className="w-full rounded-[1rem]" />
                 )}
               </div>
             )}
           </div>
 
           {/* CENTER — details & pricing */}
-          <div style={{ background: '#fff', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
-              <h1 style={{ fontSize: '18px', fontWeight: 800, color: '#1a1a1a', margin: 0, fontFamily: "'HubotSans', sans-serif" }}>{product.name}</h1>
-              <button onClick={toggleWishlist} title={inWishlist ? 'Remove from wishlist' : 'Save for later'}
-                style={{ flexShrink: 0, background: inWishlist ? '#fef2f2' : '#f5f0ff', border: `1.5px solid ${inWishlist ? '#fca5a5' : '#e0d6f5'}`, borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: inWishlist ? '#dc2626' : '#7B2FBE', fontWeight: 600, fontSize: '12px', fontFamily: "'HubotSans', sans-serif" }}>
+          <div className="rounded-[1rem] bg-white p-5 shadow-sm">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <h1 className="text-xl font-black text-slate-900">{product.name}</h1>
+              <button
+                onClick={toggleWishlist}
+                title={inWishlist ? 'Remove from wishlist' : 'Save for later'}
+                className={`inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold ${inWishlist ? 'border border-rose-200 bg-rose-50 text-rose-600' : 'border border-violet-200 bg-violet-50 text-violet-700'}`}>
                 {inWishlist ? '❤️ Saved' : '🤍 Save'}
               </button>
             </div>
-            <p style={{ fontSize: '12px', color: '#888', marginBottom: views7d >= 3 ? '6px' : '16px', fontFamily: "'HubotSans', sans-serif" }}>{product.category}</p>
+            <p className={`text-sm ${views7d >= 3 ? 'mb-2' : 'mb-4'} text-slate-500`}>{product.category}</p>
             {views7d >= 3 && (
-              <div style={{ fontSize: '12px', color: '#e53e3e', fontWeight: 600, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: "'HubotSans', sans-serif" }}>
+              <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-rose-600">
                 🔥 {views7d} people viewed this in the past 7 days
               </div>
             )}
 
-            {/* Size selector */}
-            <p style={{ fontSize: '12.5px', fontWeight: 700, color: '#333', marginBottom: '8px', fontFamily: "'HubotSans', sans-serif" }}>
+            <p className="mb-3 text-sm font-semibold text-slate-800">
               {isDieCut ? 'Size (inches):' : 'Size / Type:'}
             </p>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '18px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            <div className="mb-5 flex flex-wrap gap-2">
               {sizes.map(size => {
                 const badge = getSizeBadge(size)
                 const isSelected = selectedSize === size
+                const buttonClass = isSelected
+                  ? 'bg-violet-700 text-white shadow-sm'
+                  : badge
+                    ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                    : 'bg-slate-100 text-slate-900'
                 return (
-                  <div key={size} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                  <div key={size} className="flex flex-col items-center gap-1">
                     <button
+                      type="button"
                       onClick={() => {
                         setSelectedSize(size)
                         setSelectedThumb(0)
                         setCustomQty(isDieCut ? 100 : (product.priceTable[0]?.qty || 1))
                       }}
-                      style={{
-                        padding: '6px 14px',
-                        borderRadius: '20px',
-                        border: badge && !isSelected ? `1.5px solid ${badge.bg}` : 'none',
-                        background: isSelected ? '#7B2FBE' : (badge ? '#FFF0E8' : '#EDEDED'),
-                        color: isSelected ? '#fff' : (badge ? badge.bg : '#333'),
-                        fontSize: '12.5px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontFamily: "'HubotSans', sans-serif",
-                        transition: 'all 0.15s',
-                        whiteSpace: 'nowrap',
-                      }}
+                      className={`rounded-full px-4 py-2 text-xs font-semibold transition ${buttonClass}`}
                     >
                       {size}
                     </button>
                     {badge && (
-                      <span style={{ fontSize: '9px', background: isSelected ? '#7B2FBE' : badge.bg, color: '#fff', padding: '1px 6px', borderRadius: '8px', fontWeight: 700, lineHeight: 1.5 }}>
+                      <span className={`rounded-full px-2 py-1 text-[10px] font-bold text-white ${isSelected ? 'bg-violet-700' : ''}`} style={{ backgroundColor: isSelected ? '#7B2FBE' : badge.bg }}>
                         {badge.label}
                       </span>
                     )}
@@ -394,104 +397,123 @@ export default function ProductPage() {
               })}
             </div>
 
-            {/* Custom size inputs — shown only for die-cut + Custom */}
             {isDieCut && selectedSize === 'Custom' && (
-              <div style={{ background: '#f8f5ff', border: '1.5px solid #d4b5ff', borderRadius: '10px', padding: '14px 16px', marginBottom: '18px' }}>
-                <p style={{ fontSize: '12.5px', fontWeight: 700, color: '#333', marginBottom: '10px', fontFamily: "'HubotSans', sans-serif" }}>
-                  Enter your custom size (inches):
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <div className="mb-5 rounded-[1rem] border border-violet-200 bg-violet-50 p-4">
+                <p className="mb-3 text-sm font-semibold text-slate-800">Enter your custom size (inches):</p>
+                <div className="flex flex-wrap items-center gap-3">
                   <div>
-                    <label style={{ fontSize: '11px', color: '#666', display: 'block', marginBottom: '4px', fontFamily: "'HubotSans', sans-serif" }}>Width (in)</label>
+                    <label className="mb-1 block text-[11px] text-slate-600">Width (in)</label>
                     <input
-                      type="number" min="0.5" step="0.5" value={customWidth}
+                      type="number"
+                      min="0.5"
+                      step="0.5"
+                      value={customWidth}
                       onChange={e => setCustomWidth(Math.max(0.5, parseFloat(e.target.value) || 0.5))}
-                      style={{ width: '72px', padding: '7px 10px', border: '1.5px solid #ccc', borderRadius: '8px', fontSize: '13px', textAlign: 'center', fontFamily: "'HubotSans', sans-serif", outline: 'none' }}
+                      className="w-20 rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none"
                     />
                   </div>
-                  <span style={{ fontSize: '18px', color: '#666', marginTop: '14px' }}>×</span>
+                  <span className="text-lg text-slate-600">×</span>
                   <div>
-                    <label style={{ fontSize: '11px', color: '#666', display: 'block', marginBottom: '4px', fontFamily: "'HubotSans', sans-serif" }}>Height (in)</label>
+                    <label className="mb-1 block text-[11px] text-slate-600">Height (in)</label>
                     <input
-                      type="number" min="0.5" step="0.5" value={customHeight}
+                      type="number"
+                      min="0.5"
+                      step="0.5"
+                      value={customHeight}
                       onChange={e => setCustomHeight(Math.max(0.5, parseFloat(e.target.value) || 0.5))}
-                      style={{ width: '72px', padding: '7px 10px', border: '1.5px solid #ccc', borderRadius: '8px', fontSize: '13px', textAlign: 'center', fontFamily: "'HubotSans', sans-serif", outline: 'none' }}
+                      className="w-20 rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none"
                     />
                   </div>
-                  <div style={{ marginTop: '14px', fontSize: '12px', color: '#555', fontFamily: "'HubotSans', sans-serif" }}>
-                    → Priced as <strong style={{ color: '#7B2FBE' }}>{effectiveSize}</strong>
+                  <div className="text-sm text-slate-600">
+                    → Priced as <strong className="text-violet-700">{effectiveSize}</strong>
                   </div>
                 </div>
-                <p style={{ fontSize: '11px', color: '#888', marginTop: '8px', lineHeight: 1.5, fontFamily: "'HubotSans', sans-serif" }}>
+                <p className="mt-3 text-xs text-slate-500 leading-6">
                   Price estimate based on nearest standard size. Our team will confirm exact pricing.
                 </p>
               </div>
             )}
 
-            {/* Price table */}
-            <p style={{ fontSize: '12.5px', fontWeight: 700, color: '#333', marginBottom: '8px', fontFamily: "'HubotSans', sans-serif" }}>
-              Price Table{isDieCut && selectedSize === 'Custom' && <span style={{ fontSize: '11px', color: '#7B2FBE', fontWeight: 400 }}> (for {effectiveSize})</span>}
-              <span style={{ fontSize: '11px', color: '#999', fontWeight: 400 }}> (click a row to set quantity)</span>
-            </p>
-            <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #eee', marginBottom: '18px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#f5f5f5' }}>
-                    <th style={{ padding: '9px 14px', textAlign: 'left', fontSize: '12px', color: '#555', fontWeight: 700, fontFamily: "'HubotSans', sans-serif" }}>Qty (pcs)</th>
-                    <th style={{ padding: '9px 14px', textAlign: 'left', fontSize: '12px', color: '#555', fontWeight: 700, fontFamily: "'HubotSans', sans-serif" }}>Total Price</th>
-                    <th style={{ padding: '9px 14px', textAlign: 'left', fontSize: '12px', color: '#555', fontWeight: 700, fontFamily: "'HubotSans', sans-serif" }}>Unit Price</th>
-                    {isDieCut && <th style={{ padding: '9px 14px', textAlign: 'left', fontSize: '12px', color: '#555', fontWeight: 700, fontFamily: "'HubotSans', sans-serif" }}>Discount</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {priceRows.map((row, i) => {
-                    const isActive = customQty === row.qty
-                    return (
-                      <tr key={i}
-                        onClick={() => clickQtyRow(row.qty)}
-                        style={{ borderTop: '1px solid #eee', cursor: 'pointer', background: isActive ? '#f0e8ff' : 'transparent', transition: 'background 0.15s' }}
-                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#faf5ff' }}
-                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
-                      >
-                        <td style={{ padding: '9px 14px', fontSize: '13.5px', color: '#222', fontWeight: isActive ? 700 : 400 }}>{row.label || row.qty.toLocaleString()}</td>
-                        <td style={{ padding: '9px 14px', fontSize: '13.5px', fontWeight: 700, color: isActive ? '#7B2FBE' : '#222' }}>{fmt(row.total)}</td>
-                        <td style={{ padding: '9px 14px', fontSize: '13px', color: '#555' }}>{fmt(row.unitPrice)}/pc</td>
-                        {isDieCut && (
-                          <td style={{ padding: '9px 14px' }}>
-                            {row.discountRate > 0
-                              ? <span style={{ background: '#dcfce7', color: '#166534', borderRadius: '10px', padding: '2px 8px', fontSize: '11px', fontWeight: 700 }}>{Math.round(row.discountRate * 100)}% OFF</span>
-                              : <span style={{ color: '#999', fontSize: '11px' }}>—</span>
-                            }
-                          </td>
-                        )}
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+            <div className="mb-5 space-y-3">
+              <p className="text-sm font-semibold text-slate-800">
+                Price Table{isDieCut && selectedSize === 'Custom' && <span className="text-xs font-normal text-violet-700"> (for {effectiveSize})</span>}
+                <span className="ml-2 text-xs font-normal text-slate-500">(click a row to set quantity)</span>
+              </p>
+              <div className="overflow-hidden rounded-[1rem] border border-slate-200 bg-white shadow-sm">
+                <table className="w-full border-collapse text-sm">
+                  <thead className="bg-slate-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Qty (pcs)</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Total Price</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Unit Price</th>
+                      {isDieCut && <th className="px-4 py-3 text-left font-semibold text-slate-600">Discount</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {priceRows.map((row, i) => {
+                      const isActive = customQty === row.qty
+                      return (
+                        <tr
+                          key={i}
+                          onClick={() => clickQtyRow(row.qty)}
+                          className={`cursor-pointer border-t border-slate-200 transition ${isActive ? 'bg-violet-50' : 'hover:bg-slate-50'}`}
+                        >
+                          <td className={`px-4 py-3 text-slate-900 ${isActive ? 'font-bold' : 'font-medium'}`}>{row.label || row.qty.toLocaleString()}</td>
+                          <td className={`px-4 py-3 ${isActive ? 'font-bold text-violet-700' : 'text-slate-900'}`}>{fmt(row.total)}</td>
+                          <td className="px-4 py-3 text-slate-600">{fmt(row.unitPrice)}/pc</td>
+                          {isDieCut && (
+                            <td className="px-4 py-3">
+                              {row.discountRate > 0 ? (
+                                <span className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700">
+                                  {Math.round(row.discountRate * 100)}% OFF
+                                </span>
+                              ) : (
+                                <span className="text-xs text-slate-500">—</span>
+                              )}
+                            </td>
+                          )}
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            {/* Custom quantity */}
-            <div style={{ background: '#fafafa', borderRadius: '10px', padding: '14px 16px', border: '1px solid #eee' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: '#333', fontFamily: "'HubotSans', sans-serif", whiteSpace: 'nowrap' }}>Custom Qty:</span>
-                <button onClick={() => setCustomQty(q => Math.max(1, q - 1))}
-                  style={{ width: '30px', height: '30px', borderRadius: '50%', border: '2px solid #7B2FBE', background: '#fff', color: '#7B2FBE', fontSize: '18px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
-                <input type="number" value={customQty} min={1}
+            <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="whitespace-nowrap text-sm font-semibold text-slate-800">Custom Qty:</span>
+                <button
+                  type="button"
+                  onClick={() => setCustomQty(q => Math.max(1, q - 1))}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-violet-700 bg-white text-2xl font-bold text-violet-700"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  value={customQty}
+                  min={1}
                   onChange={e => setCustomQty(Math.max(1, parseInt(e.target.value) || 1))}
-                  style={{ width: '80px', padding: '6px 10px', border: '1.5px solid #ccc', borderRadius: '8px', fontSize: '13px', textAlign: 'center', fontFamily: "'HubotSans', sans-serif" }} />
-                <button onClick={() => setCustomQty(q => q + 1)}
-                  style={{ width: '30px', height: '30px', borderRadius: '50%', border: 'none', background: '#7B2FBE', color: '#fff', fontSize: '18px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
-                <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-                  <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>Total</p>
-                  <p style={{ fontSize: '17px', fontWeight: 800, color: '#7B2FBE', margin: 0, fontFamily: "'HubotSans', sans-serif" }}>{fmt(currentTotal)}</p>
+                  className="w-20 rounded-2xl border border-slate-300 bg-white px-3 py-2 text-center text-sm text-slate-900 outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setCustomQty(q => q + 1)}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-violet-700 text-2xl font-bold text-white"
+                >
+                  +
+                </button>
+                <div className="ml-auto min-w-[120px] text-right">
+                  <p className="text-xs text-slate-500">Total</p>
+                  <p className="text-lg font-bold text-violet-700">{fmt(currentTotal)}</p>
                   {isDieCut && discountPct > 0 && (
-                    <p style={{ fontSize: '11px', color: '#16a34a', margin: '2px 0 0', fontWeight: 600 }}>{discountPct}% bulk discount applied!</p>
+                    <p className="mt-1 text-xs font-semibold text-emerald-700">{discountPct}% bulk discount applied!</p>
                   )}
                 </div>
               </div>
               {isDieCut && (
-                <p style={{ fontSize: '11px', color: '#999', marginTop: '8px', fontFamily: "'HubotSans', sans-serif" }}>
+                <p className="mt-3 text-xs text-slate-500">
                   Note: Design fee ₦3,000 (first order) · Bulk discounts apply from 500 pcs
                 </p>
               )}
@@ -499,62 +521,78 @@ export default function ProductPage() {
           </div>
 
           {/* RIGHT — description */}
-          <div style={{ background: '#fff', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-            <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#7B2FBE', marginBottom: '12px', fontFamily: "'HubotSans', sans-serif" }}>Product Description</h3>
-            <p style={{ fontSize: '13px', color: '#555', lineHeight: 1.65, marginBottom: '16px', fontFamily: "'HubotSans', sans-serif" }}>{details.description}</p>
+          <div className="rounded-[1rem] bg-white p-5 shadow-sm">
+            <h3 className="mb-4 text-sm font-bold text-violet-700">Product Description</h3>
+            <p className="mb-4 text-sm leading-7 text-slate-600">{details.description}</p>
 
-            <p style={{ fontSize: '12.5px', fontWeight: 700, color: '#333', marginBottom: '10px', fontFamily: "'HubotSans', sans-serif" }}>Features:</p>
-            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '20px' }}>
+            <p className="mb-3 text-sm font-semibold text-slate-900">Features:</p>
+            <ul className="mb-5 space-y-2">
               {details.features.map((f, i) => (
-                <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px', fontSize: '12.5px', color: '#333', fontFamily: "'HubotSans', sans-serif" }}>
-                  <span style={{ color: '#7B2FBE', fontWeight: 700, flexShrink: 0, fontSize: '14px' }}>✓</span>{f}
+                <li key={i} className="flex gap-2 text-sm text-slate-700">
+                  <span className="mt-[2px] text-violet-700">✓</span>
+                  <span>{f}</span>
                 </li>
               ))}
             </ul>
 
             {isDieCut && (
-              <div style={{ background: '#fef3c7', borderRadius: '8px', padding: '10px 12px', marginBottom: '16px', fontSize: '12px', color: '#92400e', lineHeight: 1.5 }}>
-                <strong>Bulk Discount:</strong><br />
-                500 pcs = 10% off · 1,000 pcs = 20% off<br />
-                2,000 pcs = 22.5% off · 3,000+ pcs = 25% off (max)
+              <div className="mb-5 rounded-2xl bg-amber-100 p-4 text-sm text-amber-900">
+                <strong>Bulk Discount:</strong>
+                <p className="mt-2 leading-6">
+                  500 pcs = 10% off · 1,000 pcs = 20% off<br />
+                  2,000 pcs = 22.5% off · 3,000+ pcs = 25% off (max)
+                </p>
               </div>
             )}
 
-            <button onClick={handleAddToCart}
-              style={{ width: '100%', background: added ? '#16a34a' : '#FF6B00', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '10px', fontFamily: "'HubotSans', sans-serif", transition: 'background 0.3s' }}>
+            <button
+              onClick={handleAddToCart}
+              className={`mb-3 w-full rounded-[1rem] px-4 py-3 text-sm font-bold text-white transition ${added ? 'bg-emerald-600' : 'bg-orange-500 hover:bg-orange-600'}`}
+            >
               {added ? '✓ Added to Cart!' : 'Add to Cart'}
             </button>
-            <button onClick={handleCheckout}
-              style={{ width: '100%', background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '10px', fontFamily: "'HubotSans', sans-serif" }}>
+            <button
+              onClick={handleCheckout}
+              className="mb-3 w-full rounded-[1rem] bg-violet-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-violet-800"
+            >
               Checkout Now
             </button>
-            <a href="https://wa.me/2348065275264"
-              target="_blank" rel="noopener noreferrer"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', background: '#25D366', color: '#fff', border: 'none', borderRadius: '10px', padding: '11px', fontSize: '13.5px', fontWeight: 700, cursor: 'pointer', textDecoration: 'none', fontFamily: "'HubotSans', sans-serif" }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            <a
+              href="https://wa.me/2348065275264"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-[1rem] bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white" className="h-4 w-4" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               Ask via WhatsApp
             </a>
 
-            {/* Artwork Upload */}
-            <div style={{ marginTop: '14px', background: '#f9f5ff', borderRadius: '10px', padding: '14px 16px', border: '1.5px solid #e0d6f5' }}>
-              <p style={{ fontSize: '12.5px', fontWeight: 700, color: '#7B2FBE', margin: '0 0 6px', fontFamily: "'HubotSans', sans-serif" }}>📎 Upload Your Artwork (Optional)</p>
-              <p style={{ fontSize: '11px', color: '#888', margin: '0 0 10px', lineHeight: 1.5, fontFamily: "'HubotSans', sans-serif" }}>PDF, PNG, AI, PSD, EPS — max 25MB. We'll review before printing.</p>
+            <div className="rounded-[1rem] border border-violet-200 bg-violet-50 p-4">
+              <p className="mb-2 text-sm font-semibold text-violet-700">📎 Upload Your Artwork (Optional)</p>
+              <p className="mb-4 text-xs leading-6 text-slate-500">PDF, PNG, AI, PSD, EPS — max 25MB. We'll review before printing.</p>
               {artworkDone ? (
-                <div style={{ background: '#dcfce7', borderRadius: '8px', padding: '10px 14px', textAlign: 'center', color: '#16a34a', fontSize: '13px', fontWeight: 700, fontFamily: "'HubotSans', sans-serif" }}>
+                <div className="rounded-2xl bg-emerald-100 px-4 py-3 text-center text-sm font-bold text-emerald-800">
                   ✓ Artwork received! Our team will review it.
                 </div>
               ) : (
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <label style={{ flex: 1, cursor: 'pointer', minWidth: '0' }}>
-                    <input type="file" accept=".pdf,.png,.jpg,.jpeg,.ai,.psd,.eps,.svg,.zip" style={{ display: 'none' }}
-                      onChange={e => { setArtworkFile(e.target.files[0] || null); setArtworkDone(false) }} />
-                    <div style={{ padding: '8px 12px', border: '1.5px dashed #ccc', borderRadius: '8px', background: '#fff', fontSize: '12px', color: artworkFile ? '#7B2FBE' : '#999', fontFamily: "'HubotSans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div className="flex flex-wrap gap-3">
+                  <label className="flex-1 min-w-0 cursor-pointer">
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg,.ai,.psd,.eps,.svg,.zip"
+                      className="hidden"
+                      onChange={e => { setArtworkFile(e.target.files[0] || null); setArtworkDone(false) }}
+                    />
+                    <div className={`overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-white px-3 py-3 text-sm ${artworkFile ? 'text-violet-700' : 'text-slate-500'} whitespace-nowrap text-ellipsis overflow-hidden`}>
                       {artworkFile ? `📄 ${artworkFile.name}` : '⬆ Choose artwork file'}
                     </div>
                   </label>
                   {artworkFile && (
-                    <button onClick={uploadArtwork} disabled={artworkUploading}
-                      style={{ padding: '9px 16px', background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap', fontFamily: "'HubotSans', sans-serif" }}>
+                    <button
+                      onClick={uploadArtwork}
+                      disabled={artworkUploading}
+                      className="rounded-2xl bg-violet-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
                       {artworkUploading ? '⏳ Uploading…' : 'Send File'}
                     </button>
                   )}
@@ -564,76 +602,65 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* Similar items */}
         {similarProducts.length > 0 && (
-          <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1a1a1a', textAlign: 'center', marginBottom: '20px', letterSpacing: '0.5px', fontFamily: "'HubotSans', sans-serif" }}>SIMILAR ITEMS</h3>
-            <div className="similar-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px' }}>
+          <div className="space-y-4">
+            <h3 className="text-center text-xl font-black text-slate-900 tracking-[0.02em]">SIMILAR ITEMS</h3>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {similarProducts.map((item, i) => {
                 const simImgs = PRODUCT_IMAGES[item.slug] || []
                 return (
-                  <div key={i} onClick={() => navigate(`/store/${item.slug}`)}
-                    style={{ background: '#fff', borderRadius: '10px', padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', border: '1px solid #eee', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(123,47,190,0.12)'}
-                    onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'}
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => navigate(`/store/${item.slug}`)}
+                    className="group flex flex-col overflow-hidden rounded-[1rem] border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                   >
-                    <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: '6px', overflow: 'hidden', background: '#C8C8C8' }}>
+                    <div className="mb-3 overflow-hidden rounded-2xl bg-slate-200 aspect-[3/4]">
                       {simImgs[0] ? (
-                        <img src={simImgs[0]} alt={item.name} loading="lazy" decoding="async"
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        <img src={simImgs[0]} alt={item.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                       ) : (
-                        <div style={{ width: '100%', height: '100%', background: '#C8C8C8' }} />
+                        <div className="flex h-full w-full items-center justify-center text-3xl">🖨️</div>
                       )}
                     </div>
-                    <p style={{ fontSize: '11px', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', fontFamily: "'HubotSans', sans-serif" }}>{item.name}</p>
-                    <button style={{ background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '20px', padding: '5px 0', fontSize: '11px', fontWeight: 600, cursor: 'pointer', width: '80%', fontFamily: "'HubotSans', sans-serif" }}>Shop</button>
-                  </div>
+                    <p className="mb-3 text-xs font-semibold text-slate-900 text-center">{item.name}</p>
+                    <span className="inline-flex w-full items-center justify-center rounded-full bg-violet-700 px-3 py-2 text-[11px] font-bold text-white transition group-hover:bg-violet-800">
+                      Shop
+                    </span>
+                  </button>
                 )
               })}
             </div>
           </div>
         )}
 
-        {/* Recently Viewed */}
         {recentlyViewed.length > 0 && (
-          <div style={{ marginTop: '40px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1a1a1a', textAlign: 'center', marginBottom: '16px', letterSpacing: '0.5px', fontFamily: "'HubotSans', sans-serif" }}>RECENTLY VIEWED</h3>
-            <div className="similar-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px' }}>
+          <div className="space-y-4">
+            <h3 className="text-center text-lg font-black text-slate-900 tracking-[0.02em]">RECENTLY VIEWED</h3>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {recentlyViewed.map((item, i) => (
-                <div key={i} onClick={() => navigate(`/store/${item.slug}`)}
-                  style={{ background: '#fff', borderRadius: '10px', padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', border: '1px solid #eee', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}
-                  onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(123,47,190,0.12)'}
-                  onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'}
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => navigate(`/store/${item.slug}`)}
+                  className="group flex flex-col overflow-hidden rounded-[1rem] border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: '6px', overflow: 'hidden', background: '#e0d6f5' }}>
+                  <div className="mb-3 overflow-hidden rounded-2xl bg-slate-200 aspect-[3/4]">
                     {item.img ? (
-                      <img src={item.img} alt={item.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      <img src={item.img} alt={item.name} loading="lazy" className="h-full w-full object-cover" />
                     ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛍️</div>
+                      <div className="flex h-full w-full items-center justify-center text-3xl">🛍️</div>
                     )}
                   </div>
-                  <p style={{ fontSize: '11px', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', margin: 0, fontFamily: "'HubotSans', sans-serif" }}>{item.name}</p>
-                  <button style={{ background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '20px', padding: '5px 0', fontSize: '11px', fontWeight: 600, cursor: 'pointer', width: '80%', fontFamily: "'HubotSans', sans-serif" }}>View</button>
-                </div>
+                  <p className="mb-3 text-xs font-semibold text-slate-900 text-center">{item.name}</p>
+                  <span className="inline-flex w-full items-center justify-center rounded-full bg-violet-700 px-3 py-2 text-[11px] font-bold text-white transition group-hover:bg-violet-800">
+                    View
+                  </span>
+                </button>
               ))}
             </div>
           </div>
         )}
       </div>
-
-      <style>{`
-        @media (max-width: 900px) {
-          .product-layout { grid-template-columns: 1fr 1fr !important; }
-          .product-layout > div:first-child { grid-column: 1 / -1; max-width: 260px; margin: 0 auto; }
-        }
-        @media (max-width: 600px) {
-          .product-layout { grid-template-columns: 1fr !important; }
-          .product-layout > div:first-child { max-width: 100%; }
-        }
-        @media (max-width: 480px) {
-          .similar-grid { grid-template-columns: repeat(3, 1fr) !important; }
-        }
-      `}</style>
     </section>
   )
 }

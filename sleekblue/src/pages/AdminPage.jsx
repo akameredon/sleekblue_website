@@ -84,6 +84,7 @@ function SaveBar({ onSave, onCancel, saving, saved, className = '' }) {
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -116,7 +117,25 @@ function LoginScreen({ onLogin }) {
         </div>
         <form onSubmit={handleLogin}>
           <Input label="Username" value={username} onChange={e => setUsername(e.target.value)} placeholder="Enter username" />
-          <Input label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••••" />
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-slate-600 mb-2">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••••"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-14 text-sm text-slate-900 outline-none transition focus:border-[#7B2FBE] focus:ring-2 focus:ring-[#7B2FBE]/20"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-2 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
           {error && <p className="text-sm text-rose-600 mb-3">{error}</p>}
           <Btn onClick={handleLogin} disabled={loading} className="w-full py-3">
             {loading ? 'Signing in…' : '🔐 Sign In'}
@@ -658,10 +677,15 @@ function PageEditorView({ token }) {
             ))}
             <a href="/" target="_blank" rel="noopener noreferrer"
               className="ml-auto inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+<<<<<<< HEAD
               View Live Site ↗
             </a>
+=======
+              Open public site
+            </a>
+          </div>
+>>>>>>> 0163bd0 (Refactor code structure for improved readability and maintainability)
         </div>
-      </div>
 
       {activeTab === 'layout' && (
         <div>
@@ -761,7 +785,7 @@ function Sidebar({ view, setView, counts, onLogout }) {
     { id: 'referrals',       icon: '🔗', label: 'Referrals' },
   ]
   return (
-    <div className="w-[220px] min-h-screen flex-shrink-0 bg-[#7B2FBE] flex flex-col">
+    <div className="w-[220px] min-h-screen flex-shrink-0 text-slate-100 shadow-inner shadow-slate-900/30 flex flex-col" style={{ background: '#8A88DA' }}>
       <div className="px-4 py-5 border-b border-white/15 text-center">
         <img src={logo} alt="Sleekblue" className="mx-auto h-10 rounded-xl bg-white p-1" />
         <p className="mt-3 text-[10px] uppercase tracking-[0.24em] text-white/75">Admin Panel</p>
@@ -774,7 +798,7 @@ function Sidebar({ view, setView, counts, onLogout }) {
               key={item.id}
               type="button"
               onClick={() => setView(item.id)}
-              className={`flex w-full items-center gap-3 px-4 py-3 text-left transition ${active ? 'bg-white/20 border-l-4 border-white text-white font-semibold' : 'border-l-4 border-transparent text-slate-100 hover:bg-white/10'}`}>
+              className={`flex w-full items-center gap-3 px-4 py-3 text-left transition ${active ? 'bg-white/15 border-l-4 border-white text-white font-semibold shadow-sm' : 'border-l-4 border-transparent text-white hover:bg-white/10 hover:text-white'}`}>
               <span className="text-lg flex-shrink-0">{item.icon}</span>
               <span className="flex-1 text-sm">{item.label}</span>
               {item.badge > 0 && <span className="rounded-full bg-[#FF6B00] px-2 py-0.5 text-[10px] font-semibold text-white">{item.badge}</span>}
@@ -1321,6 +1345,7 @@ function SettingsView({ token, settings, onDataChanged }) {
     phone: '', whatsapp: '', primaryColor: '#7B2FBE', accentColor: '#FF6B00',
     heroTitle: '', heroSubtitle: '', companyName: '', email: '', address: '',
     ga4Id: '', metaPixelId: '',
+    paystackPublicKey: '', bankName: '', accountName: '', accountNumber: '',
     ...settings,
   })
   const [saving, setSaving] = useState(false)
@@ -1389,11 +1414,24 @@ function SettingsView({ token, settings, onDataChanged }) {
         </Card>
 
         <Card>
-          <h3 className="text-sm font-bold text-[#7B2FBE] mb-3">Current Settings Preview</h3>
+          <h3 className="text-sm font-bold text-[#7B2FBE] mb-3">Payment Setup</h3>
+          <Input label="Paystack Public Key" value={form.paystackPublicKey} onChange={e => set('paystackPublicKey', e.target.value)} placeholder="pk_live_xxx..." />
+          <Input label="Bank Name" value={form.bankName} onChange={e => set('bankName', e.target.value)} placeholder="e.g. Access Bank" />
+          <div className="grid gap-4 md:grid-cols-2">
+            <Input label="Account Name" value={form.accountName} onChange={e => set('accountName', e.target.value)} placeholder="Sleekblue Media Houz" />
+            <Input label="Account Number" value={form.accountNumber} onChange={e => set('accountNumber', e.target.value)} placeholder="0123456789" />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="text-sm font-bold text-[#7B2FBE] mb-4">Current Settings Preview</h3>
           <div className="bg-slate-100 rounded-2xl p-4 text-sm text-slate-600 leading-7">
             <div><strong>Phone:</strong> {form.phone || '—'}</div>
             <div><strong>WhatsApp:</strong> {form.whatsapp ? `https://wa.me/${form.whatsapp}` : '—'}</div>
             <div><strong>Email:</strong> {form.email || '—'}</div>
+            <div><strong>Bank:</strong> {form.bankName || '—'}</div>
+            <div><strong>Account:</strong> {form.accountName || '—'}{form.accountNumber ? ` • ${form.accountNumber}` : ''}</div>
+            <div><strong>Paystack:</strong> {form.paystackPublicKey ? 'Enabled' : 'Not configured'}</div>
             <div><strong>Hero:</strong> {form.heroTitle}</div>
             <div><strong>Subtitle:</strong> {form.heroSubtitle}</div>
           </div>

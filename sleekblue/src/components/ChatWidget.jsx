@@ -145,6 +145,7 @@ export default function ChatWidget() {
   const [typing, setTyping] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -152,6 +153,13 @@ export default function ChatWidget() {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [open, messages])
+
+  useEffect(() => {
+    function onResize() { setIsMobile(window.innerWidth < 768) }
+    onResize()
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   function sendMessage(text) {
     if (!text.trim()) return
@@ -173,7 +181,7 @@ export default function ChatWidget() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) }
   }
 
-  const showBubble = !open && !dismissed
+  const showBubble = !open && !dismissed && !isMobile
 
   return (
     <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
@@ -190,7 +198,7 @@ export default function ChatWidget() {
 
       {/* Chat window */}
       {open && (
-        <div style={{ width: '340px', height: '480px', background: '#fff', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: "'HubotSans', sans-serif", border: '1px solid #eee' }}>
+        <div style={{ width: isMobile ? '92vw' : '340px', height: isMobile ? '72vh' : '480px', background: '#fff', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: "'HubotSans', sans-serif", border: '1px solid #eee' }}>
           {/* Header */}
           <div style={{ background: '#7B2FBE', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>💬</div>
@@ -264,9 +272,9 @@ export default function ChatWidget() {
 
       {/* Toggle button */}
       <button onClick={() => { setOpen(!open); setDismissed(true) }}
-        style={{ width: '52px', height: '52px', borderRadius: '50%', background: '#7B2FBE', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(123,47,190,0.45)', cursor: 'pointer', alignSelf: 'flex-end', position: 'relative', transition: 'transform 0.15s' }}
-        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
-        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+        style={{ width: isMobile ? '48px' : '52px', height: isMobile ? '48px' : '52px', borderRadius: '50%', background: '#7B2FBE', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(123,47,190,0.45)', cursor: 'pointer', alignSelf: 'flex-end', position: 'relative', transition: 'transform 0.15s' }}
+        onMouseEnter={e => { if (!isMobile) e.currentTarget.style.transform = 'scale(1.08)' }}
+        onMouseLeave={e => { if (!isMobile) e.currentTarget.style.transform = 'scale(1)' }}
       >
         {open ? <FaTimes size={20} /> : <FaComments size={22} />}
         {!open && messages.length > 1 && (

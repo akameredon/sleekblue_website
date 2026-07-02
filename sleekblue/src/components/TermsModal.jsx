@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
 import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.jpg'
 
 const TERMS_VERSION = 'June 2026'
@@ -27,6 +26,7 @@ const TERMS_SECTIONS = [
   { title: '18. ACCEPTANCE OF TERMS', body: 'By clicking "I Agree", placing an order, making payment, uploading artwork, or using our services, you acknowledge that you have read, understood, and accepted these Terms & Conditions in full.\n\nYour acceptance is electronically recorded with date and time, your name, email, phone number, IP address, and the version of these Terms. Electronic records, digital communications, website logs, invoices, and order records may be relied upon as evidence of acceptance.' },
 ]
 
+<<<<<<< HEAD
 function validateFullName(v) {
   const parts = v.trim().split(/\s+/).filter(Boolean)
   return parts.length >= 2 && parts.every(p => p.length >= 2)
@@ -39,22 +39,14 @@ function validatePhone(v) {
   return /^\d{10,15}$/.test(digits)
 }
 
+=======
+>>>>>>> 0163bd0 (Refactor code structure for improved readability and maintainability)
 const F = { fontFamily: "'HubotSans', sans-serif" }
 
-export default function TermsModal() {
-  const location = useLocation()
-  const [show, setShow] = useState(false)
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [nameErr, setNameErr] = useState('')
-  const [emailErr, setEmailErr] = useState('')
-  const [phoneErr, setPhoneErr] = useState('')
-  const [scrolledToBottom, setScrolledToBottom] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [declined, setDeclined] = useState(false)
+export default function TermsModal({ open = false, onClose = () => {} }) {
   const scrollRef = useRef(null)
 
+<<<<<<< HEAD
   useEffect(() => {
     if (!localStorage.getItem(LS_KEY)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -137,22 +129,28 @@ export default function TermsModal() {
       </div>
     )
   }
+=======
+  if (!open) return null
+>>>>>>> 0163bd0 (Refactor code structure for improved readability and maintainability)
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.80)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px' }}>
       <div style={{ background: '#fff', borderRadius: '14px', width: '100%', maxWidth: '520px', maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 56px rgba(0,0,0,0.38)', overflow: 'hidden' }}>
 
         {/* Header */}
-        <div style={{ background: '#7B2FBE', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-          <img src={logo} alt="Sleekblue" style={{ height: '34px', width: 'auto', borderRadius: '5px', background: '#fff', padding: '2px' }} />
-          <div>
-            <h2 style={{ color: '#fff', fontSize: '14px', fontWeight: 800, margin: 0, ...F }}>Terms &amp; Conditions of Sale</h2>
-            <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '10px', margin: '1px 0 0', ...F }}>Version: {TERMS_VERSION} · Read carefully before continuing</p>
+        <div style={{ background: '#7B2FBE', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img src={logo} alt="Sleekblue" style={{ height: '34px', width: 'auto', borderRadius: '5px', background: '#fff', padding: '2px' }} />
+            <div>
+              <h2 style={{ color: '#fff', fontSize: '14px', fontWeight: 800, margin: 0, ...F }}>Terms &amp; Conditions of Sale</h2>
+              <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '10px', margin: '1px 0 0', ...F }}>Version: {TERMS_VERSION} · Read carefully before continuing</p>
+            </div>
           </div>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '18px', fontWeight: 700, cursor: 'pointer', lineHeight: 1 }}>✕</button>
         </div>
 
         {/* Scrollable body */}
-        <div ref={scrollRef} onScroll={handleScroll} style={{ flex: 1, overflowY: 'auto', padding: '14px 18px', background: '#FAFAFA' }}>
+        <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '14px 18px', background: '#FAFAFA' }}>
           <div style={{ background: '#FFF8E1', border: '1.5px solid #F9A825', borderRadius: '8px', padding: '10px 13px', marginBottom: '14px' }}>
             <p style={{ fontSize: '11.5px', color: '#7B3F00', margin: 0, fontWeight: 600, lineHeight: 1.5, ...F }}>
               ⚠️ By clicking "I Agree", creating an order, uploading artwork, approving a design, making payment, or using any service, you confirm you have read and accepted these Terms &amp; Conditions.
@@ -169,48 +167,9 @@ export default function TermsModal() {
           </div>
         </div>
 
-        {/* Footer / form */}
-        <div style={{ padding: '12px 18px 16px', background: '#fff', borderTop: '1px solid #eee', flexShrink: 0 }}>
-          {!scrolledToBottom && (
-            <p style={{ fontSize: '10.5px', color: '#888', textAlign: 'center', marginBottom: '8px', ...F }}>↓ Scroll to the bottom before accepting</p>
-          )}
-          <p style={{ fontSize: '11.5px', fontWeight: 700, color: '#333', marginBottom: '8px', ...F }}>Your details (required to record acceptance):</p>
-
-          <div style={{ marginBottom: '7px' }}>
-            <input type="text" placeholder="Full Name * (e.g. John Doe)" value={name}
-              onChange={e => { setName(e.target.value); if (nameErr) blurName(e.target.value) }}
-              onBlur={e => blurName(e.target.value)}
-              style={{ width: '100%', padding: '8px 11px', border: `1.5px solid ${nameErr ? '#dc2626' : '#ddd'}`, borderRadius: '7px', fontSize: '12px', ...F, outline: 'none', boxSizing: 'border-box' }} />
-            {nameErr && <p style={{ fontSize: '10.5px', color: '#dc2626', margin: '2px 0 0', ...F }}>{nameErr}</p>}
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '7px', marginBottom: '9px' }}>
-            <div>
-              <input type="email" placeholder="Email *" value={email}
-                onChange={e => { setEmail(e.target.value); if (emailErr) blurEmail(e.target.value) }}
-                onBlur={e => blurEmail(e.target.value)}
-                style={{ width: '100%', padding: '8px 11px', border: `1.5px solid ${emailErr ? '#dc2626' : '#ddd'}`, borderRadius: '7px', fontSize: '12px', ...F, outline: 'none', boxSizing: 'border-box' }} />
-              {emailErr && <p style={{ fontSize: '10.5px', color: '#dc2626', margin: '2px 0 0', ...F }}>{emailErr}</p>}
-            </div>
-            <div>
-              <input type="tel" placeholder="WhatsApp * (e.g. 08012345678)" value={phone}
-                onChange={e => { setPhone(e.target.value); if (phoneErr) blurPhone(e.target.value) }}
-                onBlur={e => blurPhone(e.target.value)}
-                style={{ width: '100%', padding: '8px 11px', border: `1.5px solid ${phoneErr ? '#dc2626' : '#ddd'}`, borderRadius: '7px', fontSize: '12px', ...F, outline: 'none', boxSizing: 'border-box' }} />
-              {phoneErr && <p style={{ fontSize: '10.5px', color: '#dc2626', margin: '2px 0 0', ...F }}>{phoneErr}</p>}
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => setDeclined(true)} style={{ flex: 1, padding: '10px', background: '#fff', border: '1.5px solid #ddd', borderRadius: '9px', fontSize: '12.5px', fontWeight: 600, color: '#888', cursor: 'pointer', ...F }}>Decline</button>
-            <button onClick={handleAgree} disabled={submitting}
-              style={{ flex: 2, padding: '10px', background: allValid ? '#7B2FBE' : '#ccc', color: '#fff', border: 'none', borderRadius: '9px', fontSize: '13px', fontWeight: 700, cursor: allValid ? 'pointer' : 'not-allowed', ...F, transition: 'background 0.2s' }}>
-              {submitting ? 'Recording…' : '✓ I Agree — Continue'}
-            </button>
-          </div>
-          <p style={{ fontSize: '10px', color: '#bbb', textAlign: 'center', marginTop: '6px', lineHeight: 1.4, ...F }}>
-            Acceptance recorded with timestamp, IP, and contact details.
-          </p>
+        {/* Footer */}
+        <div style={{ padding: '12px 18px 16px', background: '#fff', borderTop: '1px solid #eee', flexShrink: 0, display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{ padding: '10px 14px', background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '9px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', ...F }}>Close</button>
         </div>
       </div>
     </div>

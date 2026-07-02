@@ -197,7 +197,6 @@ export default function Footer() {
 
         <div className="border-t border-white/10 pt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs text-[#666]">
           <p>© {year} Sleekblue Media Houz. All rights reserved.</p>
-          <span className="text-[#555]">Built with ❤️ in Nigeria</span>
         </div>
       </div>
     </footer>

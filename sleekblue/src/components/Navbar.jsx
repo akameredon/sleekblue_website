@@ -15,6 +15,8 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [mobileExpanded, setMobileExpanded] = useState(null)
   const searchRef = useRef(null)
+  const navRef = useRef(null)
+  const closeTimeoutRef = useRef(null)
 
   const allMenuItems = Object.values(NAV_MENUS).flat()
   const [blogResults, setBlogResults] = useState([])
@@ -41,16 +43,34 @@ export default function Navbar() {
     setShowSearch(products.length > 0 || posts.length > 0)
   }
 
+  function clearCloseTimeout() {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current)
+      closeTimeoutRef.current = null
+    }
+  }
+
+  function scheduleCloseMenu() {
+    clearCloseTimeout()
+    closeTimeoutRef.current = setTimeout(() => setOpenMenu(null), 180)
+  }
+
   useEffect(() => {
     function handleClick(e) {
       if (searchRef.current && !searchRef.current.contains(e.target)) setShowSearch(false)
+      if (navRef.current && !navRef.current.contains(e.target)) setOpenMenu(null)
     }
     document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('touchstart', handleClick)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('touchstart', handleClick)
+      clearCloseTimeout()
+    }
   }, [])
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+    <header ref={navRef} className="sticky top-0 z-30 border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:px-6">
         <div className="flex-shrink-0 cursor-pointer" onClick={() => { navigate('/'); setMobileOpen(false) }}>
           <img src={sleekblueLogo} alt="Sleekblue Media Houz" className="h-12 w-auto object-contain" />
@@ -121,9 +141,19 @@ export default function Navbar() {
             <span className="text-slate-500">Customer care:</span>
             <span className="font-semibold text-slate-900">+234 806 527 5264</span>
           </a>
+<<<<<<< HEAD
           <button type="button" onClick={() => navigate('/store')} className="text-sm font-semibold text-slate-900 transition hover:text-violet-700">Store</button>
           <button type="button" onClick={() => navigate('/blog')} className="text-sm font-semibold text-slate-900 transition hover:text-violet-700">Blog</button>
           <button type="button" data-testid="cart-button" onClick={() => navigate('/cart')} className="relative flex items-center gap-2 text-sm font-semibold text-slate-900 transition hover:text-violet-700">
+=======
+          <button type="button" onClick={() => navigate('/store')} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition duration-200 hover:bg-gradient-to-r hover:from-violet-600 hover:to-fuchsia-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30">
+            Store
+          </button>
+          <button type="button" onClick={() => navigate('/blog')} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition duration-200 hover:bg-gradient-to-r hover:from-violet-600 hover:to-fuchsia-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30">
+            Blog
+          </button>
+          <button type="button" onClick={() => navigate('/cart')} className="relative flex items-center gap-2 border-none bg-transparent p-0 text-sm font-semibold text-slate-900 transition hover:text-violet-700 focus:outline-none">
+>>>>>>> 0163bd0 (Refactor code structure for improved readability and maintainability)
             <FaShoppingCart size={18} className="text-violet-700" />
             {totalItems > 0 && (
               <span data-testid="cart-badge" className="absolute -top-2 -right-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-violet-700 px-1.5 text-[10px] font-bold text-white">{totalItems}</span>
@@ -132,13 +162,24 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 md:hidden">
+<<<<<<< HEAD
           <button type="button" data-testid="cart-button-mobile" onClick={() => navigate('/cart')} className="relative text-slate-900 transition hover:text-violet-700">
+=======
+          <button type="button" onClick={() => navigate('/cart')} className="relative border-none bg-transparent p-0 text-slate-900 transition hover:text-violet-700 focus:outline-none" aria-label="Open cart">
+>>>>>>> 0163bd0 (Refactor code structure for improved readability and maintainability)
             <FaShoppingCart size={20} className="text-violet-700" />
             {totalItems > 0 && (
               <span data-testid="cart-badge-mobile" className="absolute -top-1 -right-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-violet-700 text-[9px] font-bold text-white">{totalItems}</span>
             )}
           </button>
-          <button type="button" onClick={() => setMobileOpen(!mobileOpen)} className="text-slate-900 transition hover:text-violet-700">
+          <button
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="text-slate-900 transition hover:text-violet-700 focus:outline-none"
+            aria-controls="mobile-nav"
+            aria-expanded={mobileOpen}
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          >
             {mobileOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
           </button>
         </div>
@@ -148,12 +189,27 @@ export default function Navbar() {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 md:px-6">
           <div className="flex flex-wrap items-center gap-2">
             {Object.entries(NAV_MENUS).map(([label, items]) => (
-              <div key={label} className="relative" onMouseEnter={() => setOpenMenu(label)} onMouseLeave={() => setOpenMenu(null)}>
-                <button type="button" className={`inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold transition ${openMenu === label ? 'border-b-2 border-violet-700 text-violet-700' : 'border-b-2 border-transparent text-slate-900 hover:text-violet-700'}`}>
+              <div
+                key={label}
+                className="relative"
+                onMouseEnter={() => {
+                  clearCloseTimeout()
+                  setOpenMenu(label)
+                }}
+                onMouseLeave={scheduleCloseMenu}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearCloseTimeout()
+                    setOpenMenu(openMenu === label ? null : label)
+                  }}
+                  className={`inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold transition ${openMenu === label ? 'border-b-2 border-violet-700 text-violet-700' : 'border-b-2 border-transparent text-slate-900 hover:text-violet-700'}`}
+                >
                   {label} <span className="text-[10px]">▾</span>
                 </button>
                 {openMenu === label && (
-                  <div className="absolute left-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.15)]">
+                  <div className="absolute left-0 top-full z-50 mt-2 min-w-[14rem] max-w-[calc(100vw-2rem)] w-auto overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.15)]">
                     {items.map(item => (
                       <button key={item.slug} type="button" onClick={() => { navigate(`/store/${item.slug}`); setOpenMenu(null) }} className="w-full px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">
                         {item.name}
@@ -163,12 +219,26 @@ export default function Navbar() {
                 )}
               </div>
             ))}
-            <div className="relative" onMouseEnter={() => setOpenMenu('all')} onMouseLeave={() => setOpenMenu(null)}>
-              <button type="button" className={`inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold transition ${openMenu === 'all' ? 'border-b-2 border-violet-700 text-violet-700' : 'border-b-2 border-transparent text-slate-900 hover:text-violet-700'}`}>
+            <div
+              className="relative"
+              onMouseEnter={() => {
+                clearCloseTimeout()
+                setOpenMenu('all')
+              }}
+              onMouseLeave={scheduleCloseMenu}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  clearCloseTimeout()
+                  setOpenMenu(openMenu === 'all' ? null : 'all')
+                }}
+                className={`inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold transition ${openMenu === 'all' ? 'border-b-2 border-violet-700 text-violet-700' : 'border-b-2 border-transparent text-slate-900 hover:text-violet-700'}`}
+              >
                 All Product & Services <span className="text-[10px]">▾</span>
               </button>
               {openMenu === 'all' && (
-                <div className="absolute left-0 top-full z-50 mt-2 max-h-96 w-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.15)]">
+                <div className="absolute left-0 top-full z-50 mt-2 max-h-96 min-w-[18rem] w-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.15)]">
                   {allMenuItems.map((item, i) => (
                     <button key={i} type="button" onClick={() => { navigate(`/store/${item.slug}`); setOpenMenu(null) }} className="w-full px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">
                       {item.name}
@@ -185,7 +255,7 @@ export default function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-slate-200 bg-white px-4 pb-4 pt-3 shadow-sm md:hidden">
+        <div id="mobile-nav" role="dialog" aria-modal="false" className="border-t border-slate-200 bg-white px-4 pb-6 pt-4 shadow-sm md:hidden">
           <div className="mb-4">
             <div className="flex items-center overflow-hidden rounded-full border border-slate-300 bg-white shadow-sm">
               <input
@@ -200,33 +270,32 @@ export default function Navbar() {
             {showSearch && searchResults.length > 0 && (
               <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
                 {searchResults.map(p => (
-                  <button key={p.id} type="button" onClick={() => { navigate(`/store/${p.slug}`); setShowSearch(false); setSearchQuery(''); setMobileOpen(false) }} className="w-full px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">
+                  <button key={p.id} type="button" onClick={() => { navigate(`/store/${p.slug}`); setShowSearch(false); setSearchQuery(''); setMobileOpen(false) }} className="w-full px-4 py-4 text-left text-base text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">
                     {p.name}
                   </button>
                 ))}
               </div>
             )}
           </div>
-
-          <div className="space-y-2">
+          <div className="space-y-3">
             {[{ label: 'Home', path: '/' }, { label: 'Store', path: '/store' }, { label: 'Blog', path: '/blog' }, { label: 'About', path: '/about' }, { label: 'Request Quote', path: '/quote' }].map(link => (
-              <button key={link.path} type="button" onClick={() => { navigate(link.path); setMobileOpen(false) }} className="w-full rounded-3xl bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-900 transition hover:bg-slate-100">
+              <button key={link.path} type="button" onClick={() => { navigate(link.path); setMobileOpen(false) }} className="w-full rounded-3xl bg-slate-50 px-4 py-4 text-left text-base font-semibold text-slate-900 transition hover:bg-slate-100">
                 {link.label}
               </button>
             ))}
           </div>
 
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 space-y-3">
             {Object.entries(NAV_MENUS).map(([label, items]) => (
               <div key={label} className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
-                <button type="button" onClick={() => setMobileExpanded(mobileExpanded === label ? null : label)} className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-slate-900">
+                <button type="button" aria-expanded={mobileExpanded === label} onClick={() => setMobileExpanded(mobileExpanded === label ? null : label)} className="flex w-full items-center justify-between px-4 py-4 text-left text-base font-semibold text-slate-900">
                   <span>{label}</span>
                   <span>{mobileExpanded === label ? '▲' : '▾'}</span>
                 </button>
                 {mobileExpanded === label && (
                   <div className="space-y-1 border-t border-slate-200 bg-white">
                     {items.map(item => (
-                      <button key={item.slug} type="button" onClick={() => { navigate(`/store/${item.slug}`); setMobileOpen(false) }} className="w-full px-5 py-3 text-left text-sm font-semibold text-violet-700 transition hover:bg-violet-50">
+                      <button key={item.slug} type="button" onClick={() => { navigate(`/store/${item.slug}`); setMobileOpen(false) }} className="w-full px-5 py-4 text-left text-base font-semibold text-violet-700 transition hover:bg-violet-50">
                         {item.name}
                       </button>
                     ))}

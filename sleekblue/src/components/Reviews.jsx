@@ -91,8 +91,17 @@ export default function Reviews() {
       <div style={{ position: 'relative', overflow: 'hidden' }}>
         <style>{`
           @keyframes reviewMarquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-          .review-track { display: flex; width: max-content; animation: reviewMarquee 35s linear infinite; gap: 20px; padding: 8px 0; }
-          .review-track:hover { animation-play-state: paused; }
+          .review-track { display: flex; width: max-content; gap: 20px; padding: 8px 0; }
+          /* Desktop: continuous marquee */
+          @media (min-width: 768px) {
+            .review-track { animation: reviewMarquee 90s linear infinite; }
+            .review-track:hover { animation-play-state: paused; }
+          }
+          /* Mobile: allow horizontal scroll with touch support */
+          @media (max-width: 767px) {
+            .review-track { width: auto; display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 12px; }
+            .review-track > div { flex: 0 0 auto; }
+          }
         `}</style>
         <div className="review-track">
           {[...cards, ...cards].map((t, i) => (

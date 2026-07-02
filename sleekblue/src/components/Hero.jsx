@@ -44,14 +44,18 @@ const BTN_INVISIBLE = {
   background: 'transparent',
   border: 'none',
   borderRadius: '50px',
-  padding: '10px 24px',
+  padding: '12px 28px',
   fontSize: '14px',
   cursor: 'pointer',
   whiteSpace: 'nowrap',
-  lineHeight: 1.3,
+  lineHeight: '1.3',
   color: 'transparent',
-  minWidth: '110px',
-  minHeight: '40px',
+  minWidth: '160px',
+  minHeight: '52px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  pointerEvents: 'auto',
 }
 
 export default function Hero() {
