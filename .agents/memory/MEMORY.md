@@ -1,0 +1,1 @@
+- [Git ops blocked in this env](git-sync-from-github.md) — fetch/pull/merge fail even in task agents; sync via HTTP tarball download + manual file diff/copy instead.

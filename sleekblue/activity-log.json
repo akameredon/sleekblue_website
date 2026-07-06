@@ -1,0 +1,79 @@
+[
+  {
+    "id": "ACT-1782066333978-GT2FT",
+    "action": "review_approved",
+    "detail": "Review by emeka okoro approved",
+    "user": "admin",
+    "timestamp": "2026-06-21T18:25:33.978Z"
+  },
+  {
+    "id": "ACT-1782066306518-UO261",
+    "action": "newsletter_subscribe",
+    "detail": "martinsobioha1@gmail.com subscribed to newsletter",
+    "user": "public",
+    "timestamp": "2026-06-21T18:25:06.518Z"
+  },
+  {
+    "id": "ACT-1782066184800-13FQB",
+    "action": "review_submitted",
+    "detail": "emeka okoro submitted a review",
+    "user": "public",
+    "timestamp": "2026-06-21T18:23:04.800Z"
+  },
+  {
+    "id": "ACT-1782064549249-H8PCD",
+    "action": "promo_banner",
+    "detail": "enabled",
+    "user": "admin",
+    "timestamp": "2026-06-21T17:55:49.249Z"
+  },
+  {
+    "id": "ACT-1782064542228-S9NSW",
+    "action": "promo_banner",
+    "detail": "disabled",
+    "user": "admin",
+    "timestamp": "2026-06-21T17:55:42.228Z"
+  },
+  {
+    "id": "ACT-1782055516225-V8S8M",
+    "action": "comment_submitted",
+    "detail": "frank commented on dvddgd",
+    "user": "public",
+    "timestamp": "2026-06-21T15:25:16.225Z"
+  },
+  {
+    "id": "ACT-1782054972007-0MZ21",
+    "action": "referral_created",
+    "detail": "Referral link created for CHIBUIKE",
+    "user": "admin",
+    "timestamp": "2026-06-21T15:16:12.007Z"
+  },
+  {
+    "id": "ACT-1782052356200-CI2IU",
+    "action": "promo_banner",
+    "detail": "disabled",
+    "user": "admin",
+    "timestamp": "2026-06-21T14:32:36.200Z"
+  },
+  {
+    "id": "ACT-1782052327786-PP7MK",
+    "action": "promo_banner",
+    "detail": "enabled",
+    "user": "admin",
+    "timestamp": "2026-06-21T14:32:07.786Z"
+  },
+  {
+    "id": "ACT-1782052262508-2D611",
+    "action": "promo_banner",
+    "detail": "enabled",
+    "user": "admin",
+    "timestamp": "2026-06-21T14:31:02.508Z"
+  },
+  {
+    "id": "ACT-1782052160182-6WPVQ",
+    "action": "promo_banner",
+    "detail": "enabled",
+    "user": "admin",
+    "timestamp": "2026-06-21T14:29:20.182Z"
+  }
+]

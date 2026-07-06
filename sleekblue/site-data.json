@@ -1,14 +1,20 @@
 {
   "settings": {
-    "phone": "+2348065275264",
-    "whatsapp": "2348065275264",
+    "phone": "+2348065275264, +2348037321545",
+    "whatsapp": "+2348065275264",
     "primaryColor": "#7B2FBE",
     "accentColor": "#FF6B00",
     "heroTitle": "Premium Print, Branding & Design",
     "heroSubtitle": "Zero Stress. Fast Turnaround.",
     "companyName": "Sleekblue Media Houz",
     "email": "info@sleekbluemediahouz.com",
-    "address": "Lagos, Nigeria"
+    "address": "14 Mere Street Off Tetlow Rd, Owerri Imo State, Nigeria",
+    "ga4Id": "",
+    "metaPixelId": "",
+    "paystackPublicKey": "",
+    "bankName": "Access Diamond Bank  ",
+    "accountName": "Sleekblue grafik studio",
+    "accountNumber": " 0055364170"
   },
   "productOverrides": {
     "signage": {
@@ -37,7 +43,727 @@
       "sizes": [
         "Custom"
       ]
+    },
+    "flyer": {
+      "name": "Flyer",
+      "category": "Corporate Branding",
+      "badge": "Promo Ready",
+      "description": "Eye-catching promotional flyers for events, sales, and announcements. A4, A5, or custom sizes.",
+      "features": [
+        "130gsm art paper",
+        "A4, or A5, ",
+        "Single or double-sided",
+        "Vibrant full-colour",
+        "Quick 24hr production",
+        "Bulk rates available"
+      ],
+      "priceTable": [
+        {
+          "qty": 100,
+          "unitPrice": 95
+        },
+        {
+          "qty": 500,
+          "unitPrice": 65
+        },
+        {
+          "qty": 1000,
+          "unitPrice": 60
+        }
+      ],
+      "sizes": [
+        "A4",
+        "A5"
+      ]
+    },
+    "flex-banner": {
+      "name": "Flex Banner",
+      "category": "Flex Printing/Large Format",
+      "badge": "Best for Outdoors",
+      "description": "High-quality flex banners for outdoor advertising, events, exhibitions, and promotions. Weather-resistant and long-lasting.",
+      "features": [
+        "500gsm heavy-duty flex",
+        "UV resistant inks",
+        "Hemmed & eyeleted edges",
+        "Any custom size available",
+        "Vibrant colour output",
+        "Fast 24–48hr production"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 3240
+        },
+        {
+          "qty": 5,
+          "unitPrice": 3240
+        },
+        {
+          "qty": 10,
+          "unitPrice": 3240
+        }
+      ],
+      "sizes": [
+        "3x6ft",
+        "4x6ft",
+        "4x8ft",
+        "6x8ft",
+        "Custom"
+      ],
+      "variantPrices": {
+        "3x6ft": [
+          {
+            "qty": 1,
+            "unitPrice": 3240
+          },
+          {
+            "qty": 5,
+            "unitPrice": 3240
+          },
+          {
+            "qty": 10,
+            "unitPrice": 3240
+          }
+        ],
+        "4x6ft": [
+          {
+            "qty": 1,
+            "unitPrice": 3240
+          },
+          {
+            "qty": 5,
+            "unitPrice": 3240
+          },
+          {
+            "qty": 10,
+            "unitPrice": 3240
+          }
+        ],
+        "4x8ft": [
+          {
+            "qty": 1,
+            "unitPrice": 3240
+          },
+          {
+            "qty": 5,
+            "unitPrice": 3240
+          },
+          {
+            "qty": 15,
+            "unitPrice": 3240
+          }
+        ],
+        "6x8ft": [
+          {
+            "qty": 1,
+            "unitPrice": 3240
+          },
+          {
+            "qty": 5,
+            "unitPrice": 3240
+          },
+          {
+            "qty": 10,
+            "unitPrice": 3240
+          }
+        ],
+        "Custom": [
+          {
+            "qty": 1,
+            "unitPrice": 3240
+          },
+          {
+            "qty": 5,
+            "unitPrice": 3240
+          },
+          {
+            "qty": 10,
+            "unitPrice": 3240
+          }
+        ]
+      }
+    },
+    "billboard": {
+      "name": "Billboard",
+      "category": "Flex Printing/Large Format",
+      "badge": "High Impact",
+      "description": "Large-scale billboard printing for high-traffic outdoor advertising. Maximum visibility, premium print quality.",
+      "features": [
+        "Heavy-duty material",
+        "Weather and UV resistant",
+        "High-resolution print",
+        "Any custom size",
+        "Professional installation guide",
+        "Durable for 12+ months"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 36000
+        },
+        {
+          "qty": 3,
+          "unitPrice": 36000
+        }
+      ],
+      "sizes": [
+        "10x20ft",
+        "12x24ft",
+        "14x24ft",
+        "Custom"
+      ]
+    },
+    "sav-printing": {
+      "name": "SAV Printing",
+      "category": "Flex Printing/Large Format",
+      "badge": "Versatile",
+      "description": "Self-adhesive vinyl (SAV) printing for vehicle graphics, floor decals, walls, windows, and point-of-sale displays.",
+      "features": [
+        "Pressure-sensitive adhesive",
+        "Removable or permanent options",
+        "Indoor and outdoor use",
+        "Vibrant print quality",
+        "Easy application",
+        "Custom cut shapes"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 5000
+        },
+        {
+          "qty": 5,
+          "unitPrice": 5000
+        }
+      ],
+      "sizes": [
+        "4x5",
+        "5x6",
+        "5x10",
+        "4x20",
+        "5x60",
+        "Custom"
+      ]
+    },
+    "reflective-flex": {
+      "name": "Reflective Flex",
+      "category": "Flex Printing/Large Format",
+      "badge": "24hr Visibility",
+      "description": "Reflective flex banners for night-time visibility. Ideal for safety signage, road-facing ads, and 24-hour promotions.",
+      "features": [
+        "High-visibility at night",
+        "Grade 1 reflective material",
+        "Full-colour printing",
+        "Durable all-weather use",
+        "Eyelets for easy hanging",
+        "Custom sizes"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 16000
+        },
+        {
+          "qty": 5,
+          "unitPrice": 16000
+        }
+      ],
+      "sizes": [
+        "3x6ft",
+        "4x6ft",
+        "10x8ft",
+        "Custom"
+      ]
+    },
+    "window-graphics": {
+      "name": "Window Graphics",
+      "category": "Flex Printing/Large Format",
+      "badge": "Shop Front Ready",
+      "description": "Eye-catching window graphics for retail shops, offices, restaurants, and vehicles. Perforated or solid vinyl options.",
+      "features": [
+        "Perforated or frosted options",
+        "One-way vision available",
+        "UV resistant print",
+        "Easy to install & remove",
+        "Custom sizes & shapes",
+        "Interior & exterior use"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 24000
+        },
+        {
+          "qty": 5,
+          "unitPrice": 24000
+        }
+      ],
+      "sizes": [
+        "4x10",
+        "4x5",
+        "4x3",
+        "4x4"
+      ]
+    },
+    "graphic-design": {
+      "name": "Graphic Design",
+      "category": "Corporate Branding",
+      "badge": "Creative Studio",
+      "description": "Professional graphic design for all your branding needs — logos, social media, print materials, and more.",
+      "features": [
+        "Experienced brand designers",
+        "Fast 24–48hr turnaround",
+        "Unlimited revisions (3 rounds)",
+        "Print & digital formats",
+        "Source files included",
+        "Social media graphics"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 40000
+        }
+      ],
+      "sizes": [
+        "Flyer/Poster",
+        "Social Media",
+        "Logo",
+        "Full Branding"
+      ]
+    },
+    "die-cut-stickers": {
+      "name": "Die Cut Stickers",
+      "category": "Label Stickers",
+      "badge": "Most Popular",
+      "description": "Premium waterproof die-cut stickers cut to any shape. Ideal for product labelling, branding zobo, yoghurt, parfait, bottled drinks, and more.",
+      "features": [
+        "Waterproof & UV resistant",
+        "Strong permanent adhesive",
+        "Cut to any shape or design",
+        "High-resolution full-colour print",
+        "Easy to peel and apply",
+        "Bulk discounts from 500 pcs"
+      ],
+      "priceTable": [],
+      "sizes": [
+        "1.5x1.5\"",
+        "2x2\"",
+        "2.5x2.5\"",
+        "3x3\"",
+        "3x4\"",
+        "4x4\"",
+        "2x8\" Water Label",
+        "Custom"
+      ],
+      "variantPrices": null
+    },
+    "rollup-stand": {
+      "name": "Rollup Stand",
+      "category": "Flex Printing/Large Format",
+      "badge": "Event Ready",
+      "description": "Portable rollup banner stands for trade shows, exhibitions, offices, and events. Print-ready, easy to set up.",
+      "features": [
+        "Retractable aluminium stand",
+        "High-resolution print",
+        "85cm wide standard size",
+        "Carry bag included",
+        "Full-colour gradient-friendly",
+        "Setup in under 60 seconds"
+      ],
+      "priceTable": [
+        {
+          "qty": 1,
+          "unitPrice": 50000
+        },
+        {
+          "qty": 3,
+          "unitPrice": 50000
+        },
+        {
+          "qty": 5,
+          "unitPrice": 48000
+        }
+      ],
+      "sizes": [
+        "85cm Standard",
+        "100cm Wide"
+      ],
+      "variantPrices": null
     }
   },
-  "stickerPriceOverrides": {}
+  "stickerPriceOverrides": {},
+  "content": {
+    "reviews": {
+      "heading": "Customers love Sleekblue",
+      "rating": "5.0/5",
+      "reviewCount": "40",
+      "googleReviewUrl": "https://share.google/OwMhndIizA29kGair",
+      "testimonials": [
+        {
+          "id": "REV-1782066184799-KIPK2",
+          "name": "emeka okoro",
+          "rating": 5,
+          "text": "am excited working with sleekblue",
+          "location": "orlu imo state",
+          "visible": true
+        },
+        {
+          "name": "Makuochukwu Augustine Okeke",
+          "text": "Always delivers. I must say I started enjoying peace of mind in event branding when I made the switch to Sleekblue.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Utoh Chiugo",
+          "text": "I was really thrilled by their service. I printed a wedding card and souvenir stickers — they gave attention to details, good printing, good graphics designs and a lovely space. Their prices are very good. I love printing here and recommend it to anyone.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Promise Nwachukwu",
+          "text": "Sleekblue print and cut delivers top notch quality with clean finishing and fast turnaround time. Very professional and detail oriented. I highly recommend them for any branding and printing services.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Boniface Emmanuel",
+          "text": "Outstanding printing service! Clean, high-quality output, fast delivery, and great customer support. Definitely my go-to for all printing needs.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Mark Uwajeh",
+          "text": "Number 1, very reliable.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Igbokwe Ann",
+          "text": "Sleekblue media houz, the surest place when it comes to designing and printing. I received my work with so much joy.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Elizabeth Solomon",
+          "text": "Tasted and trusted, always on point... I have never regretted trusting Sleekblue media house with my printing.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Nwagwu Emmanuella",
+          "text": "Sleekblue media house is the number one media house in Nigeria! Their customer service is top notch, they are never late to deliver! They got you covered on all your printing and graphics needs.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Meg Obiomah",
+          "text": "Sleekblue media houz is not just a business place, but one that adds value to everyone who comes along. There's personal touch, there's excellence. It's wholesome, it's engaging.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "CHIZARAM ZOE CHARIS",
+          "text": "Sleekblue is my GO TO when I need that perfect job and on time too. Big ups!! More than a 5 star rating.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Glory Akhigbe",
+          "text": "Call them at odd hours they will always deliver. Sleekblue has always been reliable and dependable — very creative and excellent.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Endurance John",
+          "text": "You guys are simply amazing creating amazing designs. You are truly sleek. Good value and good quality.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Mma Sylvia",
+          "text": "With Sleekblue you can be sure of quality. They are simply very good.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Deraa",
+          "text": "Every customer is family, and every job done with them ends in great smiles.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Ojinkama Mary",
+          "text": "Reliable and very accommodating. Price friendly. Very creative and trustworthy.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Anastasia Ugwulebo",
+          "text": "Very creative, reliable and updated with recent tech ideas for business growth.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Harriet Aneke",
+          "text": "Delivers good quality jobs and exhibits high level of professionalism.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Don Creative Hub",
+          "text": "I appreciate the effort you put into every job. Top professionals.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Melvin Moore",
+          "text": "Very creative and dependable anytime.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Kamsi Vivian",
+          "text": "You guys pay attention to details, productive and creative.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Shaly Okorie",
+          "text": "Quick and reliable anytime.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Joseph Emmanuel",
+          "text": "Truly excellent and creative.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Stephen Obioha",
+          "text": "Excellent service. Always consistent and professional.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Doris Chidera",
+          "text": "Printing of product label and flex banner — Sleekblue is your best print partner.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Pst Lydia Ojiaku",
+          "text": "I love the quality and style. Sleekblue always delivers beyond expectation.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        },
+        {
+          "name": "Ahaotu Wisdom",
+          "text": "I think they are the best. Stick with Sleekblue and you will believe it too.",
+          "rating": 5,
+          "location": "Owerri, Nigeria",
+          "visible": true
+        }
+      ]
+    },
+    "trustBar": {
+      "rating": "5.0/5",
+      "reviewCount": "500+",
+      "tagline": "TRUSTED BY GLOBAL BRANDS",
+      "partners": [
+        {
+          "key": "UBA",
+          "name": "UBA",
+          "visible": true
+        },
+        {
+          "key": "MTN",
+          "name": "MTN",
+          "visible": true
+        },
+        {
+          "key": "HERO",
+          "name": "HERO",
+          "visible": true
+        },
+        {
+          "key": "IMO_DIGITAL",
+          "name": "Imo Digital City Limited",
+          "visible": true
+        },
+        {
+          "key": "NNPC",
+          "name": "NNPC",
+          "visible": true
+        },
+        {
+          "key": "SEPLAT",
+          "name": "Seplat Energy",
+          "visible": true
+        }
+      ]
+    },
+    "faq": [
+      {
+        "question": "What types of printing services does Sleekblue Media Houz offer?",
+        "answer": "We offer a wide range of premium printing and branding services including die-cut stickers, flex banners, flyers & posters, business cards, rollup stands, T-shirts & caps, product labels, vehicle branding, signage & billboards, burial brochures, and corporate graphic design."
+      },
+      {
+        "question": "What is the minimum order quantity?",
+        "answer": "Minimum order quantities vary by product. For die-cut stickers, our minimum is 100 pieces. For flyers and business cards, it's typically 50–100 pieces. Flex banners and rollup stands can be ordered as a single piece."
+      },
+      {
+        "question": "How long does production and delivery take?",
+        "answer": "Standard production takes 1–3 business days for most products. Rush orders can be completed in 24 hours for an additional fee. We deliver nationwide across Nigeria, with delivery typically taking 1–3 extra days depending on your location."
+      },
+      {
+        "question": "Do you offer custom design services?",
+        "answer": "Yes! Our in-house design team can create professional artwork for any of our products — from logo design and full brand identity packages to individual print files. Design turnaround is usually 24–48 hours."
+      },
+      {
+        "question": "Do you deliver nationwide across Nigeria?",
+        "answer": "Absolutely. We deliver to all 36 states and the FCT via trusted courier partners. Whether you're in Lagos, Abuja, Port Harcourt, Kano, or anywhere else in Nigeria, we'll get your prints to you safely."
+      },
+      {
+        "question": "How do I place an order and what payment methods do you accept?",
+        "answer": "You can place an order directly on our website or chat with us on WhatsApp at +234 806 527 5264. We accept bank transfers, mobile payments, and online card payments. Once payment is confirmed, your order goes straight to production."
+      }
+    ]
+  },
+  "productImages": {
+    "die-cut-stickers": [
+      "/uploads/products/1781047060160.jpg",
+      "/uploads/products/1781054435395.jpg"
+    ]
+  },
+  "hero": {
+    "customSlides": []
+  },
+  "about": {
+    "heroTitle": "About Sleekblue Media Houz",
+    "heroSubtitle": "We print for the biggest brands — and yours is next.",
+    "whoWeAreTitle": "Who We Are",
+    "whoWeAre": "Sleekblue Media Houz is a premium printing and corporate branding company dedicated to helping businesses of all sizes — from solopreneurs to big brands — communicate their identity with clarity and confidence. We specialize in die-cut stickers, flex printing, large format printing, corporate branding, and a wide range of promotional materials.",
+    "missionTitle": "Our Mission",
+    "mission": "To deliver premium printing with zero stress — high quality output, fast turnaround, and reliable service that empowers small businesses and enterprise brands alike to stand out in their market.",
+    "valuesTitle": "What Sets Us Apart",
+    "values": [
+      {
+        "icon": "🎯",
+        "title": "Precision",
+        "desc": "Every cut, every print is executed to exact specifications."
+      },
+      {
+        "icon": "⚡",
+        "title": "Speed",
+        "desc": "Fast turnaround without compromising on quality."
+      },
+      {
+        "icon": "💎",
+        "title": "Quality",
+        "desc": "Waterproof, durable materials that last and impress."
+      },
+      {
+        "icon": "🤝",
+        "title": "Trust",
+        "desc": "Trusted by UBA, MTN, HERO, NNPC, Seplat, and 500+ brands."
+      },
+      {
+        "icon": "💰",
+        "title": "Value",
+        "desc": "Bulk discounts for growing businesses."
+      },
+      {
+        "icon": "🛠️",
+        "title": "Support",
+        "desc": "24/7 customer care and WhatsApp-first communication."
+      }
+    ],
+    "whoWeServeTitle": "Who We Serve",
+    "whoWeServe": [
+      "Solopreneurs & Micro Businesses",
+      "Small Business Owners",
+      "Growth Business Enterprises",
+      "Big Brands & Corporate Organizations"
+    ],
+    "ctaTitle": "Ready to Print?",
+    "ctaText": "Call us or chat on WhatsApp — we respond fast.",
+    "stats": [
+      {
+        "value": "500+",
+        "label": "Happy Clients"
+      },
+      {
+        "value": "5★",
+        "label": "Google Rating"
+      },
+      {
+        "value": "15+",
+        "label": "Years Experience"
+      },
+      {
+        "value": "24/7",
+        "label": "Support"
+      }
+    ],
+    "showStats": true
+  },
+  "promoBanner": {
+    "enabled": true,
+    "text": "FREE DELIVERY WITHIN OWERRI",
+    "link": "",
+    "color": "#ffffff",
+    "bgColor": "#c50d0d"
+  },
+  "blogPosts": [
+    {
+      "id": "POST-1782055488283-Y0MDB",
+      "title": "dvddgd",
+      "slug": "dvddgd",
+      "status": "published",
+      "category": "",
+      "date": "2026-06-21",
+      "excerpt": "summary",
+      "content": "Hi hello",
+      "coverImage": "",
+      "tags": [
+        "stickers"
+      ],
+      "videoUrl": "",
+      "audioUrl": "",
+      "mediaFiles": [],
+      "authorName": "martins",
+      "authorBio": "hi",
+      "publishAt": "",
+      "viewCount": 8,
+      "order": 0,
+      "createdAt": "2026-06-21T15:24:48.283Z",
+      "updatedAt": "2026-06-21T15:24:48.283Z"
+    }
+  ]
 }

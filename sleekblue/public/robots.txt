@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /sbm-control-2026
+Disallow: /sbm-control-2026/
+Disallow: /api/
+
+Sitemap: https://sleekbluemediahouz.com/sitemap.xml
