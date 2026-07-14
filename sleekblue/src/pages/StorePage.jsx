@@ -188,7 +188,7 @@ export default function StorePage() {
                   <div key={slug} className="flex items-center gap-3 rounded-2xl border border-[#e0d6f5] bg-[#f9f5ff] px-3 py-2">
                     <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#e0d6f5]">
                       {PRODUCT_IMAGES[slug]?.[0] && (
-                        <img src={PRODUCT_IMAGES[slug][0]} alt={p.name} className="h-full w-full object-cover" />
+                        <img src={PRODUCT_IMAGES[slug][0]} alt={p.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                       )}
                     </div>
                     <span

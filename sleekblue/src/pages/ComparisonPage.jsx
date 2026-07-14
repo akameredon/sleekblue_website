@@ -108,7 +108,7 @@ export default function ComparisonPage() {
                       </button>
                       <div className="mx-auto mb-2 h-[90px] w-[90px] overflow-hidden rounded-2xl bg-violet-100">
                         {PRODUCT_IMAGES[p.slug]?.[0]
-                          ? <img src={PRODUCT_IMAGES[p.slug][0]} alt={p.name} className="h-full w-full object-cover" />
+                          ? <img src={PRODUCT_IMAGES[p.slug][0]} alt={p.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                           : <div className="flex h-full w-full items-center justify-center text-2xl">🖨️</div>
                         }
                       </div>
