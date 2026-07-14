@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "build": "cd sleekblue && npm run build",
+    "start": "cd sleekblue && npm start",
+    "install-app": "cd sleekblue && npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
