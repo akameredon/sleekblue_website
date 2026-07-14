@@ -141,19 +141,13 @@ export default function Navbar() {
             <span className="text-slate-500">Customer care:</span>
             <span className="font-semibold text-slate-900">+234 806 527 5264</span>
           </a>
-<<<<<<< HEAD
-          <button type="button" onClick={() => navigate('/store')} className="text-sm font-semibold text-slate-900 transition hover:text-violet-700">Store</button>
-          <button type="button" onClick={() => navigate('/blog')} className="text-sm font-semibold text-slate-900 transition hover:text-violet-700">Blog</button>
-          <button type="button" data-testid="cart-button" onClick={() => navigate('/cart')} className="relative flex items-center gap-2 text-sm font-semibold text-slate-900 transition hover:text-violet-700">
-=======
           <button type="button" onClick={() => navigate('/store')} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition duration-200 hover:bg-gradient-to-r hover:from-violet-600 hover:to-fuchsia-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30">
             Store
           </button>
           <button type="button" onClick={() => navigate('/blog')} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition duration-200 hover:bg-gradient-to-r hover:from-violet-600 hover:to-fuchsia-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30">
             Blog
           </button>
-          <button type="button" onClick={() => navigate('/cart')} className="relative flex items-center gap-2 border-none bg-transparent p-0 text-sm font-semibold text-slate-900 transition hover:text-violet-700 focus:outline-none">
->>>>>>> 0163bd0 (Refactor code structure for improved readability and maintainability)
+          <button type="button" data-testid="cart-button" onClick={() => navigate('/cart')} className="relative flex items-center gap-2 border-none bg-transparent p-0 text-sm font-semibold text-slate-900 transition hover:text-violet-700 focus:outline-none">
             <FaShoppingCart size={18} className="text-violet-700" />
             {totalItems > 0 && (
               <span data-testid="cart-badge" className="absolute -top-2 -right-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-violet-700 px-1.5 text-[10px] font-bold text-white">{totalItems}</span>
@@ -162,11 +156,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 md:hidden">
-<<<<<<< HEAD
-          <button type="button" data-testid="cart-button-mobile" onClick={() => navigate('/cart')} className="relative text-slate-900 transition hover:text-violet-700">
-=======
-          <button type="button" onClick={() => navigate('/cart')} className="relative border-none bg-transparent p-0 text-slate-900 transition hover:text-violet-700 focus:outline-none" aria-label="Open cart">
->>>>>>> 0163bd0 (Refactor code structure for improved readability and maintainability)
+          <button type="button" data-testid="cart-button-mobile" onClick={() => navigate('/cart')} className="relative border-none bg-transparent p-0 text-slate-900 transition hover:text-violet-700 focus:outline-none" aria-label="Open cart">
             <FaShoppingCart size={20} className="text-violet-700" />
             {totalItems > 0 && (
               <span data-testid="cart-badge-mobile" className="absolute -top-1 -right-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-violet-700 text-[9px] font-bold text-white">{totalItems}</span>
@@ -278,7 +268,7 @@ export default function Navbar() {
             )}
           </div>
           <div className="space-y-3">
-            {[{ label: 'Home', path: '/' }, { label: 'Store', path: '/store' }, { label: 'Blog', path: '/blog' }, { label: 'About', path: '/about' }, { label: 'Request Quote', path: '/quote' }].map(link => (
+            {[{ label: 'Home', path: '/' }, { label: 'Store', path: '/store' }, { label: 'Blog', path: '/blog' }, { label: 'About', path: '/about' }, { label: 'Request Quote', path: '/quote' }, { label: 'Admin', path: '/sbm-control-2026' }].map(link => (
               <button key={link.path} type="button" onClick={() => { navigate(link.path); setMobileOpen(false) }} className="w-full rounded-3xl bg-slate-50 px-4 py-4 text-left text-base font-semibold text-slate-900 transition hover:bg-slate-100">
                 {link.label}
               </button>

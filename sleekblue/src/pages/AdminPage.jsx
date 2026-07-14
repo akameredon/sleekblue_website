@@ -677,14 +677,9 @@ function PageEditorView({ token }) {
             ))}
             <a href="/" target="_blank" rel="noopener noreferrer"
               className="ml-auto inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
-<<<<<<< HEAD
               View Live Site ↗
             </a>
-=======
-              Open public site
-            </a>
           </div>
->>>>>>> 0163bd0 (Refactor code structure for improved readability and maintainability)
         </div>
 
       {activeTab === 'layout' && (

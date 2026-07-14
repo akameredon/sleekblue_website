@@ -26,112 +26,12 @@ const TERMS_SECTIONS = [
   { title: '18. ACCEPTANCE OF TERMS', body: 'By clicking "I Agree", placing an order, making payment, uploading artwork, or using our services, you acknowledge that you have read, understood, and accepted these Terms & Conditions in full.\n\nYour acceptance is electronically recorded with date and time, your name, email, phone number, IP address, and the version of these Terms. Electronic records, digital communications, website logs, invoices, and order records may be relied upon as evidence of acceptance.' },
 ]
 
-<<<<<<< HEAD
-function validateFullName(v) {
-  const parts = v.trim().split(/\s+/).filter(Boolean)
-  return parts.length >= 2 && parts.every(p => p.length >= 2)
-}
-function validateEmail(v) {
-  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v.trim())
-}
-function validatePhone(v) {
-  const digits = v.replace(/[\s\-()+.]/g, '')
-  return /^\d{10,15}$/.test(digits)
-}
-
-=======
->>>>>>> 0163bd0 (Refactor code structure for improved readability and maintainability)
 const F = { fontFamily: "'HubotSans', sans-serif" }
 
-export default function TermsModal({ open = false, onClose = () => {} }) {
+export default function TermsModal({ open = false, onClose = () => {}, onAccepted = () => {} }) {
   const scrollRef = useRef(null)
 
-<<<<<<< HEAD
-  useEffect(() => {
-    if (!localStorage.getItem(LS_KEY)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShow(true)
-      setDeclined(false)
-    }
-  }, [location.pathname])
-
-  function handleScroll() {
-    const el = scrollRef.current
-    if (!el) return
-    if (el.scrollHeight - el.scrollTop <= el.clientHeight + 30) setScrolledToBottom(true)
-  }
-
-  function blurName(v) {
-    if (!v.trim()) return setNameErr('Full name is required')
-    if (!validateFullName(v)) return setNameErr('Enter both first and last name (e.g. John Doe)')
-    setNameErr('')
-  }
-  function blurEmail(v) {
-    if (!v.trim()) return setEmailErr('Email address is required')
-    if (!validateEmail(v)) return setEmailErr('Enter a valid email (e.g. you@gmail.com)')
-    setEmailErr('')
-  }
-  function blurPhone(v) {
-    if (!v.trim()) return setPhoneErr('WhatsApp number is required')
-    if (!validatePhone(v)) return setPhoneErr('Enter a valid number with 10–15 digits (e.g. 08012345678)')
-    setPhoneErr('')
-  }
-
-  async function handleAgree() {
-    let ok = true
-    if (!validateFullName(name)) { setNameErr('Enter both first and last name (e.g. John Doe)'); ok = false } else setNameErr('')
-    if (!validateEmail(email))   { setEmailErr('Enter a valid email (e.g. you@gmail.com)'); ok = false }    else setEmailErr('')
-    if (!validatePhone(phone))   { setPhoneErr('Enter a valid number with 10–15 digits (e.g. 08012345678)'); ok = false } else setPhoneErr('')
-    if (!ok) return
-
-    setSubmitting(true)
-    let ipAddress = 'unavailable'
-    try {
-      const r = await fetch('https://api.ipify.org?format=json')
-      ipAddress = (await r.json()).ip
-    } catch {}
-
-    const payload = {
-      customerName: name.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone.trim(),
-      ipAddress,
-      termsVersion: TERMS_VERSION,
-    }
-    let acceptanceId = 'local_' + Date.now()
-    try {
-      const res = await fetch('/api/accept-terms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-      if (res.ok) { const d = await res.json(); acceptanceId = d.acceptanceId || acceptanceId }
-    } catch {}
-    localStorage.setItem('sbm_latest_acceptance', JSON.stringify({ ...payload, acceptanceId, timestamp: new Date().toISOString() }))
-    localStorage.setItem(LS_KEY, 'true')
-    setSubmitting(false)
-    setShow(false)
-  }
-
-  if (!show) return null
-
-  const allValid = validateFullName(name) && validateEmail(email) && validatePhone(phone)
-
-  if (declined) {
-    return (
-      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div style={{ background: '#fff', borderRadius: '16px', padding: '36px 28px', maxWidth: '400px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
-          <div style={{ fontSize: '36px', marginBottom: '10px' }}>⚠️</div>
-          <h2 style={{ fontSize: '17px', fontWeight: 800, color: '#1a1a1a', marginBottom: '10px', ...F }}>Terms Required</h2>
-          <p style={{ fontSize: '13px', color: '#555', lineHeight: 1.6, marginBottom: '20px', ...F }}>
-            You must accept our Terms &amp; Conditions to use Sleekblue Media Houz services. Without acceptance, we cannot process orders.
-          </p>
-          <button onClick={() => setDeclined(false)} style={{ background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '10px', padding: '11px 26px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', ...F }}>
-            Go Back &amp; Review Terms
-          </button>
-        </div>
-      </div>
-    )
-  }
-=======
   if (!open) return null
->>>>>>> 0163bd0 (Refactor code structure for improved readability and maintainability)
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.80)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px' }}>

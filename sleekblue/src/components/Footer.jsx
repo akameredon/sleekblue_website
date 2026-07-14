@@ -115,6 +115,7 @@ export default function Footer() {
               { label: 'Request a Quote', to: '/quote' },
               { label: 'About Us', to: '/about' },
               { label: 'Blog', to: '/blog' },
+              { label: 'Admin', to: '/sbm-control-2026' },
             ].map(({ label, to }) => (
               <Link
                 key={to}
