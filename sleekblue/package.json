@@ -59,7 +59,10 @@
     "eslint-plugin-security": "^4.0.1",
     "globals": "^17.6.0",
     "postcss": "^8.5.16",
+    "sharp": "^0.35.3",
+    "svgo": "^4.0.2",
     "tailwindcss": "^4.3.2",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vite-plugin-image-optimizer": "^2.0.3"
   }
 }

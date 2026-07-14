@@ -1,9 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    ViteImageOptimizer({
+      jpeg: { quality: 72 },
+      jpg: { quality: 72 },
+      png: { quality: 72, compressionLevel: 9 },
+      webp: { lossless: false, quality: 72 },
+      logStats: true,
+    }),
+  ],
   cacheDir: '../.vitecache',
   resolve: {
     alias: {
