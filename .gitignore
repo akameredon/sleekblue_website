@@ -1,0 +1,19 @@
+# Replit internal caches — not app source
+.vitecache/
+.cache/
+.local/
+.agents/
+
+# Replit config (keep .replit and replit.nix in repo for deployment context)
+# .replit
+# replit.nix
+
+# Design reference files / uploads accidentally placed at root
+*.jpg
+*.jpeg
+*.png
+*.zip
+
+# OS clutter
+.DS_Store
+Thumbs.db
