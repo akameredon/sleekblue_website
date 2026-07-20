@@ -14,10 +14,9 @@ export default defineConfig({
       logStats: true,
     }),
   ],
-  cacheDir: '../.vitecache',
   resolve: {
     alias: {
-      '@assets': path.resolve(__dirname, '../attached_assets'),
+      '@assets': path.resolve(__dirname, './attached_assets'),
     },
     dedupe: ['react', 'react-dom'],
   },
@@ -39,7 +38,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:3000',
         changeOrigin: true,
       },
     },
