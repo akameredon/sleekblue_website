@@ -268,7 +268,7 @@ export default function Navbar() {
             )}
           </div>
           <div className="space-y-3">
-            {[{ label: 'Home', path: '/' }, { label: 'Store', path: '/store' }, { label: 'Blog', path: '/blog' }, { label: 'About', path: '/about' }, { label: 'Request Quote', path: '/quote' }, { label: 'Admin', path: '/sbm-control-2026' }].map(link => (
+            {[{ label: 'Home', path: '/' }, { label: 'Store', path: '/store' }, { label: 'Blog', path: '/blog' }, { label: 'About', path: '/about' }, { label: 'Request Quote', path: '/quote' }, { label: 'Admin', path: '/portal' }].map(link => (
               <button key={link.path} type="button" onClick={() => { navigate(link.path); setMobileOpen(false) }} className="w-full rounded-3xl bg-slate-50 px-4 py-4 text-left text-base font-semibold text-slate-900 transition hover:bg-slate-100">
                 {link.label}
               </button>

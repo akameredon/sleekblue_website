@@ -1110,7 +1110,7 @@ app.get('/sitemap.xml', (req, res) => {
 // ── robots.txt ─────────────────────────────────────────────────────────────────
 app.get('/robots.txt', (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
-  res.send('User-agent: *\nAllow: /\nDisallow: /sbm-control-2026\nDisallow: /api/\n\nSitemap: https://sleekbluemediahouz.com/sitemap.xml\n')
+  res.send('User-agent: *\nAllow: /\nDisallow: /portal\nDisallow: /api/\n\nSitemap: https://sleekbluemediahouz.com/sitemap.xml\n')
 })
 
 // ── RSS feed ───────────────────────────────────────────────────────────────────

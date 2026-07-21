@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
 const STORAGE_KEY = 'sbm_wa_popup'
-const HIDE_PATHS = ['/sbm-control-2026', '/cart', '/checkout']
+const HIDE_PATHS = ['/portal', '/cart', '/checkout']
 
 export default function WhatsAppLeadPopup() {
   const location = useLocation()
