@@ -1,3 +1,12 @@
+// ── Process-level crash guards — keep the server alive on unhandled errors ────
+process.on('uncaughtException', (err) => {
+  console.error('[CRASH PREVENTED] uncaughtException:', err?.message || err)
+  console.error(err?.stack || '')
+})
+process.on('unhandledRejection', (reason) => {
+  console.error('[CRASH PREVENTED] unhandledRejection:', reason?.message || reason)
+})
+
 import express from 'express'
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
@@ -124,7 +133,7 @@ if (!existsSync(ADMIN_CFG_FILE)) {
 
 const app = express()
 
-// ── Trust proxy for accurate IPs behind Replit reverse proxy ─────────────────
+// ── Trust proxy for accurate IPs behind Hostinger's nginx reverse proxy ──────
 app.set('trust proxy', 1)
 
 // ── Security headers via Helmet ───────────────────────────────────────────────
@@ -1461,4 +1470,7 @@ if (existsSync(DIST_DIR)) {
   })
 }
 
-app.listen(PORT, () => console.log(`Sleekblue API server running on port ${PORT}`))
+const server = app.listen(PORT, () => console.log(`Sleekblue API server running on port ${PORT}`))
+server.on('error', (err) => {
+  console.error('[SERVER ERROR]', err?.message || err)
+})
