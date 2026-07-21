@@ -1,0 +1,641 @@
+d logs
+Lines: 160
+
+Search logs
+
+
+
+1
+
+added 316 packages, and audited 317 packages in 3s
+
+2
+
+
+3
+
+97 packages are looking for funding
+
+4
+
+run `npm fund` for details
+
+5
+
+
+6
+
+found 0 vulnerabilities
+
+7
+
+
+8
+
+> sleekblue@0.0.0 build
+
+9
+
+> vite build
+
+10
+
+
+11
+
+vite v8.1.5 building client environment for production...
+
+12
+
+transforming...✓ 238 modules transformed.
+
+13
+
+rendering chunks...
+
+14
+
+computing gzip size...
+
+15
+
+dist/index.html 6.78 kB │ gzip: 1.96 kB
+
+16
+
+dist/assets/NNPC_LOGO_1779922059067-C8dS09HM.jpg 8.07 kB
+
+17
+
+dist/assets/HERO_LOGO_1779921080592-qIqiG_HO.jpg 9.84 kB
+
+18
+
+dist/assets/MTN_LOGO_1779921080594-CbA8KDs8.jpg 10.98 kB
+
+19
+
+dist/assets/SEPLAT_LOGO_1779921080595-BywSEqnl.jpg 12.38 kB
+
+20
+
+dist/assets/UBA_LOGO_1779921080597-CdZZkABR.jpg 12.90 kB
+
+21
+
+dist/assets/IMO_DIGITAL_CITY_LIMITED_LOGO_1779921080594-DIGEK6a1.jpg 22.90 kB
+
+22
+
+dist/assets/SLEEKBLUE_LOGO_1779921080596-CeL1hKwc.jpg 33.91 kB
+
+23
+
+dist/assets/branded_polo_b_1780603728215-BJ811SG_.jpg 518.27 kB
+
+24
+
+dist/assets/letter_head_b_1780611760304-C4l171iU.jpg 536.82 kB
+
+25
+
+dist/assets/nylon_bag_a_1780611760309-Bekww25S.jpg 643.90 kB
+
+26
+
+dist/assets/jotter_b_1780611760302-DyD5_wzz.jpg 653.10 kB
+
+27
+
+dist/assets/letter_head_c_1780611760305-Cy8WXOIK.jpg 672.92 kB
+
+28
+
+dist/assets/letter_head_a_1780611760304-DbmNOBVi.jpg 688.11 kB
+
+29
+
+dist/assets/I_D_card_b_1780611760300-DSvd-_AR.jpg 696.57 kB
+
+30
+
+dist/assets/branded_polo_c_1780603728215-fVacXlbY.jpg 706.16 kB
+
+31
+
+dist/assets/paper_bag_c_1780612370854-0mmWDX1M.jpg 712.68 kB
+
+32
+
+dist/assets/jotter_d_1780611760303-C0na2Wiw.jpg 733.63 kB
+
+33
+
+dist/assets/branded_polo_d_1780603728216-BkGpCilI.jpg 743.29 kB
+
+34
+
+dist/assets/complementary_card_c_1780609250612-DZ4AfnWg.jpg 745.28 kB
+
+35
+
+dist/assets/SLEEKBLUE_LOGO_1779927359068-Gy_boF1y.jpg 746.03 kB
+
+36
+
+dist/assets/4X4_C_1781055566670-dH-1oXUg.jpg 754.60 kB
+
+37
+
+dist/assets/jotter_c_1780611760303-BAa-MgEm.jpg 759.11 kB
+
+38
+
+dist/assets/I_D_card_c_1780611760301-D_zyONS3.jpg 764.81 kB
+
+39
+
+dist/assets/mug_b_1780611760308-CCtZXCBD.jpg 767.85 kB
+
+40
+
+dist/assets/branding_b_1780603728217-CMG4kplp.jpg 776.64 kB
+
+41
+
+dist/assets/hand_fan_c_1780611760299-Knt6AVMp.jpg 780.16 kB
+
+42
+
+dist/assets/nylon_bag_c_1780611760310-6bh-ZPB0.jpg 790.42 kB
+
+43
+
+dist/assets/branding_c_1780603728218-D_IbhlMT.jpg 794.07 kB
+
+44
+
+dist/assets/roll_up_stand_b_1780612370861-B-g7FZGc.jpg 794.53 kB
+
+45
+
+dist/assets/I_D_card_a_1780611760300-CTtsTcW7.jpg 795.57 kB
+
+46
+
+dist/assets/logo_branding_c_1780611760307-CcKEj-Td.jpg 808.55 kB
+
+47
+
+dist/assets/hand_fan_a_1780609250616-DxcnEt5b.jpg 811.07 kB
+
+48
+
+dist/assets/complementary_card_b_1780609250611-B3Bx4fnv.jpg 812.94 kB
+
+49
+
+dist/assets/car_branding_b_1780609250608-1xu6dotB.jpg 821.86 kB
+
+50
+
+dist/assets/tote_bag_c_1780612999009-ChQ2xjPT.jpg 826.86 kB
+
+51
+
+dist/assets/cap_b_1780609250606-BOlT2kxi.jpg 829.19 kB
+
+52
+
+dist/assets/HERO_SLIDE_3_1779922059066-D0kJqF7P.jpg 839.85 kB
+
+53
+
+dist/assets/table_calender_c_1780612999006-BDSKjtP-.jpg 840.63 kB
+
+54
+
+dist/assets/brochure_d_1780603728220-DYeq4fJU.jpg 855.91 kB
+
+55
+
+dist/assets/umbrella_b_1780614186226-DeViUEfB.jpg 857.32 kB
+
+56
+
+dist/assets/car_branding_d_1780609250610-s4mpQGbN.jpg 861.28 kB
+
+57
+
+dist/assets/paper_bag_b_1780612370853-C_T91jTk.jpg 861.95 kB
+
+58
+
+dist/assets/cap_c_1780609250607-YXqWis9j.jpg 878.23 kB
+
+59
+
+dist/assets/cap_a_1780609250605-Dp8t6EJ6.jpg 878.93 kB
+
+60
+
+dist/assets/calender_b_1780609250604-CUPXG5jR.jpg 883.60 kB
+
+61
+
+dist/assets/tote_bag_a_1780612999008-Bm6JefL1.jpg 900.43 kB
+
+62
+
+dist/assets/pen_a_1780612370854-CFPUKLYQ.jpg 919.33 kB
+
+63
+
+dist/assets/car_branding_e_1780609250610-BngaJcOy.jpg 946.01 kB
+
+64
+
+dist/assets/table_calender_b_1780612999006-DyyAYqYO.jpg 957.55 kB
+
+65
+
+dist/assets/table_calender_a_1780612370864-BOMBjQ3P.jpg 958.49 kB
+
+66
+
+dist/assets/car_branding_c_1780609250609-s6bXDMHy.jpg 962.01 kB
+
+67
+
+dist/assets/mug_a_1780611760307-DsEwKYIE.jpg 976.97 kB
+
+68
+
+dist/assets/brochure_b_1780603728219-ClORRbXI.jpg 980.06 kB
+
+69
+
+dist/assets/jotter_a_1780611760301-C_ncgwKU.jpg 981.55 kB
+
+70
+
+dist/assets/nylon_bag_b_1780611760309-81-cYNLk.jpg 985.91 kB
+
+71
+
+dist/assets/tote_bag_b_1780612999009--uIrbvVi.jpg 1,002.62 kB
+
+72
+
+dist/assets/brochure_a_1780603728219-VdCI0qzL.jpg 1,025.54 kB
+
+73
+
+dist/assets/brochure_f_1780603728221-CczCTeAT.jpg 1,031.63 kB
+
+74
+
+dist/assets/HERO_SLIDE_2_1779922059065-CeLFvrBh.jpg 1,038.30 kB
+
+75
+
+dist/assets/HERO_IMAGE_1_1779922059063-DlHrbHjY.jpg 1,043.36 kB
+
+76
+
+dist/assets/flyer_c_1780609250614-CIY2W4yb.jpg 1,059.47 kB
+
+77
+
+dist/assets/banner_b_1780603728211-DxX1XJ2B.jpg 1,063.76 kB
+
+78
+
+dist/assets/brochure_c_1780603728220-BYBKDEeu.jpg 1,066.27 kB
+
+79
+
+dist/assets/flyer_d_1780609250615-D-xskFgb.jpg 1,069.23 kB
+
+80
+
+dist/assets/billboard_a_1780603728212-BWlC7Erh.jpg 1,082.84 kB
+
+81
+
+dist/assets/paper_bag_a_1780612370852-PBno0sFA.jpg 1,107.14 kB
+
+82
+
+dist/assets/logo_branding_a_1780611760305-DCZK_KOc.jpg 1,110.48 kB
+
+83
+
+dist/assets/flyer_a_1780609250613-DQc49x8W.jpg 1,115.31 kB
+
+84
+
+dist/assets/roll_up_stand_a_1780612370861-CjAwKAKM.jpg 1,132.03 kB
+
+85
+
+dist/assets/poster_e_1780612370859-CVdA-yq6.jpg 1,135.76 kB
+
+86
+
+dist/assets/umbrella_d_1780614186228-v5vfv24r.jpg 1,143.67 kB
+
+87
+
+dist/assets/1.5x1.5_D_1781055566684-BaDJj7pW.jpg 1,156.18 kB
+
+88
+
+dist/assets/poster_c_1780612370858-ClTcdJ7I.jpg 1,158.95 kB
+
+89
+
+dist/assets/logo_branding_b_1780611760306-DrxlLgyW.jpg 1,175.15 kB
+
+90
+
+dist/assets/HERO_SLIDE_1_1779922059065-BCntrGlN.jpg 1,182.10 kB
+
+91
+
+dist/assets/billboard_b_1780603728212-BNeUpd5R.jpg 1,198.10 kB
+
+92
+
+dist/assets/complementary_card_1780609250612-ChygHQE_.jpg 1,225.06 kB
+
+93
+
+dist/assets/2X4_A_1780614732048-DW0DNdYj.jpg 1,231.38 kB
+
+94
+
+dist/assets/hand_fan_b_1780611760298-DDC-jobv.jpg 1,239.83 kB
+
+95
+
+dist/assets/4X4_B_1781055566684-Ugb2G_Aw.jpg 1,250.08 kB
+
+96
+
+dist/assets/banner_a_1780603728210-BCGdyV-a.jpg 1,251.07 kB
+
+97
+
+dist/assets/flyer_b_1780609250613-BKBMddrl.jpg 1,273.77 kB
+
+98
+
+dist/assets/flyer_e_1780609250615-B9cfwO1J.jpg 1,289.25 kB
+
+99
+
+dist/assets/window_graphics_b_1780612999051-BoRwc2D9.jpg 1,298.86 kB
+
+100
+
+dist/assets/calender_a_1780609250603-BPRKEpln.jpg 1,302.03 kB
+
+101
+
+dist/assets/branded_polo_a_1780603728214-EANM5mfF.jpg 1,317.24 kB
+
+102
+
+dist/assets/WEBSITE_DESIGN_LAYOUT_2026_-_Copy_1780612999051-Dss6KBuD.jpg 1,326.70 kB
+
+103
+
+dist/assets/signage_a_1780612370863-BOFh7S7n.jpg 1,342.57 kB
+
+104
+
+dist/assets/poster_b_1780612370857-uHKdWouz.jpg 1,385.98 kB
+
+105
+
+dist/assets/pen_c_1780612370856-Bn3kEdnO.jpg 1,388.21 kB
+
+106
+
+dist/assets/window_graphics_c_1780612999052-BX1mgIUC.jpg 1,431.39 kB
+
+107
+
+dist/assets/roll_up_stand_c_1780612370862-BaSnu4Xl.jpg 1,435.28 kB
+
+108
+
+dist/assets/calender_c_1780609250605-B4xbIbuE.jpg 1,440.96 kB
+
+109
+
+dist/assets/1.5x1.5_b_1781055566685-DMq2WEAG.jpg 1,453.88 kB
+
+110
+
+dist/assets/1.5x1.5_A_1781055566686-BYQ5Z83D.jpg 1,462.17 kB
+
+111
+
+dist/assets/signage_c_1780612370864-CcADgF5s.jpg 1,470.15 kB
+
+112
+
+dist/assets/window_graphics_e_1780612999054-uCMWCzqI.jpg 1,514.17 kB
+
+113
+
+dist/assets/pen_b_1780612370855-DzcL4Xy0.jpg 1,517.49 kB
+
+114
+
+dist/assets/billboard_d_1780603728213-pw4v8d2J.jpg 1,571.55 kB
+
+115
+
+dist/assets/brochure_e_1780603728220-fb9sX8ri.jpg 1,587.15 kB
+
+116
+
+dist/assets/umbrella_c_1780614186227-vYcn_7E7.jpg 1,691.28 kB
+
+117
+
+dist/assets/branding_a_1780603728217-DDjUNzwA.jpg 1,712.82 kB
+
+118
+
+dist/assets/3x3_A_1780614732052-CrPO29N9.jpg 1,719.84 kB
+
+119
+
+dist/assets/poster_a_1780612370857-CvYZJEXC.jpg 1,720.58 kB
+
+120
+
+dist/assets/billboard_c_1780603728213-BW5tVM4a.jpg 1,767.97 kB
+
+121
+
+dist/assets/banner_c_1780603728211-BaRxVgOn.jpg 1,839.62 kB
+
+122
+
+dist/assets/1.5x1.5_C_1781055566685-DjlQF9QT.jpg 1,950.37 kB
+
+123
+
+dist/assets/3X4_A_1780614732056-BEYR1jhc.jpg 2,127.92 kB
+
+124
+
+dist/assets/window_graphics_a_1780612999051-DV5cHhL2.jpg 2,249.28 kB
+
+125
+
+dist/assets/3x3_B_1780614732052-ohD88_9r.jpg 2,334.00 kB
+
+126
+
+dist/assets/signage_b_1780612370863-BfxD21Pq.jpg 2,347.59 kB
+
+127
+
+dist/assets/window_graphics_d_1780612999053-DKtkcc68.jpg 2,425.77 kB
+
+128
+
+dist/assets/2X8_A_1780614732050-_bHcPou8.jpg 2,589.67 kB
+
+129
+
+dist/assets/2X7_A_1780614732049-CUCro7AR.jpg 2,683.33 kB
+
+130
+
+dist/assets/2X8_B_1780614732051-BHzqA7Jy.jpg 2,776.87 kB
+
+131
+
+dist/assets/3X4_B_1780614732056-lOb9lREz.jpg 2,820.86 kB
+
+132
+
+dist/assets/2X7_C_1780614732050-mBHoCQ3d.jpg 2,904.83 kB
+
+133
+
+dist/assets/2X7_B_1780614732049-D-POtr0H.jpg 3,414.58 kB
+
+134
+
+dist/assets/3x3_C_1780614732053-Cbo3mOkd.jpg 3,420.64 kB
+
+135
+
+dist/assets/index-B9EfZOMZ.css 58.62 kB │ gzip: 10.71 kB
+
+136
+
+dist/assets/Breadcrumb-C6LklmAl.js 1.49 kB │ gzip: 0.78 kB
+
+137
+
+dist/assets/useSEO-DSs6hsZW.js 1.90 kB │ gzip: 0.89 kB
+
+138
+
+dist/assets/HeroCanvas-DMffB3yK.js 3.36 kB │ gzip: 1.24 kB
+
+139
+
+dist/assets/NotFoundPage-CHqXbDaz.js 3.68 kB │ gzip: 1.45 kB
+
+140
+
+dist/assets/QuotePage-DLvVyG48.js 6.14 kB │ gzip: 2.20 kB
+
+141
+
+dist/assets/ComparisonPage-DIBaU0zn.js 6.26 kB │ gzip: 2.22 kB
+
+142
+
+dist/assets/productImages-BUwlG2E3.js 6.27 kB │ gzip: 2.33 kB
+
+143
+
+dist/assets/PriceListPage-BoONTIFY.js 6.69 kB │ gzip: 2.38 kB
+
+144
+
+dist/assets/StorePage-Bnv4Gyk7.js 6.80 kB │ gzip: 2.37 kB
+
+145
+
+dist/assets/AboutPage-B2Tnv0Bi.js 8.07 kB │ gzip: 2.83 kB
+
+146
+
+dist/assets/CartPage-DcLIcqw5.js 8.19 kB │ gzip: 2.40 kB
+
+147
+
+dist/assets/BlogPage-C28ffpwg.js 10.21 kB │ gzip: 3.34 kB
+
+148
+
+dist/assets/BlogPostPage-DrnLD1HP.js 15.35 kB │ gzip: 4.84 kB
+
+149
+
+dist/assets/ProductPage-D4x3XxZa.js 21.48 kB │ gzip: 6.75 kB
+
+150
+
+dist/assets/CheckoutPage-NiAfwNWx.js 22.99 kB │ gzip: 7.56 kB
+
+151
+
+dist/assets/HomePage-C-6jnum0.js 33.67 kB │ gzip: 9.53 kB
+
+152
+
+dist/assets/index-VzkL6WWd.js 322.39 kB │ gzip: 100.37 kB
+
+153
+
+dist/assets/AdminPage-DcmTjbUk.js 569.07 kB │ gzip: 160.83 kB
+
+154
+
+
+155
+
+[plugin builtin:vite-reporter]
+
+156
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+
+157
+
+- Using dynamic import() to code-split the application
+
+158
+
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+
+159
+
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+160
+
+✓ built in 1.24s
