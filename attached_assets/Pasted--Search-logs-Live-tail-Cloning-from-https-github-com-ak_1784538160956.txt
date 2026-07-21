@@ -1,0 +1,54 @@
+
+Search logs
+
+Live tail
+
+
+
+==> Cloning from https://github.com/akameredon/sleekblue_website
+==> Checking out commit 3520dadf50452ea8cd52067bd7962bb7582666cc in branch main
+==> Requesting Node.js version >=18.0.0
+==> Using Node.js version 26.5.0 via /opt/render/project/src/package.json
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Installing Node.js version 26.5.0...
+==> Running build command 'yarn install'...
+yarn install v1.22.22
+info No lockfile found.
+[1/5] Validating package.json...
+[2/5] Resolving packages...
+[3/5] Fetching packages...
+[4/5] Linking dependencies...
+warning " > @tiptap/extension-image@3.28.0" has unmet peer dependency "@tiptap/core@3.28.0".
+warning " > @tiptap/extension-link@3.28.0" has unmet peer dependency "@tiptap/core@3.28.0".
+warning " > @tiptap/extension-placeholder@3.28.0" has unmet peer dependency "@tiptap/extensions@3.28.0".
+warning " > @tiptap/react@3.28.0" has unmet peer dependency "@tiptap/core@3.28.0".
+warning "@tiptap/react > @tiptap/extension-bubble-menu@3.28.0" has unmet peer dependency "@tiptap/core@3.28.0".
+warning "@tiptap/react > @tiptap/extension-floating-menu@3.28.0" has unmet peer dependency "@floating-ui/dom@^1.0.0".
+warning "@tiptap/react > @tiptap/extension-floating-menu@3.28.0" has unmet peer dependency "@tiptap/core@3.28.0".
+warning Workspaces can only be enabled in private projects.
+warning Workspaces can only be enabled in private projects.
+warning Workspaces can only be enabled in private projects.
+warning Workspaces can only be enabled in private projects.
+warning Workspaces can only be enabled in private projects.
+[5/5] Building fresh packages...
+success Saved lockfile.
+Done in 14.86s.
+==> Uploading build...
+==> Uploaded in 8.6s. Compression took 1.9s
+==> Build successful 🎉
+==> Deploying...
+==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+==> Running 'node server.js'
+Sleekblue API server running on port 3000
+==> New primary port detected: 3000. Restarting deploy to update network configuration...
+==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+==> Running 'node server.js'
+Sleekblue API server running on port 3000
+==> Your service is live 🎉
+==> 
+==> ///////////////////////////////////////////////////////////
+==> 
+==> Available at your primary URL https://sleekblue-website.onrender.com
+==> 
+==> ///////////////////////////////////////////////////////////
+==> Detected a new open port HTTP:3000

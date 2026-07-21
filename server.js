@@ -39,7 +39,7 @@ const siteUpload    = multer({ storage: makeStorage('site'),    limits: { fileSi
 
 const JWT_SECRET = process.env.JWT_SECRET
 if (!JWT_SECRET) { console.error('[FATAL] JWT_SECRET env var is not set. Set it before starting the server.'); process.exit(1) }
-const PORT       = process.env.PORT || 3001
+const PORT       = process.env.PORT || 3000
 
 function readJSON(file, fallback = {}) {
   if (!existsSync(file)) return fallback

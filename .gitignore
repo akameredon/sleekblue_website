@@ -1,18 +1,20 @@
-# Replit internal caches — not app source
+# Dependencies
+node_modules/
+
+# Environment variables (configure in Hostinger hPanel)
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+
+# Replit internal caches
 .vitecache/
 .cache/
 .local/
 .agents/
-
-# Replit config (keep .replit and replit.nix in repo for deployment context)
-# .replit
-# replit.nix
-
-# Design reference files / uploads accidentally placed at root
-*.jpg
-*.jpeg
-*.png
-*.zip
+.replit
 
 # OS clutter
 .DS_Store

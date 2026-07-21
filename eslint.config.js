@@ -6,7 +6,7 @@ import security from 'eslint-plugin-security'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'node_modules', 'lighthouse-reports', 'test-results']),
+  globalIgnores(['dist', 'node_modules']),
 
   // ── Browser / React source files ──────────────────────────────────────────
   {
@@ -24,7 +24,7 @@ export default defineConfig([
 
   // ── Node.js server files with security rules ──────────────────────────────
   {
-    files: ['server.js', 'lighthouserc.js', 'vite.config.js', 'postcss.config.js'],
+    files: ['server.js', 'vite.config.js', 'postcss.config.js'],
     extends: [
       js.configs.recommended,
     ],
@@ -38,7 +38,6 @@ export default defineConfig([
       sourceType: 'module',
     },
     rules: {
-      // Security rules from eslint-plugin-security
       'security/detect-eval-with-expression': 'error',
       'security/detect-non-literal-regexp': 'warn',
       'security/detect-non-literal-fs-filename': 'warn',
