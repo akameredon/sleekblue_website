@@ -145,7 +145,6 @@ export default function App() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/sbm-control-2026" element={<AdminPage />} />
-          <Route path="/admin" element={<Navigate to="/sbm-control-2026" replace />} />
           <Route path="/*"     element={<MainSite />} />
         </Routes>
       </Suspense>
