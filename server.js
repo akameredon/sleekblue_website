@@ -47,8 +47,10 @@ const productUpload = multer({ storage: makeStorage('products'), limits: { fileS
 const siteUpload    = multer({ storage: makeStorage('site'),    limits: { fileSize: 10 * 1024 * 1024 } })
 
 const JWT_SECRET = process.env.JWT_SECRET
-if (!JWT_SECRET) { console.error('[FATAL] JWT_SECRET env var is not set. Set it before starting the server.'); process.exit(1) }
-const PORT       = process.env.PORT || 3000
+if (!JWT_SECRET) {
+  console.error('[WARNING] JWT_SECRET env var is not set. Admin panel will be unavailable until it is configured in Hostinger hPanel.')
+}
+const PORT = process.env.PORT || 3000
 
 function readJSON(file, fallback = {}) {
   if (!existsSync(file)) return fallback
@@ -115,20 +117,15 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
 
 if (!existsSync(ADMIN_CFG_FILE)) {
-  const initialPassword = ADMIN_PASSWORD || (process.env.NODE_ENV === 'production' ? null : `dev-${generateId('ADMIN')}`)
-  if (!initialPassword && process.env.NODE_ENV === 'production') {
-    console.error('[FATAL] ADMIN_PASSWORD env var is not set. Set it before starting the server.')
-    process.exit(1)
+  const initialPassword = ADMIN_PASSWORD || `dev-${generateId('ADMIN')}`
+  if (!ADMIN_PASSWORD && process.env.NODE_ENV === 'production') {
+    console.error('[WARNING] ADMIN_PASSWORD env var is not set. A temporary password has been generated — set ADMIN_PASSWORD in Hostinger hPanel to use a permanent one.')
   }
   writeJSON(ADMIN_CFG_FILE, {
     username: ADMIN_USERNAME,
     passwordHash: bcrypt.hashSync(initialPassword, 10),
   })
-  if (initialPassword) {
-    console.log(`[Admin] Default credentials: ${ADMIN_USERNAME} / ${initialPassword}`)
-  } else {
-    console.log('[Admin] Admin credentials were not initialized because ADMIN_PASSWORD is not set.')
-  }
+  console.log(`[Admin] Credentials initialised: ${ADMIN_USERNAME} / ${ADMIN_PASSWORD ? '(from env)' : initialPassword}`)
 }
 
 const app = express()
@@ -208,6 +205,9 @@ app.use('/uploads', express.static(UPLOADS_DIR))
 
 // ── Auth middleware ───────────────────────────────────────────────────────────
 function requireAuth(req, res, next) {
+  if (!JWT_SECRET) {
+    return res.status(503).json({ error: 'Admin panel is unavailable: JWT_SECRET is not configured. Set it in Hostinger hPanel → Node.js → Environment Variables.' })
+  }
   const auth = req.headers.authorization || ''
   const token = auth.replace('Bearer ', '')
   if (!token) {
@@ -471,6 +471,9 @@ app.get('/api/seo', (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 app.post('/api/admin/login', (req, res) => {
+  if (!JWT_SECRET) {
+    return res.status(503).json({ error: 'Admin panel is unavailable: JWT_SECRET is not configured. Set it in Hostinger hPanel → Node.js → Environment Variables.' })
+  }
   const { username, password } = req.body
   const cfg = readJSON(ADMIN_CFG_FILE, {})
   if (username !== cfg.username) return res.status(401).json({ error: 'Invalid credentials' })
