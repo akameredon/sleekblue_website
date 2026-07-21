@@ -1447,15 +1447,13 @@ if (existsSync(DIST_DIR)) {
       }
     },
   }))
-  // All non-API GET routes that are not handled by the API should return index.html
-  app.get('/*', (req, res) => {
-    if (req.path.startsWith('/api')) {
-      return res.status(404).json({ error: 'Not found' })
-    }
+  // SPA fallback — serve index.html for all non-API routes (Express 5 compatible)
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api')) return next()
     res.sendFile(join(DIST_DIR, 'index.html'))
   })
 } else {
-  app.get('/*', (req, res) => {
+  app.use((req, res, next) => {
     if (req.path.startsWith('/api')) {
       return res.status(503).json({ error: 'Frontend not built. Run: npm run build' })
     }
