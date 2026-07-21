@@ -1,3 +1,9 @@
+import express from 'express'
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname, join, extname } from 'path'
+import { execSync } from 'child_process'
+
 // ── Process-level crash guards — keep the server alive on unhandled errors ────
 process.on('uncaughtException', (err) => {
   console.error('[CRASH PREVENTED] uncaughtException:', err?.message || err)
@@ -6,11 +12,6 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason) => {
   console.error('[CRASH PREVENTED] unhandledRejection:', reason?.message || reason)
 })
-
-import express from 'express'
-import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname, join, extname } from 'path'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import multer from 'multer'
@@ -1447,9 +1448,20 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'sleekblue', timestamp: new Date().toISOString() })
 })
 
-// ── Serve React frontend (production build) ───────────────────────────────────
+// ── Ensure frontend is built — self-heal if dist/ is missing ─────────────────
 const DIST_DIR = join(__dirname, 'dist')
-if (existsSync(DIST_DIR)) {
+if (!existsSync(join(DIST_DIR, 'index.html'))) {
+  console.log('[Startup] dist/index.html not found — building frontend now...')
+  try {
+    execSync('npm run build', { cwd: __dirname, stdio: 'inherit' })
+    console.log('[Startup] Frontend build complete.')
+  } catch (buildErr) {
+    console.error('[Startup] Frontend build FAILED:', buildErr?.message || buildErr)
+  }
+}
+
+// ── Serve React frontend (production build) ───────────────────────────────────
+if (existsSync(join(DIST_DIR, 'index.html'))) {
   app.use(express.static(DIST_DIR, {
     maxAge: '1h',
     immutable: false,
@@ -1459,7 +1471,7 @@ if (existsSync(DIST_DIR)) {
       }
     },
   }))
-  // SPA fallback — serve index.html for all non-API routes (Express 5 compatible)
+  // SPA fallback — serve index.html for all non-API routes
   app.use((req, res, next) => {
     if (req.path.startsWith('/api')) return next()
     res.sendFile(join(DIST_DIR, 'index.html'))
@@ -1467,9 +1479,9 @@ if (existsSync(DIST_DIR)) {
 } else {
   app.use((req, res, next) => {
     if (req.path.startsWith('/api')) {
-      return res.status(503).json({ error: 'Frontend not built. Run: npm run build' })
+      return res.status(503).json({ error: 'Frontend build failed at startup. Check server logs.' })
     }
-    res.status(503).send('Frontend not built. Run: npm run build')
+    res.status(503).send('Frontend build failed at startup. Check server logs in Hostinger hPanel.')
   })
 }
 

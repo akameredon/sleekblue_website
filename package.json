@@ -8,9 +8,8 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "node server.js",
+    "start": "npm run build && node server.js",
     "build": "vite build",
-    "postinstall": "npm run build",
     "dev": "vite",
     "lint": "eslint .",
     "preview": "vite preview"
