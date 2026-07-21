@@ -1,18 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import { ViteImageOptimizer } from 'vite-plugin-image-optimizer'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 export default defineConfig({
   plugins: [
     react(),
-    ViteImageOptimizer({
-      jpeg: { quality: 72 },
-      jpg: { quality: 72 },
-      png: { quality: 72, compressionLevel: 9 },
-      webp: { lossless: false, quality: 72 },
-      logStats: true,
-    }),
   ],
   resolve: {
     alias: {
