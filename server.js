@@ -1,4 +1,5 @@
 import express from 'express'
+import compression from 'compression'
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join, extname } from 'path'
@@ -69,13 +70,46 @@ function getClientIP(req) {
   return raw.replace(/^::ffff:/, '')
 }
 
-// ── Analytics helpers ─────────────────────────────────────────────────────────
-function readAnalytics() { return readJSON(ANALYTICS_FILE, { events: [], securityEvents: [] }) }
-function writeAnalytics(data) { try { writeJSON(ANALYTICS_FILE, data) } catch { /* empty */ } }
+// ── Site-data in-memory cache — reads happen once; writes update cache + disk ──
+let _siteDataCache = null
+function getSiteData() {
+  if (!_siteDataCache) _siteDataCache = readJSON(SITE_DATA_FILE, {})
+  return _siteDataCache
+}
+function writeSiteData(data) {
+  _siteDataCache = data
+  writeSiteData(data)
+}
+
+// ── Analytics in-memory cache with buffered disk writes ───────────────────────
+// Reads always hit memory; disk is synced every 30 s (or on process exit).
+let _analyticsCache = null
+let _analyticsDirty = false
+let _analyticsFlushTimer = null
+
+function getAnalytics() {
+  if (!_analyticsCache) _analyticsCache = readJSON(ANALYTICS_FILE, { events: [], securityEvents: [] })
+  return _analyticsCache
+}
+function flushAnalytics() {
+  if (_analyticsDirty && _analyticsCache) {
+    try { writeJSON(ANALYTICS_FILE, _analyticsCache) } catch { /* empty */ }
+    _analyticsDirty = false
+  }
+}
+function scheduleAnalyticsFlush() {
+  _analyticsDirty = true
+  if (!_analyticsFlushTimer) {
+    _analyticsFlushTimer = setTimeout(() => { _analyticsFlushTimer = null; flushAnalytics() }, 30_000)
+  }
+}
+// Flush on graceful shutdown so no events are lost
+process.on('SIGTERM', flushAnalytics)
+process.on('SIGINT',  flushAnalytics)
 
 function logSecurityEvent(type, req) {
   try {
-    const data = readAnalytics()
+    const data = getAnalytics()
     data.securityEvents = data.securityEvents || []
     data.securityEvents.unshift({
       id: generateId('SEC'),
@@ -87,18 +121,20 @@ function logSecurityEvent(type, req) {
       timestamp: new Date().toISOString(),
     })
     data.securityEvents = data.securityEvents.slice(0, 500)
-    writeAnalytics(data)
+    scheduleAnalyticsFlush()
   } catch { /* empty */ }
 }
 
 // IP Geolocation — ip-api.com free tier (no key required)
-const geoCache = {}
+// Capped at 500 entries to prevent unbounded memory growth.
+const geoCache = new Map()
+const GEO_CACHE_MAX = 500
 async function geolocateIP(ip) {
   if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('::ffff:') ||
       ip.startsWith('192.168') || ip.startsWith('10.') || ip.startsWith('172.')) {
     return { country: 'Local', city: 'Dev Server', region: '', lat: 0, lon: 0 }
   }
-  if (geoCache[ip]) return geoCache[ip]
+  if (geoCache.has(ip)) return geoCache.get(ip)
   try {
     const ctrl = new AbortController()
     const timeout = setTimeout(() => ctrl.abort(), 4000)
@@ -107,7 +143,8 @@ async function geolocateIP(ip) {
     const d = await res.json()
     if (d.status === 'success') {
       const loc = { country: d.country || 'Unknown', city: d.city || '', region: d.regionName || '', lat: d.lat || 0, lon: d.lon || 0 }
-      geoCache[ip] = loc
+      if (geoCache.size >= GEO_CACHE_MAX) geoCache.delete(geoCache.keys().next().value) // evict oldest
+      geoCache.set(ip, loc)
       return loc
     }
   } catch { /* empty */ }
@@ -133,6 +170,9 @@ const app = express()
 
 // ── Trust proxy for accurate IPs behind Hostinger's nginx reverse proxy ──────
 app.set('trust proxy', 1)
+
+// ── Gzip compression — cuts response sizes by 60-80% ─────────────────────────
+app.use(compression())
 
 // ── Security headers via Helmet ───────────────────────────────────────────────
 app.use(helmet({
@@ -312,12 +352,12 @@ app.post('/api/accept-terms', (req, res) => {
 })
 
 app.get('/api/settings', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json(data.settings || {})
 })
 
 app.get('/api/products', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json({
     productOverrides: data.productOverrides || {},
     stickerPriceOverrides: data.stickerPriceOverrides || {},
@@ -325,7 +365,7 @@ app.get('/api/products', (req, res) => {
 })
 
 app.get('/api/products/:slug', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   const override = (data.productOverrides || {})[req.params.slug]
   res.json(override || null)
 })
@@ -379,17 +419,18 @@ app.post('/api/analytics/track', (req, res) => {
       ip,
       location: null,
     }
-    const data = readAnalytics()
+    // All reads/writes go to the in-memory cache; disk flush is deferred
+    const data = getAnalytics()
     data.events = data.events || []
     data.events.unshift(eventData)
     data.events = data.events.slice(0, 10000)
-    writeAnalytics(data)
-    // Geo-resolve asynchronously
+    scheduleAnalyticsFlush()
+    // Geo-resolve asynchronously — updates the in-memory record directly
     geolocateIP(ip).then(location => {
       try {
-        const d = readAnalytics()
+        const d = getAnalytics()
         const idx = (d.events || []).findIndex(e => e.id === eventData.id)
-        if (idx !== -1) { d.events[idx].location = location; writeAnalytics(d) }
+        if (idx !== -1) { d.events[idx].location = location; scheduleAnalyticsFlush() }
       } catch { /* empty */ }
     }).catch(() => {})
   } catch { /* empty */ }
@@ -397,55 +438,55 @@ app.post('/api/analytics/track', (req, res) => {
 })
 
 app.get('/api/hero', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json(data.hero || {})
 })
 
 app.get('/api/content', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json(mergeContentDefaults(data.content || {}))
 })
 
 app.get('/api/page-layout', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json(data.pageLayout || DEFAULT_PAGE_LAYOUT)
 })
 
 app.get('/api/product-images', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json(data.productImages || {})
 })
 
 app.get('/api/sticker-images', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json(data.stickerImages || {})
 })
 
 app.get('/api/product-variant-images', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json(data.productVariantImages || {})
 })
 
 app.get('/api/site-images', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json(data.siteImages || {})
 })
 
 app.get('/api/about', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json({ ...ABOUT_DEFAULTS, ...(data.about || {}) })
 })
 
 app.put('/api/admin/about', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.about = { ...(data.about || {}), ...req.body }
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   logActivity('about_updated', 'About page content updated', 'admin')
   res.json({ ok: true })
 })
 
 app.get('/api/blog', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   const now = new Date()
   const posts = (data.blogPosts || []).filter(p => {
     if (p.status !== 'published') return false
@@ -456,14 +497,14 @@ app.get('/api/blog', (req, res) => {
 })
 
 app.get('/api/blog/:slug', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   const post = (data.blogPosts || []).find(p => p.slug === req.params.slug && p.status === 'published')
   if (!post) return res.status(404).json({ error: 'Not found' })
   res.json(post)
 })
 
 app.get('/api/seo', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json(data.seo || {})
 })
 
@@ -489,38 +530,38 @@ app.get('/api/admin/acceptances', requireAuth, (req, res) => {
 })
 
 app.get('/api/admin/site-data', requireAuth, (req, res) => {
-  res.json(readJSON(SITE_DATA_FILE, {}))
+  res.json(getSiteData())
 })
 
 app.put('/api/admin/products/:slug', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, { settings: {}, productOverrides: {}, stickerPriceOverrides: {} })
+  const data = getSiteData()
   data.productOverrides = data.productOverrides || {}
   data.productOverrides[req.params.slug] = req.body
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Product saved:', req.params.slug)
   res.json({ ok: true })
 })
 
 app.delete('/api/admin/products/:slug', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, { settings: {}, productOverrides: {}, stickerPriceOverrides: {} })
+  const data = getSiteData()
   data.productOverrides = data.productOverrides || {}
   delete data.productOverrides[req.params.slug]
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   res.json({ ok: true })
 })
 
 app.put('/api/admin/sticker-prices', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, { settings: {}, productOverrides: {}, stickerPriceOverrides: {} })
+  const data = getSiteData()
   data.stickerPriceOverrides = req.body
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Sticker prices updated')
   res.json({ ok: true })
 })
 
 app.put('/api/admin/settings', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, { settings: {}, productOverrides: {}, stickerPriceOverrides: {} })
+  const data = getSiteData()
   data.settings = { ...(data.settings || {}), ...req.body }
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Settings updated')
   res.json({ ok: true })
 })
@@ -539,25 +580,25 @@ app.put('/api/admin/password', requireAuth, (req, res) => {
 })
 
 app.put('/api/admin/hero', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, { settings: {}, productOverrides: {}, stickerPriceOverrides: {}, content: {} })
+  const data = getSiteData()
   data.hero = { ...(data.hero || {}), ...req.body }
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Hero content updated')
   res.json({ ok: true })
 })
 
 app.put('/api/admin/page-layout', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, { settings: {}, productOverrides: {}, stickerPriceOverrides: {}, content: {} })
+  const data = getSiteData()
   data.pageLayout = req.body
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Page layout updated')
   res.json({ ok: true })
 })
 
 app.put('/api/admin/content', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, { settings: {}, productOverrides: {}, stickerPriceOverrides: {}, content: {} })
+  const data = getSiteData()
   data.content = { ...(data.content || {}), ...req.body }
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Content updated:', Object.keys(req.body).join(', '))
   res.json({ ok: true })
 })
@@ -565,9 +606,9 @@ app.put('/api/admin/content', requireAuth, (req, res) => {
 app.put('/api/admin/faq', requireAuth, (req, res) => {
   const { faq } = req.body
   if (!Array.isArray(faq)) return res.status(400).json({ error: 'faq must be an array' })
-  const data = readJSON(SITE_DATA_FILE, { content: {} })
+  const data = getSiteData()
   data.content = { ...(data.content || {}), faq }
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] FAQ updated:', faq.length, 'items')
   res.json({ ok: true })
 })
@@ -576,11 +617,11 @@ app.put('/api/admin/faq', requireAuth, (req, res) => {
 app.post('/api/admin/upload/hero', requireAuth, heroUpload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
   const url = `/uploads/hero/${req.file.filename}`
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.hero = data.hero || {}
   data.hero.customSlides = data.hero.customSlides || []
   data.hero.customSlides.push(url)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Hero slide uploaded:', url)
   res.json({ ok: true, url })
 })
@@ -588,10 +629,10 @@ app.post('/api/admin/upload/hero', requireAuth, heroUpload.single('image'), (req
 app.delete('/api/admin/upload/hero', requireAuth, (req, res) => {
   const { url } = req.body
   if (!url) return res.status(400).json({ error: 'No url provided' })
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.hero = data.hero || {}
   data.hero.customSlides = (data.hero.customSlides || []).filter(u => u !== url)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   try { const filename = url.replace('/uploads/hero/', ''); unlinkSync(join(UPLOADS_DIR, 'hero', filename)) } catch { /* empty */ }
   res.json({ ok: true })
 })
@@ -599,10 +640,10 @@ app.delete('/api/admin/upload/hero', requireAuth, (req, res) => {
 app.put('/api/admin/upload/hero/reorder', requireAuth, (req, res) => {
   const { slides } = req.body
   if (!Array.isArray(slides)) return res.status(400).json({ error: 'slides must be array' })
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.hero = data.hero || {}
   data.hero.customSlides = slides
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   res.json({ ok: true })
 })
 
@@ -610,11 +651,11 @@ app.put('/api/admin/upload/hero/reorder', requireAuth, (req, res) => {
 app.post('/api/admin/upload/hero/extra-default', requireAuth, heroUpload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
   const url = `/uploads/hero/${req.file.filename}`
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.hero = data.hero || {}
   data.hero.extraDefaultSlides = data.hero.extraDefaultSlides || []
   data.hero.extraDefaultSlides.push(url)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Extra default slide added:', url)
   res.json({ ok: true, url })
 })
@@ -622,11 +663,11 @@ app.post('/api/admin/upload/hero/extra-default', requireAuth, heroUpload.single(
 app.delete('/api/admin/upload/hero/extra-default', requireAuth, (req, res) => {
   const { url } = req.body
   if (!url) return res.status(400).json({ error: 'No url provided' })
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.hero = data.hero || {}
   data.hero.extraDefaultSlides = (data.hero.extraDefaultSlides || []).filter(u => u !== url)
   data.hero.hiddenExtraDefaultSlides = (data.hero.hiddenExtraDefaultSlides || []).filter(u => u !== url)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   try { const filename = url.replace('/uploads/hero/', ''); unlinkSync(join(UPLOADS_DIR, 'hero', filename)) } catch { /* empty */ }
   res.json({ ok: true })
 })
@@ -634,10 +675,10 @@ app.delete('/api/admin/upload/hero/extra-default', requireAuth, (req, res) => {
 app.put('/api/admin/hero/extra-default-visibility', requireAuth, (req, res) => {
   const { hiddenExtraDefaultSlides } = req.body
   if (!Array.isArray(hiddenExtraDefaultSlides)) return res.status(400).json({ error: 'array required' })
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.hero = data.hero || {}
   data.hero.hiddenExtraDefaultSlides = hiddenExtraDefaultSlides
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   res.json({ ok: true })
 })
 
@@ -645,10 +686,10 @@ app.put('/api/admin/hero/extra-default-visibility', requireAuth, (req, res) => {
 app.put('/api/admin/hero/default-slides', requireAuth, (req, res) => {
   const { hiddenDefaultSlides } = req.body
   if (!Array.isArray(hiddenDefaultSlides)) return res.status(400).json({ error: 'hiddenDefaultSlides must be array' })
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.hero = data.hero || {}
   data.hero.hiddenDefaultSlides = hiddenDefaultSlides
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Default slides visibility updated:', hiddenDefaultSlides)
   res.json({ ok: true })
 })
@@ -658,11 +699,11 @@ app.post('/api/admin/upload/product/:slug', requireAuth, productUpload.single('i
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
   const { slug } = req.params
   const url = `/uploads/products/${req.file.filename}`
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.productImages = data.productImages || {}
   data.productImages[slug] = data.productImages[slug] || []
   data.productImages[slug].push(url)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Product image uploaded:', slug, url)
   res.json({ ok: true, url })
 })
@@ -671,10 +712,10 @@ app.delete('/api/admin/upload/product/:slug', requireAuth, (req, res) => {
   const { slug } = req.params
   const { url } = req.body
   if (!url) return res.status(400).json({ error: 'No url provided' })
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.productImages = data.productImages || {}
   data.productImages[slug] = (data.productImages[slug] || []).filter(u => u !== url)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   try { const filename = url.replace('/uploads/products/', ''); unlinkSync(join(UPLOADS_DIR, 'products', filename)) } catch { /* empty */ }
   res.json({ ok: true })
 })
@@ -685,11 +726,11 @@ app.post('/api/admin/upload/sticker-image', requireAuth, productUpload.single('i
   const { size } = req.body
   if (!size) return res.status(400).json({ error: 'size is required' })
   const url = `/uploads/products/${req.file.filename}`
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.stickerImages = data.stickerImages || {}
   data.stickerImages[size] = data.stickerImages[size] || []
   if (!data.stickerImages[size].includes(url)) data.stickerImages[size].push(url)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Sticker image uploaded for size', size, ':', url)
   res.json({ ok: true, url, size })
 })
@@ -697,10 +738,10 @@ app.post('/api/admin/upload/sticker-image', requireAuth, productUpload.single('i
 app.delete('/api/admin/sticker-image', requireAuth, (req, res) => {
   const { size, url } = req.body
   if (!size || !url) return res.status(400).json({ error: 'size and url required' })
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.stickerImages = data.stickerImages || {}
   data.stickerImages[size] = (data.stickerImages[size] || []).filter(u => u !== url)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   try { const filename = url.replace('/uploads/products/', ''); unlinkSync(join(UPLOADS_DIR, 'products', filename)) } catch { /* empty */ }
   res.json({ ok: true })
 })
@@ -712,12 +753,12 @@ app.post('/api/admin/upload/product-variant/:slug', requireAuth, productUpload.s
   const { variant } = req.body
   if (!variant) return res.status(400).json({ error: 'variant is required' })
   const url = `/uploads/products/${req.file.filename}`
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.productVariantImages = data.productVariantImages || {}
   data.productVariantImages[slug] = data.productVariantImages[slug] || {}
   data.productVariantImages[slug][variant] = data.productVariantImages[slug][variant] || []
   data.productVariantImages[slug][variant].push(url)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Variant image uploaded:', slug, variant, url)
   res.json({ ok: true, url })
 })
@@ -726,11 +767,11 @@ app.delete('/api/admin/upload/product-variant/:slug', requireAuth, (req, res) =>
   const { slug } = req.params
   const { variant, url } = req.body
   if (!variant || !url) return res.status(400).json({ error: 'variant and url required' })
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.productVariantImages = data.productVariantImages || {}
   data.productVariantImages[slug] = data.productVariantImages[slug] || {}
   data.productVariantImages[slug][variant] = (data.productVariantImages[slug][variant] || []).filter(u => u !== url)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   try { const filename = url.replace('/uploads/products/', ''); unlinkSync(join(UPLOADS_DIR, 'products', filename)) } catch { /* empty */ }
   res.json({ ok: true })
 })
@@ -748,30 +789,30 @@ app.post('/api/admin/upload/site', requireAuth, siteUpload.single('image'), (req
   const { key } = req.body
   if (!key) return res.status(400).json({ error: 'key is required' })
   const url = `/uploads/site/${req.file.filename}`
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.siteImages = data.siteImages || {}
   data.siteImages[key] = url
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Site image uploaded:', key, url)
   res.json({ ok: true, url })
 })
 
 // ── About ─────────────────────────────────────────────────────────────────────
 app.put('/api/admin/about', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.about = { ...(data.about || {}), ...req.body }
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   res.json({ ok: true })
 })
 
 // ── Blog ──────────────────────────────────────────────────────────────────────
 app.get('/api/admin/blog', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json(data.blogPosts || [])
 })
 
 app.post('/api/admin/blog', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.blogPosts = data.blogPosts || []
   const post = {
     id: generateId('POST'),
@@ -796,33 +837,33 @@ app.post('/api/admin/blog', requireAuth, (req, res) => {
     updatedAt: new Date().toISOString(),
   }
   data.blogPosts.unshift(post)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] Blog post created:', post.id)
   res.json({ ok: true, post })
 })
 
 app.put('/api/admin/blog/:id', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   const idx = (data.blogPosts || []).findIndex(p => p.id === req.params.id)
   if (idx === -1) return res.status(404).json({ error: 'Not found' })
   data.blogPosts[idx] = { ...data.blogPosts[idx], ...req.body, updatedAt: new Date().toISOString() }
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   res.json({ ok: true, post: data.blogPosts[idx] })
 })
 
 app.delete('/api/admin/blog/:id', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.blogPosts = (data.blogPosts || []).filter(p => p.id !== req.params.id)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   res.json({ ok: true })
 })
 
 app.put('/api/admin/blog/reorder', requireAuth, (req, res) => {
   const { posts } = req.body
   if (!Array.isArray(posts)) return res.status(400).json({ error: 'posts must be array' })
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.blogPosts = posts
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   res.json({ ok: true })
 })
 
@@ -836,16 +877,16 @@ app.post('/api/admin/upload/blog', requireAuth, blogUpload.single('file'), (req,
 
 // ── SEO ───────────────────────────────────────────────────────────────────────
 app.put('/api/admin/seo', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.seo = { ...(data.seo || {}), ...req.body }
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   console.log('[Admin] SEO settings saved')
   res.json({ ok: true, seo: data.seo })
 })
 
 // ── Analytics (admin) ─────────────────────────────────────────────────────────
 app.get('/api/admin/analytics', requireAuth, (req, res) => {
-  const raw = readAnalytics()
+  const raw = getAnalytics()
   const events = raw.events || []
   const securityEvents = (raw.securityEvents || []).slice(0, 200)
 
@@ -912,7 +953,8 @@ app.get('/api/admin/analytics', requireAuth, (req, res) => {
 })
 
 app.delete('/api/admin/analytics/clear', requireAuth, (req, res) => {
-  writeAnalytics({ events: [], securityEvents: [] })
+  _analyticsCache = { events: [], securityEvents: [] }
+  flushAnalytics()
   console.log('[Admin] Analytics data cleared')
   res.json({ ok: true })
 })
@@ -1043,33 +1085,33 @@ app.post('/api/upload/artwork', artworkUpload.single('artwork'), (req, res) => {
 
 // ── Blog view counter ──────────────────────────────────────────────────────────
 app.post('/api/blog/:slug/view', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   const idx = (data.blogPosts || []).findIndex(p => p.slug === req.params.slug && p.status === 'published')
   if (idx !== -1) {
     data.blogPosts[idx].viewCount = (data.blogPosts[idx].viewCount || 0) + 1
-    writeJSON(SITE_DATA_FILE, data)
+    writeSiteData(data)
   }
   res.json({ ok: true })
 })
 
 // ── Promo banner (public) ──────────────────────────────────────────────────────
 app.get('/api/promo-banner', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   res.json(data.promoBanner || { enabled: false, text: '', link: '', color: '#7B2FBE', bgColor: '#f5f0ff' })
 })
 
 // ── Promo banner (admin) ───────────────────────────────────────────────────────
 app.put('/api/admin/promo-banner', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.promoBanner = { ...(data.promoBanner || {}), ...req.body }
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   logActivity('promo_banner', req.body.enabled ? 'enabled' : 'disabled')
   res.json({ ok: true })
 })
 
 // ── Admin backup ───────────────────────────────────────────────────────────────
 app.get('/api/admin/backup', requireAuth, (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   const filename = `sleekblue-backup-${new Date().toISOString().slice(0, 10)}.json`
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
   res.setHeader('Content-Type', 'application/json')
@@ -1086,12 +1128,12 @@ app.get('/api/admin/activity-log', requireAuth, (req, res) => {
 app.post('/api/admin/upload/product/:slug/bulk', requireAuth, productUpload.array('images', 10), (req, res) => {
   if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files' })
   const { slug } = req.params
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.productImages = data.productImages || {}
   data.productImages[slug] = data.productImages[slug] || []
   const urls = req.files.map(f => `/uploads/products/${f.filename}`)
   data.productImages[slug].push(...urls)
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   logActivity('bulk_image_upload', `${urls.length} images for ${slug}`)
   res.json({ ok: true, urls })
 })
@@ -1106,7 +1148,7 @@ const SITEMAP_PRODUCT_SLUGS = [
 ]
 
 app.get('/sitemap.xml', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   const BASE = 'https://sleekbluemediahouz.com'
   const now = new Date()
   const posts = (data.blogPosts || []).filter(p => p.status === 'published' && (!p.publishAt || new Date(p.publishAt) <= now))
@@ -1128,7 +1170,7 @@ app.get('/robots.txt', (req, res) => {
 
 // ── RSS feed ───────────────────────────────────────────────────────────────────
 app.get('/feed.xml', (req, res) => {
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   const BASE = 'https://sleekbluemediahouz.com'
   const now = new Date()
   const posts = (data.blogPosts || []).filter(p => p.status === 'published' && (!p.publishAt || new Date(p.publishAt) <= now)).slice(0, 20)
@@ -1197,7 +1239,7 @@ function scorePage(seo = {}) {
 }
 
 app.get('/api/admin/seo-audit', requireAuth, (req, res) => {
-  const data  = readJSON(SITE_DATA_FILE, {})
+  const data  = getSiteData()
   const seo   = data.seo || {}
   const now   = new Date()
 
@@ -1226,10 +1268,10 @@ app.get('/api/admin/seo-audit', requireAuth, (req, res) => {
 
 // ── Growth Dashboard ────────────────────────────────────────────────────────────
 app.get('/api/admin/growth', requireAuth, (req, res) => {
-  const analytics  = readAnalytics()
+  const analytics  = getAnalytics()
   const events     = analytics.events || []
   const leads      = readJSON(LEADS_FILE, [])
-  const data       = readJSON(SITE_DATA_FILE, {})
+  const data       = getSiteData()
   const now        = new Date()
   const msDay      = 86400000
   const days30     = 30
@@ -1384,12 +1426,12 @@ app.patch('/api/admin/reviews/:id/approve', requireAuth, (req, res) => {
   const list = readJSON(REVIEWS_PENDING_FILE, [])
   const rev = list.find(r => r.id === req.params.id)
   if (!rev) return res.status(404).json({ error: 'Not found' })
-  const data = readJSON(SITE_DATA_FILE, {})
+  const data = getSiteData()
   data.content = data.content || {}
   data.content.reviews = data.content.reviews || {}
   data.content.reviews.testimonials = data.content.reviews.testimonials || []
   data.content.reviews.testimonials.unshift({ id: rev.id, name: rev.name, rating: rev.rating, text: rev.text, location: rev.location, visible: true })
-  writeJSON(SITE_DATA_FILE, data)
+  writeSiteData(data)
   writeJSON(REVIEWS_PENDING_FILE, list.filter(r => r.id !== req.params.id))
   logActivity('review_approved', `Review by ${rev.name} approved`, 'admin')
   res.json({ ok: true })
@@ -1436,7 +1478,7 @@ app.patch('/api/admin/leads/:id/follow-up', requireAuth, (req, res) => {
 
 // ── Social proof — product view count (7-day) ──────────────────────────────────
 app.get('/api/product/views/:slug', (req, res) => {
-  const analytics = readAnalytics()
+  const analytics = getAnalytics()
   const slug = req.params.slug
   const cutoff = new Date(Date.now() - 7 * 86400000)
   const views7d = (analytics.events || []).filter(e => e.type === 'product_view' && e.slug === slug && new Date(e.timestamp) >= cutoff).length

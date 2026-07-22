@@ -25,6 +25,23 @@ export default defineConfig({
       'react/jsx-dev-runtime',
     ],
   },
+  build: {
+    target: 'es2020',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Tiptap editor — only used in the admin panel, split into its own chunk
+          if (id.includes('@tiptap')) return 'editor'
+          // React core
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) return 'react'
+          // Router
+          if (id.includes('react-router-dom') || id.includes('react-router/')) return 'router'
+          // Everything else from node_modules
+          if (id.includes('node_modules')) return 'vendor'
+        },
+      },
+    },
+  },
   server: {
     host: '0.0.0.0',
     port: 5000,
