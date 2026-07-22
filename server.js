@@ -78,7 +78,7 @@ function getSiteData() {
 }
 function writeSiteData(data) {
   _siteDataCache = data
-  writeSiteData(data)
+  writeJSON(SITE_DATA_FILE, data)
 }
 
 // ── Analytics in-memory cache with buffered disk writes ───────────────────────
@@ -1522,22 +1522,23 @@ app.use((req, res, next) => {
   )
 })
 
-// ── Start server immediately so the host proxy never times out ────────────────
+// ── Build frontend synchronously if dist/ is missing before accepting requests ─
+// This ensures Hostinger (and any host) never receives a 503 during startup.
+// Normally `npm start` = `npm run build && node server.js` so dist/ exists;
+// this only fires when `node server.js` is run directly without a prior build.
+if (!existsSync(join(DIST_DIR, 'index.html'))) {
+  console.log('[Startup] dist/index.html not found — building frontend now (blocking)...')
+  try {
+    execSync('npm run build', { cwd: __dirname, stdio: 'inherit' })
+    console.log('[Startup] Frontend build complete.')
+  } catch (buildErr) {
+    console.error('[Startup] Frontend build FAILED:', buildErr?.message || buildErr)
+    // Continue starting the server even if build fails — API routes still work
+  }
+}
+
+// ── Start server ──────────────────────────────────────────────────────────────
 const server = app.listen(PORT, () => console.log(`Sleekblue API server running on port ${PORT}`))
 server.on('error', (err) => {
   console.error('[SERVER ERROR]', err?.message || err)
 })
-
-// ── Self-heal: build the frontend in the background if dist/ is missing ───────
-// (Normally `npm start` = `npm run build && node server.js` so dist/ already
-//  exists. This only fires when someone runs `node server.js` directly.)
-if (!existsSync(join(DIST_DIR, 'index.html'))) {
-  console.log('[Startup] dist/index.html not found — building frontend in background...')
-  exec('npm run build', { cwd: __dirname }, (buildErr) => {
-    if (buildErr) {
-      console.error('[Startup] Frontend build FAILED:', buildErr?.message || buildErr)
-    } else {
-      console.log('[Startup] Frontend build complete — serving frontend now.')
-    }
-  })
-}
