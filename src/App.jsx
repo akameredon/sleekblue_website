@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { trackPageView } from './hooks/useAnalytics'
 import { CartProvider } from './context/CartContext'
 import Navbar from './components/Navbar'
@@ -141,13 +141,13 @@ function MainSite() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/portal" element={<AdminPage />} />
           <Route path="/*"     element={<MainSite />} />
         </Routes>
       </Suspense>
-    </BrowserRouter>
+    </HashRouter>
   )
 }

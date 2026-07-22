@@ -1,0 +1,10 @@
+# Hostinger SPA routing — serve index.html for all routes that aren't real files
+Options -MultiViews
+RewriteEngine On
+
+# Let existing files and directories through (uploads, assets, etc.)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Everything else → index.html (React handles routing via hash)
+RewriteRule ^ index.html [QSA,L]
