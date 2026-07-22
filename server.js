@@ -3,6 +3,7 @@ import compression from 'compression'
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join, extname } from 'path'
+
 // ── Process-level crash guards — keep the server alive on unhandled errors ────
 process.on('uncaughtException', (err) => {
   console.error('[CRASH PREVENTED] uncaughtException:', err?.message || err)
@@ -166,6 +167,9 @@ if (!existsSync(ADMIN_CFG_FILE)) {
 
 const app = express()
 
+// ── DEBUG: trace every incoming request — remove once /store & /product are fixed ──
+app.use((req, res, next) => { console.log('HIT:', req.method, req.path); next() })
+
 // ── Trust proxy for accurate IPs behind Hostinger's nginx reverse proxy ──────
 app.set('trust proxy', 1)
 
@@ -181,7 +185,7 @@ app.use(helmet({
 
 app.use(express.json({ limit: '5mb' }))
 
-// ── CORS ─────────────────────────────────────────────────────────────────────
+// ── CORS ───────────────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
@@ -239,7 +243,7 @@ const loginLimiter = rateLimit({
 app.use('/api/', generalLimiter)
 app.use('/api/admin/login', loginLimiter)
 
-// ── Serve uploaded files ──────────────────────────────────────────────────────
+// ── Serve uploaded files ────────────────────────────────────────────────────────
 app.use('/uploads', express.static(UPLOADS_DIR))
 
 // ── Auth middleware ───────────────────────────────────────────────────────────
@@ -611,7 +615,7 @@ app.put('/api/admin/faq', requireAuth, (req, res) => {
   res.json({ ok: true })
 })
 
-// ── Hero image uploads ────────────────────────────────────────────────────────
+// ── Hero image uploads ──────────────────────────────────────────────────────────
 app.post('/api/admin/upload/hero', requireAuth, heroUpload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
   const url = `/uploads/hero/${req.file.filename}`
@@ -645,7 +649,7 @@ app.put('/api/admin/upload/hero/reorder', requireAuth, (req, res) => {
   res.json({ ok: true })
 })
 
-// ── Extra default slides (uploaded, appear alongside built-in 4) ──────────────
+// ── Extra default slides (uploaded, appear alongside built-in 4) ─────────────
 app.post('/api/admin/upload/hero/extra-default', requireAuth, heroUpload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
   const url = `/uploads/hero/${req.file.filename}`
@@ -680,7 +684,7 @@ app.put('/api/admin/hero/extra-default-visibility', requireAuth, (req, res) => {
   res.json({ ok: true })
 })
 
-// ── Default slide visibility ───────────────────────────────────────────────────
+// ── Default slide visibility ────────────────────────────────────────────────────
 app.put('/api/admin/hero/default-slides', requireAuth, (req, res) => {
   const { hiddenDefaultSlides } = req.body
   if (!Array.isArray(hiddenDefaultSlides)) return res.status(400).json({ error: 'hiddenDefaultSlides must be array' })
@@ -774,7 +778,7 @@ app.delete('/api/admin/upload/product-variant/:slug', requireAuth, (req, res) =>
   res.json({ ok: true })
 })
 
-// ── Site & brand images ───────────────────────────────────────────────────────
+// ── Site & brand images ────────────────────────────────────────────────────────
 app.post('/api/admin/upload/brand-logo', requireAuth, siteUpload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
   const url = `/uploads/site/${req.file.filename}`
@@ -795,7 +799,7 @@ app.post('/api/admin/upload/site', requireAuth, siteUpload.single('image'), (req
   res.json({ ok: true, url })
 })
 
-// ── About ─────────────────────────────────────────────────────────────────────
+// ── About ──────────────────────────────────────────────────────────────────────
 app.put('/api/admin/about', requireAuth, (req, res) => {
   const data = getSiteData()
   data.about = { ...(data.about || {}), ...req.body }
@@ -803,7 +807,7 @@ app.put('/api/admin/about', requireAuth, (req, res) => {
   res.json({ ok: true })
 })
 
-// ── Blog ──────────────────────────────────────────────────────────────────────
+// ── Blog ───────────────────────────────────────────────────────────────────────
 app.get('/api/admin/blog', requireAuth, (req, res) => {
   const data = getSiteData()
   res.json(data.blogPosts || [])
@@ -873,7 +877,7 @@ app.post('/api/admin/upload/blog', requireAuth, blogUpload.single('file'), (req,
   res.json({ ok: true, url, type })
 })
 
-// ── SEO ───────────────────────────────────────────────────────────────────────
+// ── SEO ────────────────────────────────────────────────────────────────────────
 app.put('/api/admin/seo', requireAuth, (req, res) => {
   const data = getSiteData()
   data.seo = { ...(data.seo || {}), ...req.body }
@@ -882,7 +886,7 @@ app.put('/api/admin/seo', requireAuth, (req, res) => {
   res.json({ ok: true, seo: data.seo })
 })
 
-// ── Analytics (admin) ─────────────────────────────────────────────────────────
+// ── Analytics (admin) ──────────────────────────────────────────────────────────
 app.get('/api/admin/analytics', requireAuth, (req, res) => {
   const raw = getAnalytics()
   const events = raw.events || []
@@ -1062,7 +1066,7 @@ const ABOUT_DEFAULTS = {
   showStats: true,
 }
 
-// ── Activity log ──────────────────────────────────────────────────────────────
+// ── Activity log ────────────────────────────────────────────────────────────────
 const ACTIVITY_FILE = join(__dirname, 'activity-log.json')
 function logActivity(action, detail, user = 'admin') {
   try {
@@ -1072,7 +1076,7 @@ function logActivity(action, detail, user = 'admin') {
   } catch { /* empty */ }
 }
 
-// ── Artwork upload (public — customers send print files) ───────────────────────
+// ── Artwork upload (public — customers send print files) ─────────────────────
 mkdirSync(join(UPLOADS_DIR, 'artwork'), { recursive: true })
 const artworkUpload = multer({ storage: makeStorage('artwork'), limits: { fileSize: 25 * 1024 * 1024 } })
 
@@ -1081,7 +1085,7 @@ app.post('/api/upload/artwork', artworkUpload.single('artwork'), (req, res) => {
   res.json({ ok: true, url: `/uploads/artwork/${req.file.filename}` })
 })
 
-// ── Blog view counter ──────────────────────────────────────────────────────────
+// ── Blog view counter ────────────────────────────────────────────────────────────
 app.post('/api/blog/:slug/view', (req, res) => {
   const data = getSiteData()
   const idx = (data.blogPosts || []).findIndex(p => p.slug === req.params.slug && p.status === 'published')
@@ -1092,13 +1096,13 @@ app.post('/api/blog/:slug/view', (req, res) => {
   res.json({ ok: true })
 })
 
-// ── Promo banner (public) ──────────────────────────────────────────────────────
+// ── Promo banner (public) ────────────────────────────────────────────────────────
 app.get('/api/promo-banner', (req, res) => {
   const data = getSiteData()
   res.json(data.promoBanner || { enabled: false, text: '', link: '', color: '#7B2FBE', bgColor: '#f5f0ff' })
 })
 
-// ── Promo banner (admin) ───────────────────────────────────────────────────────
+// ── Promo banner (admin) ─────────────────────────────────────────────────────────
 app.put('/api/admin/promo-banner', requireAuth, (req, res) => {
   const data = getSiteData()
   data.promoBanner = { ...(data.promoBanner || {}), ...req.body }
@@ -1107,7 +1111,7 @@ app.put('/api/admin/promo-banner', requireAuth, (req, res) => {
   res.json({ ok: true })
 })
 
-// ── Admin backup ───────────────────────────────────────────────────────────────
+// ── Admin backup ─────────────────────────────────────────────────────────────────
 app.get('/api/admin/backup', requireAuth, (req, res) => {
   const data = getSiteData()
   const filename = `sleekblue-backup-${new Date().toISOString().slice(0, 10)}.json`
@@ -1117,12 +1121,12 @@ app.get('/api/admin/backup', requireAuth, (req, res) => {
   res.send(JSON.stringify(data, null, 2))
 })
 
-// ── Activity log (admin) ───────────────────────────────────────────────────────
+// ── Activity log (admin) ─────────────────────────────────────────────────────────
 app.get('/api/admin/activity-log', requireAuth, (req, res) => {
   res.json(readJSON(ACTIVITY_FILE, []).slice(0, 200))
 })
 
-// ── Bulk product image upload ──────────────────────────────────────────────────
+// ── Bulk product image upload ─────────────────────────────────────────────────────
 app.post('/api/admin/upload/product/:slug/bulk', requireAuth, productUpload.array('images', 10), (req, res) => {
   if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files' })
   const { slug } = req.params
@@ -1136,7 +1140,7 @@ app.post('/api/admin/upload/product/:slug/bulk', requireAuth, productUpload.arra
   res.json({ ok: true, urls })
 })
 
-// ── Sitemap ────────────────────────────────────────────────────────────────────
+// ── Sitemap ────────────────────────────────────────────────────────────────────────
 const SITEMAP_PRODUCT_SLUGS = [
   'die-cut-stickers','product-labels','flex-banner','backlit-banner','canvas-banner',
   'flyers-posters','business-card','letterhead','compliment-slip','invoice-receipt',
@@ -1160,13 +1164,13 @@ app.get('/sitemap.xml', (req, res) => {
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`)
 })
 
-// ── robots.txt ─────────────────────────────────────────────────────────────────
+// ── robots.txt ─────────────────────────────────────────────────────────────────────
 app.get('/robots.txt', (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
   res.send('User-agent: *\nAllow: /\nDisallow: /portal\nDisallow: /api/\n\nSitemap: https://sleekbluemediahouz.com/sitemap.xml\n')
 })
 
-// ── RSS feed ───────────────────────────────────────────────────────────────────
+// ── RSS feed ───────────────────────────────────────────────────────────────────────
 app.get('/feed.xml', (req, res) => {
   const data = getSiteData()
   const BASE = 'https://sleekbluemediahouz.com'
@@ -1186,7 +1190,7 @@ app.get('/feed.xml', (req, res) => {
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n  <channel>\n    <title>Sleekblue Media Houz Blog</title>\n    <link>${BASE}/blog</link>\n    <description>Printing tips, branding guides and business insights from Sleekblue Media Houz</description>\n    <language>en-ng</language>\n    <atom:link href="${BASE}/feed.xml" rel="self" type="application/rss+xml" />\n${items}\n  </channel>\n</rss>`)
 })
 
-// ── SEO Agent audit ────────────────────────────────────────────────────────────
+// ── SEO Agent audit ──────────────────────────────────────────────────────────────
 const STATIC_PAGES = [
   { key: 'home',       label: 'Homepage',          path: '/' },
   { key: 'store',      label: 'Store',              path: '/store' },
@@ -1264,7 +1268,7 @@ app.get('/api/admin/seo-audit', requireAuth, (req, res) => {
   res.json({ pages, posts, avgScore, critical, warnings, total })
 })
 
-// ── Growth Dashboard ────────────────────────────────────────────────────────────
+// ── Growth Dashboard ─────────────────────────────────────────────────────────────
 app.get('/api/admin/growth', requireAuth, (req, res) => {
   const analytics  = getAnalytics()
   const events     = analytics.events || []
@@ -1349,7 +1353,7 @@ app.get('/api/admin/growth', requireAuth, (req, res) => {
   })
 })
 
-// ── Newsletter ─────────────────────────────────────────────────────────────────
+// ── Newsletter ─────────────────────────────────────────────────────────────────────
 const NEWSLETTER_FILE     = join(__dirname, 'newsletter.json')
 const COMMENTS_FILE       = join(__dirname, 'comments.json')
 const REVIEWS_PENDING_FILE= join(__dirname, 'reviews-pending.json')
@@ -1371,7 +1375,7 @@ app.delete('/api/admin/newsletter/:id', requireAuth, (req, res) => {
   res.json({ ok: true })
 })
 
-// ── Blog comments ──────────────────────────────────────────────────────────────
+// ── Blog comments ────────────────────────────────────────────────────────────────
 app.get('/api/blog/:slug/comments', (req, res) => {
   const all = readJSON(COMMENTS_FILE, {})
   res.json((all[req.params.slug] || []).filter(c => c.approved))
@@ -1408,7 +1412,7 @@ app.delete('/api/admin/comments/:id', requireAuth, (req, res) => {
   res.json({ ok: true })
 })
 
-// ── Review submissions ─────────────────────────────────────────────────────────
+// ── Review submissions ───────────────────────────────────────────────────────────
 app.post('/api/reviews/submit', (req, res) => {
   const { name, rating, text, location } = req.body || {}
   if (!name || !text) return res.status(400).json({ error: 'Name and review required' })
@@ -1439,7 +1443,7 @@ app.delete('/api/admin/reviews/:id', requireAuth, (req, res) => {
   res.json({ ok: true })
 })
 
-// ── Referral system ────────────────────────────────────────────────────────────
+// ── Referral system ───────────────────────────────────────────────────────────────
 app.post('/api/referral/generate', requireAuth, (req, res) => {
   const { name, contact } = req.body || {}
   if (!name) return res.status(400).json({ error: 'Name required' })
@@ -1463,7 +1467,7 @@ app.delete('/api/admin/referrals/:id', requireAuth, (req, res) => {
   res.json({ ok: true })
 })
 
-// ── Lead follow-up toggle ──────────────────────────────────────────────────────
+// ── Lead follow-up toggle ─────────────────────────────────────────────────────────
 app.patch('/api/admin/leads/:id/follow-up', requireAuth, (req, res) => {
   const leads = readJSON(LEADS_FILE, [])
   const idx = leads.findIndex(l => l.id === req.params.id)
@@ -1474,7 +1478,7 @@ app.patch('/api/admin/leads/:id/follow-up', requireAuth, (req, res) => {
   res.json({ ok: true, followedUp: leads[idx].followedUp })
 })
 
-// ── Social proof — product view count (7-day) ──────────────────────────────────
+// ── Social proof — product view count (7-day) ─────────────────────────────────────
 app.get('/api/product/views/:slug', (req, res) => {
   const analytics = getAnalytics()
   const slug = req.params.slug
@@ -1483,7 +1487,7 @@ app.get('/api/product/views/:slug', (req, res) => {
   res.json({ slug, views7d })
 })
 
-// ── Health and deployment checks ───────────────────────────────────────────
+// ── Health and deployment checks ───────────────────────────────────────────────
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'sleekblue', timestamp: new Date().toISOString() })
 })
@@ -1520,6 +1524,6 @@ app.use((req, res, next) => {
   )
 })
 
-// ── Start server ──────────────────────────────────────────────────────────────
+// ── Start server ────────────────────────────────────────────────────────────────
 const server = app.listen(PORT, () => console.log(`Sleekblue server running on port ${PORT}`))
 server.on('error', err => console.error('[SERVER ERROR]', err?.message || err))
