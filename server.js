@@ -3,8 +3,6 @@ import compression from 'compression'
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join, extname } from 'path'
-import { execSync, exec } from 'child_process'
-
 // ── Process-level crash guards — keep the server alive on unhandled errors ────
 process.on('uncaughtException', (err) => {
   console.error('[CRASH PREVENTED] uncaughtException:', err?.message || err)
@@ -1522,23 +1520,6 @@ app.use((req, res, next) => {
   )
 })
 
-// ── Build frontend synchronously if dist/ is missing before accepting requests ─
-// This ensures Hostinger (and any host) never receives a 503 during startup.
-// Normally `npm start` = `npm run build && node server.js` so dist/ exists;
-// this only fires when `node server.js` is run directly without a prior build.
-if (!existsSync(join(DIST_DIR, 'index.html'))) {
-  console.log('[Startup] dist/index.html not found — building frontend now (blocking)...')
-  try {
-    execSync('npm run build', { cwd: __dirname, stdio: 'inherit' })
-    console.log('[Startup] Frontend build complete.')
-  } catch (buildErr) {
-    console.error('[Startup] Frontend build FAILED:', buildErr?.message || buildErr)
-    // Continue starting the server even if build fails — API routes still work
-  }
-}
-
 // ── Start server ──────────────────────────────────────────────────────────────
-const server = app.listen(PORT, () => console.log(`Sleekblue API server running on port ${PORT}`))
-server.on('error', (err) => {
-  console.error('[SERVER ERROR]', err?.message || err)
-})
+const server = app.listen(PORT, () => console.log(`Sleekblue server running on port ${PORT}`))
+server.on('error', err => console.error('[SERVER ERROR]', err?.message || err))
