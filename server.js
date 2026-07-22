@@ -2,7 +2,7 @@ import express from 'express'
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join, extname } from 'path'
-import { execSync } from 'child_process'
+import { execSync, exec } from 'child_process'
 
 // ── Process-level crash guards — keep the server alive on unhandled errors ────
 process.on('uncaughtException', (err) => {
@@ -1448,44 +1448,54 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'sleekblue', timestamp: new Date().toISOString() })
 })
 
-// ── Ensure frontend is built — self-heal if dist/ is missing ─────────────────
-const DIST_DIR = join(__dirname, 'dist')
-if (!existsSync(join(DIST_DIR, 'index.html'))) {
-  console.log('[Startup] dist/index.html not found — building frontend now...')
-  try {
-    execSync('npm run build', { cwd: __dirname, stdio: 'inherit' })
-    console.log('[Startup] Frontend build complete.')
-  } catch (buildErr) {
-    console.error('[Startup] Frontend build FAILED:', buildErr?.message || buildErr)
-  }
-}
-
 // ── Serve React frontend (production build) ───────────────────────────────────
-if (existsSync(join(DIST_DIR, 'index.html'))) {
-  app.use(express.static(DIST_DIR, {
-    maxAge: '1h',
-    immutable: false,
-    setHeaders: (res, path) => {
-      if (path.endsWith('.html')) {
-        res.setHeader('Cache-Control', 'no-cache')
-      }
-    },
-  }))
-  // SPA fallback — serve index.html for all non-API routes
-  app.use((req, res, next) => {
-    if (req.path.startsWith('/api')) return next()
-    res.sendFile(join(DIST_DIR, 'index.html'))
-  })
-} else {
-  app.use((req, res, next) => {
-    if (req.path.startsWith('/api')) {
-      return res.status(503).json({ error: 'Frontend build failed at startup. Check server logs.' })
-    }
-    res.status(503).send('Frontend build failed at startup. Check server logs in Hostinger hPanel.')
-  })
-}
+const DIST_DIR = join(__dirname, 'dist')
 
+app.use(express.static(DIST_DIR, {
+  maxAge: '1h',
+  immutable: false,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+    }
+  },
+}))
+
+// SPA fallback — serve index.html for ALL non-API, non-static routes so that
+// direct URL access (e.g. /products, /about) works just like in-app navigation.
+// Checked at request time so it works even if the build finishes after startup.
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next()
+  const indexPath = join(DIST_DIR, 'index.html')
+  if (existsSync(indexPath)) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+    return res.sendFile(indexPath)
+  }
+  // Build not ready yet — ask the client to retry shortly
+  res.status(503).set('Retry-After', '10').send(
+    '<!doctype html><html><head><meta http-equiv="refresh" content="5"></head>' +
+    '<body style="font-family:sans-serif;padding:2rem">' +
+    '<h2>Starting up…</h2><p>The app is building. This page will refresh automatically.</p>' +
+    '</body></html>'
+  )
+})
+
+// ── Start server immediately so the host proxy never times out ────────────────
 const server = app.listen(PORT, () => console.log(`Sleekblue API server running on port ${PORT}`))
 server.on('error', (err) => {
   console.error('[SERVER ERROR]', err?.message || err)
 })
+
+// ── Self-heal: build the frontend in the background if dist/ is missing ───────
+// (Normally `npm start` = `npm run build && node server.js` so dist/ already
+//  exists. This only fires when someone runs `node server.js` directly.)
+if (!existsSync(join(DIST_DIR, 'index.html'))) {
+  console.log('[Startup] dist/index.html not found — building frontend in background...')
+  exec('npm run build', { cwd: __dirname }, (buildErr) => {
+    if (buildErr) {
+      console.error('[Startup] Frontend build FAILED:', buildErr?.message || buildErr)
+    } else {
+      console.log('[Startup] Frontend build complete — serving frontend now.')
+    }
+  })
+}
