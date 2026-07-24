@@ -22,11 +22,11 @@ const __dirname = path.dirname(__filename)
 // ─── Config ──────────────────────────────────────────────────────────────────
 const PORT = parseInt(process.env.PORT || '3000', 10)
 const JWT_SECRET = process.env.JWT_SECRET || (() => {
-  console.warn('[WARN] JWT_SECRET not set — using insecure fallback. Set it in Replit Secrets!')
-  return 'sleekblue-dev-secret-change-me-in-production'
+  console.error('[ERROR] JWT_SECRET is not set. Admin login is disabled until this secret is configured.')
+  return null
 })()
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
 
 // ─── Paths ───────────────────────────────────────────────────────────────────
 const DATA_FILE = path.join(__dirname, 'site-data.json')
@@ -137,6 +137,7 @@ app.use('/assets', express.static(path.join(__dirname, 'attached_assets')))
 
 // ─── JWT Auth Middleware ───────────────────────────────────────────────────────
 function requireAuth(req, res, next) {
+  if (!JWT_SECRET) return res.status(503).json({ error: 'Admin auth is not configured (JWT_SECRET missing)' })
   const header = req.headers['authorization'] || ''
   const token = header.startsWith('Bearer ') ? header.slice(7) : null
   if (!token) return res.status(401).json({ error: 'Unauthorized' })
@@ -149,31 +150,33 @@ function requireAuth(req, res, next) {
 }
 
 // ─── Multer ───────────────────────────────────────────────────────────────────
-function makeUploader(subdir, fieldName = 'file') {
+function makeUploader(subdir, { fieldName = 'file', allowAudio = false, maxMB = 10 } = {}) {
   const storage = multer.diskStorage({
     destination: path.join(UPLOADS_DIR, subdir),
     filename: (_, file, cb) => {
-      const ext = path.extname(file.originalname) || '.jpg'
+      const ext = path.extname(file.originalname) || '.bin'
       cb(null, `${Date.now()}-${crypto.randomBytes(4).toString('hex')}${ext}`)
     },
   })
   return multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+    limits: { fileSize: maxMB * 1024 * 1024 },
     fileFilter: (_, file, cb) => {
-      const ok = /image\/(jpeg|png|gif|webp|svg\+xml)/.test(file.mimetype)
-      cb(ok ? null : new Error('Only image files are allowed'), ok)
+      const isImage = /^image\/(jpeg|png|gif|webp|svg\+xml)$/.test(file.mimetype)
+      const isAudio = allowAudio && /^audio\//.test(file.mimetype)
+      const ok = isImage || isAudio
+      cb(ok ? null : new Error(`Unsupported file type: ${file.mimetype}`), ok)
     },
   }).single(fieldName)
 }
 
-const heroUploader = makeUploader('hero')
+const heroUploader    = makeUploader('hero')
 const productUploader = makeUploader('products')
 const variantUploader = makeUploader('variants')
 const stickerUploader = makeUploader('stickers')
-const blogUploader = makeUploader('blog')
+const blogUploader    = makeUploader('blog', { allowAudio: true, maxMB: 20 })
 const artworkUploader = makeUploader('artwork')
-const brandUploader = makeUploader('brand')
+const brandUploader   = makeUploader('brand')
 
 function uploadMiddleware(uploader) {
   return (req, res, next) => {
@@ -228,7 +231,13 @@ app.get('/api/about', (_, res) => {
   res.json(d.about || {})
 })
 
-// Product overrides
+// All product overrides (used by ComparisonPage)
+app.get('/api/products', (_, res) => {
+  const d = getSiteData()
+  res.json({ productOverrides: d.productOverrides || {} })
+})
+
+// Single product override
 app.get('/api/products/:slug', (req, res) => {
   const d = getSiteData()
   const overrides = (d.productOverrides || {})[req.params.slug] || null
