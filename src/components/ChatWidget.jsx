@@ -72,7 +72,7 @@ const KB = [
   },
   {
     patterns: ['contact', 'phone', 'call', 'reach', 'email', 'address', 'whatsapp', 'number'],
-    answer: `**Contact Sleekblue Media Houz:**\n\n📞 **Phone:** ${PHONE}\n💬 **WhatsApp:** ${PHONE} (fastest response)\n🌐 **Website:** sleekbluemediahouz.com\n\nWe're online and responsive — WhatsApp is the fastest way to reach us!`,
+    answer: `**Contact Sleekblue Media Houz:**\n\n📞 **Phone:** +234 806 527 5264\n💬 **WhatsApp:** +234 806 527 5264 (fastest response)\n🌐 **Website:** sleekbluemediahouz.com\n\nWe're online and responsive — WhatsApp is the fastest way to reach us!`,
     quick: ['Chat on WhatsApp', 'How to order'],
   },
   {

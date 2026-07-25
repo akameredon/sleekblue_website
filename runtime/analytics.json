@@ -1,5 +1,15 @@
 [
   {
+    "ts": 1784999469561,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1784999469460,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
     "type": "pageview",
     "page": "/",
     "device": "mobile",
