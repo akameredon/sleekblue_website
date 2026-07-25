@@ -1,9 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect, no-unused-vars, no-empty, no-dupe-keys */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.jpg'
 import { ALL_PRODUCTS, STICKER_SIZE_PRICES, getProductDetails } from '../data/products'
-import { AnalyticsView, ReportsView } from '../components/AdminAnalytics'
-import TiptapEditor from '../components/TiptapEditor'
+
+// Heavy components — lazy-loaded so they don't inflate the main AdminPage chunk
+const AnalyticsView = lazy(() => import('../components/AdminAnalytics').then(m => ({ default: m.AnalyticsView })))
+const ReportsView   = lazy(() => import('../components/AdminAnalytics').then(m => ({ default: m.ReportsView })))
+const TiptapEditor  = lazy(() => import('../components/TiptapEditor'))
 
 const PRI = '#7B2FBE'
 const PRI_LIGHT = '#f0e8ff'
@@ -2099,12 +2102,14 @@ function BlogPostEditor({ token, post, onSaved, onCancel }) {
           <Card>
             <h3 className="text-sm font-bold text-[#7B2FBE] mb-4">Content</h3>
             <p className="text-sm text-slate-500 mb-4">Use the rich text editor below — format headings, bold, lists, links, and more.</p>
-            <TiptapEditor
-              value={form.content}
-              onChange={v => set('content', v)}
-              placeholder="Write your full blog post here…"
-              height={460}
-            />
+            <Suspense fallback={<div className="flex items-center justify-center h-40 text-slate-400 text-sm">Loading editor…</div>}>
+              <TiptapEditor
+                value={form.content}
+                onChange={v => set('content', v)}
+                placeholder="Write your full blog post here…"
+                height={460}
+              />
+            </Suspense>
           </Card>
         </div>
 
@@ -3701,8 +3706,8 @@ export default function AdminPage() {
             {view === 'settings'       && <SettingsView token={token} settings={siteData.settings} onDataChanged={fetchAll} />}
             {view === 'acceptances'    && <AcceptancesView acceptances={siteData.acceptances} />}
             {view === 'security'       && <SecurityView token={token} />}
-            {view === 'analytics'      && <AnalyticsView token={token} />}
-            {view === 'reports'        && <ReportsView token={token} />}
+            {view === 'analytics'      && <Suspense fallback={<div className="p-8 text-slate-400 text-sm">Loading analytics…</div>}><AnalyticsView token={token} /></Suspense>}
+            {view === 'reports'        && <Suspense fallback={<div className="p-8 text-slate-400 text-sm">Loading reports…</div>}><ReportsView token={token} /></Suspense>}
             {view === 'leads'          && <LeadsView token={token} />}
             {view === 'promo-banner'   && <PromoBannerView token={token} />}
             {view === 'activity-log'   && <ActivityLogView token={token} />}
