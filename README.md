@@ -1,74 +1,115 @@
-# Sleekblue Media Houz
+# Sleekblue Media Houz — Platform Engine
 
-Premium printing and branding company website — die-cut stickers, flex banners, business cards, corporate branding, and more.
+> **Enterprise Grade Printing, Corporate Branding & Digital Commerce Platform**
+> Built for high-volume retail printing operations in Owerri, Imo State, Nigeria.
 
-Built with **React + Vite** (frontend) and **Express** (backend API), deployable as a Node.js web app on Hostinger.
-
----
-
-## Project Structure
-
-```
-/
-├── server.js          # Express API server (root entry point)
-├── package.json       # Root package — dependencies, scripts, engines
-├── vite.config.js     # Vite build config
-├── tailwind.config.js
-├── postcss.config.js
-├── index.html         # Vite HTML entry
-├── src/               # React frontend source
-├── public/            # Static assets (fonts, manifest, sw.js)
-├── attached_assets/   # Product/hero images
-├── site-data.json     # CMS data (hero, products, blog)
-├── leads.json         # Lead submissions
-└── uploads/           # Uploaded files (created at runtime)
-```
+[![CI Pipeline](https://github.com/sleekblue/website/actions/workflows/ci.yml/badge.svg)](https://github.com/sleekblue/website/actions)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
+[![Build Status](https://img.shields.io/badge/build-passing-success.svg)](package.json)
 
 ---
 
-## Environment Variables
+## 📐 System Architecture
 
-Configure these in Hostinger hPanel → Node.js → Environment Variables (never commit real values):
+The application adopts a **Unified Single-Process Architecture** combining an Express 5 REST API Engine with a Vite-compiled React Single Page Application (SPA).
 
-| Variable         | Required | Description                                      |
-|------------------|----------|--------------------------------------------------|
-| `JWT_SECRET`     | ✅        | Long random string (min 32 chars) for JWT signing |
-| `ADMIN_USERNAME` | ✅        | Admin dashboard login username                   |
-| `ADMIN_PASSWORD` | ✅        | Admin dashboard login password                   |
-| `PORT`           | ⬜        | Assigned automatically by Hostinger              |
-
-Generate a JWT secret:
-```bash
-node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
+                      ┌─────────────────────────────────────────┐
+                      │              Web Client                 │
+                      │   (React SPA + React Router v7)         │
+                      └────────────────────┬────────────────────┘
+                                           │
+                                     HTTP / HTTPS
+                                           │
+                      ┌────────────────────▼────────────────────┐
+                      │            Express 5 Server             │
+                      │              (server.js)                │
+                      └─────────┬─────────────────────┬─────────┘
+                                │                     │
+                 ┌──────────────▼──────┐       ┌──────▼──────────────┐
+                 │  REST API Engine    │       │ Static Asset Server │
+                 │ (/api/v1/* Routes)  │       │   (no-cache SPA)    │
+                 └──────────────┬──────┘       └─────────────────────┘
+                                │
+                 ┌──────────────▼──────┐
+                 │ Atomic File Storage │
+                 │ (.tmp -> renameSync)│
+                 └─────────────────────┘
 ```
 
 ---
 
-## Deployment on Hostinger (Node.js Web App)
+## 🛠️ Key Technical Specifications
 
-1. Connect your GitHub repository in hPanel.
-2. Set the environment variables above.
-3. Configure the deployment command:
-   ```
-   npm install && npm run build && npm start
-   ```
-4. Hostinger will run `npm start` (`node server.js`) to launch the app.
-
-The server serves the built React frontend from `dist/` and handles all API routes under `/api/`.
+* **Frontend Stack**: React 19, React Router v7, TipTap Rich Text Editor, Custom Glassmorphic Design Token System.
+* **Backend Stack**: Express 5, Node.js 18+, Helmet Security Headers, Compression (Gzip + Brotli), Express Rate Limiter, JWT Authentication, Bcrypt Password Hashing.
+* **Build System**: Vite 6, Rollup Code-Splitting (`vendor`, `react`, `router`, `editor` chunks), PostCSS.
+* **Testing & CI/CD**: Native Node.js Test Runner (`node --test`), GitHub Actions Automated CI Workflow.
 
 ---
 
-## Local Development
+## 🚀 Quick Start & Installation
+
+### Prerequisites
+* Node.js `>= 18.0.0`
+* npm `>= 9.0.0`
+
+### Setup Instructions
 
 ```bash
+# 1. Clone the repository
+git clone https://github.com/sleekblue/sleekblue_website.git
+cd sleekblue_website
+
+# 2. Install dependencies
 npm install
-npm run build        # Build React frontend once
-npm start            # Start Express server (serves built frontend on port 3000)
+
+# 3. Configure environment variables
+cp .env.example .env
+
+# 4. Run automated test suite
+npm test
+
+# 5. Start development server
+npm run dev
+
+# 6. Build & run production server
+npm run build
+npm start
 ```
 
-Or for hot-reload dev mode:
+---
+
+## 🔒 Environment Variables Specification
+
+Configure the following variables in `.env` or your hosting provider's panel:
+
+| Variable | Type | Required | Description |
+| :--- | :---: | :---: | :--- |
+| `PORT` | Number | No | Web server port (Default: `3000`) |
+| `NODE_ENV` | String | Yes | Environment mode (`development` or `production`) |
+| `JWT_SECRET` | String | Yes | Min 32-character secret key for signing admin authentication tokens |
+| `ADMIN_USERNAME` | String | Yes | Admin portal login username |
+| `ADMIN_PASSWORD` | String | Yes | Admin portal login password |
+
+---
+
+## 🧪 Automated Testing
+
+Run the test suite using Node's native test runner:
+
 ```bash
-npm run dev          # Vite dev server only (port 5000, proxies /api to port 3000)
-# In a separate terminal:
-node server.js       # Express API server (port 3000)
+npm test
 ```
+
+Test coverage includes:
+- Pricing engine & volume batch discount calculations.
+- Order minimum quantity constraint validation.
+- Input validation and email sanitization helpers.
+
+---
+
+## 📄 License
+
+This project is proprietary software developed for **Sleekblue Media Houz**. All rights reserved.

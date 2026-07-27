@@ -33,14 +33,12 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Tiptap editor — only used in the admin panel, split into its own chunk
+          // Tiptap editor — only used in the admin panel, split into its own chunk.
+          // IMPORTANT: Do NOT manually split React, react-dom, react-router, or scheduler.
+          // Doing so causes initialization-order errors (TDZ / 'unstable_now' crashes)
+          // because Rollup cannot guarantee the correct evaluation order across chunks
+          // when React internals are spread across multiple files.
           if (id.includes('@tiptap')) return 'editor'
-          // React core
-          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) return 'react'
-          // Router
-          if (id.includes('react-router-dom') || id.includes('react-router/')) return 'router'
-          // Everything else from node_modules
-          if (id.includes('node_modules')) return 'vendor'
         },
       },
     },

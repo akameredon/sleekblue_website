@@ -40,12 +40,25 @@ const __dirname = path.dirname(__filename)
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const PORT = parseInt(process.env.PORT || '3000', 10)
-const JWT_SECRET = process.env.JWT_SECRET || (() => {
-  console.error('[ERROR] JWT_SECRET is not set. Admin login is disabled until this secret is configured.')
-  return null
-})()
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
+const IS_PROD = process.env.NODE_ENV === 'production'
+
+if (IS_PROD && !process.env.JWT_SECRET) {
+  console.error('[FATAL] JWT_SECRET is missing in production. Refusing to start.')
+  process.exit(1)
+}
+if (IS_PROD && !process.env.ADMIN_PASSWORD) {
+  console.error('[FATAL] ADMIN_PASSWORD is missing in production. Refusing to start.')
+  process.exit(1)
+}
+if (IS_PROD && !process.env.PAYSTACK_SECRET_KEY) {
+  console.error('[FATAL] PAYSTACK_SECRET_KEY is missing in production. Refusing to start.')
+  process.exit(1)
+}
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_only_fallback_do_not_use_in_prod'
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'dev_only_change_me'
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || ''
 
 // ─── Paths ───────────────────────────────────────────────────────────────────
 const DATA_FILE = path.join(__dirname, 'site-data.json')
@@ -74,10 +87,16 @@ function readJson(filePath, defaultVal = {}) {
     return typeof defaultVal === 'function' ? defaultVal() : structuredClone(defaultVal)
   }
 }
+
 function writeJson(filePath, data) {
-  const tmp = filePath + '.tmp'
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2))
-  fs.renameSync(tmp, filePath)
+  const tmp = filePath + '.' + crypto.randomBytes(4).toString('hex') + '.tmp'
+  try {
+    fs.writeFileSync(tmp, JSON.stringify(data, null, 2))
+    fs.renameSync(tmp, filePath)
+  } catch (err) {
+    console.error(`[DB WRITE ERROR] Failed to write ${filePath}:`, err.message)
+    try { fs.unlinkSync(tmp) } catch {}
+  }
 }
 
 const runtimePath = (name) => path.join(RUNTIME_DIR, `${name}.json`)
