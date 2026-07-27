@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.jpg'
+import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.webp'
 
 const TERMS_VERSION = 'June 2026'
 const LS_KEY = 'sbm_terms_v2026'
@@ -32,6 +32,14 @@ export default function TermsModal({ open = false, onClose = () => {}, onAccepte
   const scrollRef = useRef(null)
 
   if (!open) return null
+
+  function handleAgree() {
+    localStorage.setItem(LS_KEY, Date.now().toString())
+    // Persist server-side for compliance audit trail (non-blocking)
+    fetch('/api/terms/accept', { method: 'POST' }).catch(() => {})
+    onAccepted()
+    onClose()
+  }
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.80)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px' }}>
@@ -68,8 +76,9 @@ export default function TermsModal({ open = false, onClose = () => {}, onAccepte
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '12px 18px 16px', background: '#fff', borderTop: '1px solid #eee', flexShrink: 0, display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '10px 14px', background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '9px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', ...F }}>Close</button>
+        <div style={{ padding: '12px 18px 16px', background: '#fff', borderTop: '1px solid #eee', flexShrink: 0, display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+          <button onClick={onClose} style={{ padding: '10px 16px', background: '#fff', color: '#555', border: '1.5px solid #ddd', borderRadius: '9px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', ...F }}>Decline</button>
+          <button onClick={handleAgree} style={{ padding: '10px 20px', background: '#7B2FBE', color: '#fff', border: 'none', borderRadius: '9px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', ...F }}>✓ I Agree &amp; Continue</button>
         </div>
       </div>
     </div>

@@ -86,7 +86,7 @@ export default function CheckoutPage() {
     )
   }
 
-  function startPaystackPayment() {
+  async function startPaystackPayment(orderRef, amountKobo) {
     if (!settings.paystackPublicKey) {
       setMessage('Paystack is not configured. Please choose another payment option.')
       return
@@ -99,9 +99,11 @@ export default function CheckoutPage() {
     const handler = window.PaystackPop.setup({
       key: settings.paystackPublicKey,
       email: form.email || 'customer@example.com',
-      amount: Math.round(total) * 100,
+      // Uses the server-authoritative amount in kobo, ignoring client cart state
+      amount: amountKobo,
       currency: 'NGN',
-      ref: `SBM-${Date.now()}`,
+      // Uses the server-issued ref so the webhook can map payment to order
+      ref: orderRef,
       metadata: {
         custom_fields: [
           { display_name: 'Customer Name', variable_name: 'customer_name', value: form.name },
@@ -126,8 +128,33 @@ export default function CheckoutPage() {
     if (!validate()) return
     setSubmitting(true)
 
+    let orderRef, amountKobo
+    try {
+      const res = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cartItems.map(i => ({ id: i.id, slug: i.slug, name: i.name, size: i.size, quantity: i.quantity, price: i.price })),
+          customer: form,
+          paymentMethod,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.ok) {
+        setMessage(data.error || 'Could not create order. Please try again.')
+        setSubmitting(false)
+        return
+      }
+      orderRef = data.ref
+      amountKobo = data.amountKobo
+    } catch {
+      setMessage('Network error. Please check your connection and try again.')
+      setSubmitting(false)
+      return
+    }
+
     if (paymentMethod === 'paystack') {
-      startPaystackPayment()
+      startPaystackPayment(orderRef, amountKobo)
       setSubmitting(false)
       return
     }

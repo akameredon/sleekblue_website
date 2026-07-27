@@ -1,0 +1,34 @@
+**Here are the 5 biggest issues in this project (ranked by severity/impact):**
+
+### 1. **Missing / Incomplete Backend Server (Critical)**
+- `server.js` is referenced everywhere (README, deployment instructions, Vite proxy, API calls like `/api/products`, `/api/page-layout`, `/api/content`, auth, multer uploads, etc.) but **does not exist** in the provided files.
+- The entire admin dashboard, leads, reviews, dynamic content, JWT auth, file uploads, and runtime JSON files (`leads.json`, `admin-config.json`, etc.) rely on an Express server that isn't shipped.
+- Deployment on Hostinger (`npm start` → `node server.js`) will **fail immediately**.
+- **Fix priority**: Highest. The app is frontend-only in practice.
+
+### 2. **No .env + Hardcoded / Missing Secrets**
+- `.env.example` exists but `JWT_SECRET`, `ADMIN_PASSWORD`, Paystack keys, etc., are missing or empty.
+- Admin login (`ADMIN_USERNAME=admin`) and many features will break or be insecure.
+- WhatsApp number, bank details, and Paystack public key are partially hardcoded/scattered.
+- **Security risk**: Easy credential exposure if deployed as-is.
+
+### 3. **Large Build Chunks & Poor Performance**
+- Vite build log shows **AdminPage chunk = 569 kB** (huge) and main JS ~322 kB.
+- Warning about chunks >500 kB (dynamic imports recommended).
+- Tiptap editor + React 19 + many images bundled poorly.
+- No proper code-splitting for admin vs. public routes.
+- **Impact**: Slow load times, especially on mobile/Nigeria networks.
+
+### 4. **Data & CMS Fragility**
+- Heavy reliance on static `ALL_PRODUCTS`, `site-data.json`, and runtime JSON files (`leads.json`, etc.) without proper backend persistence or validation.
+- No database (SQLite/Mongo/etc.) — everything is file-based, which is unreliable for production (concurrency, backups, scaling).
+- Admin overrides and dynamic content (price tables, images) exist but depend on the missing server.
+- Image handling (attached_assets + multer) is messy with timestamped filenames.
+
+### 5. **Security & Production Issues**
+- **No rate limiting / helmet / security headers** fully effective without server.
+- Multer uploads without strong validation (file type/size) — risk of malicious uploads.
+- Client-side auth (localStorage for wishlist/cart/terms) is fine for UX but admin JWT needs proper server enforcement.
+- `.htaccess` for SPA routing is present but may conflict with Node/Hostinger setup.
+- Large ZIP (~120 MB) due to unoptimized images in `attached_assets/`.
+-

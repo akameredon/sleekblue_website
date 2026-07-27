@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import sleekblueLogo from '@assets/SLEEKBLUE_LOGO_1779921080596.jpg'
+import sleekblueLogo from '@assets/SLEEKBLUE_LOGO_1779921080596.webp'
 import { useSEO } from '../hooks/useSEO'
 import HeroCanvas from '../components/HeroCanvas'
 

@@ -202,7 +202,7 @@ export default function BlogPostPage() {
       publisher: {
         '@type': 'Organization',
         name: 'Sleekblue Media Houz',
-        logo: { '@type': 'ImageObject', url: 'https://sleekbluemediahouz.com/sleekblue-logo.jpg' },
+        logo: { '@type': 'ImageObject', url: 'https://sleekbluemediahouz.com/sleekblue-logo.webp' },
       },
       mainEntityOfPage: { '@type': 'WebPage', '@id': `https://sleekbluemediahouz.com/blog/${slug}` },
     }

@@ -1,0 +1,449 @@
+[
+  {
+    "ts": 1785164479513,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "sav-printing",
+    "name": "SAV Printing"
+  },
+  {
+    "ts": 1785164477762,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164475508,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "sav-printing",
+    "name": "SAV Printing"
+  },
+  {
+    "ts": 1785164475359,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "sav-printing",
+    "name": "SAV Printing"
+  },
+  {
+    "ts": 1785164475353,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164472109,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164433748,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164412249,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164405459,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164405348,
+    "ip": "127.0.0.1",
+    "type": "cart_add",
+    "slug": "brochure",
+    "name": "Brochure"
+  },
+  {
+    "ts": 1785164397592,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "brochure",
+    "name": "Brochure"
+  },
+  {
+    "ts": 1785164397188,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "brochure",
+    "name": "Brochure"
+  },
+  {
+    "ts": 1785164397117,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164392220,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "flyers-posters",
+    "name": "Flyers & Posters"
+  },
+  {
+    "ts": 1785164390890,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "flyers-posters",
+    "name": "Flyers & Posters"
+  },
+  {
+    "ts": 1785164390884,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164348578,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164311494,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164309139,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164296207,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785156549959,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785156435910,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785156435756,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785156345116,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "billboard",
+    "name": "Billboard"
+  },
+  {
+    "ts": 1785156345109,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "billboard",
+    "name": "Billboard"
+  },
+  {
+    "ts": 1785156343090,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785156343069,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785156295741,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "billboard",
+    "name": "Billboard"
+  },
+  {
+    "ts": 1785156295730,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "billboard",
+    "name": "Billboard"
+  },
+  {
+    "ts": 1785156293998,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785156293971,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785156290769,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "billboard",
+    "name": "Billboard"
+  },
+  {
+    "ts": 1785156290762,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "billboard",
+    "name": "Billboard"
+  },
+  {
+    "ts": 1785156290470,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "billboard",
+    "name": "Billboard"
+  },
+  {
+    "ts": 1785156290451,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "billboard",
+    "name": "Billboard"
+  },
+  {
+    "ts": 1785156290444,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785156286706,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785003626468,
+    "ip": "10.48.3.136",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785003626328,
+    "ip": "10.48.7.46",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785001690215,
+    "ip": "10.48.7.46",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785001690169,
+    "ip": "10.48.10.74",
+    "type": "pageview"
+  },
+  {
+    "ts": 1784999841836,
+    "ip": "10.48.3.136",
+    "type": "pageview"
+  },
+  {
+    "ts": 1784999841329,
+    "ip": "10.48.3.136",
+    "type": "pageview"
+  },
+  {
+    "ts": 1784999587727,
+    "ip": "10.48.3.136",
+    "type": "pageview"
+  },
+  {
+    "ts": 1784999587719,
+    "ip": "10.48.13.142",
+    "type": "pageview"
+  },
+  {
+    "ts": 1784999469561,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1784999469460,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-24T08:19:37.401Z",
+    "ts": 1784881178416,
+    "ip": "127.0.0.1"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-24T08:19:37.371Z",
+    "ts": 1784881177953,
+    "ip": "127.0.0.1"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T17:00:31.670Z",
+    "ts": 1784826032198,
+    "ip": "10.48.10.20"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T17:00:31.648Z",
+    "ts": 1784826032159,
+    "ip": "10.48.14.92"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "desktop",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.0.0 Safari/537.36",
+    "timestamp": "2026-07-23T16:52:46.274Z",
+    "ts": 1784825566369,
+    "ip": "127.0.0.1"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "desktop",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.0.0 Safari/537.36",
+    "timestamp": "2026-07-23T16:52:46.264Z",
+    "ts": 1784825566347,
+    "ip": "127.0.0.1"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T16:51:37.099Z",
+    "ts": 1784825497584,
+    "ip": "10.48.8.143"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T16:51:37.043Z",
+    "ts": 1784825497540,
+    "ip": "10.48.7.164"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T16:47:13.028Z",
+    "ts": 1784825233527,
+    "ip": "10.48.11.59"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T16:47:12.917Z",
+    "ts": 1784825233453,
+    "ip": "10.48.11.59"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T04:23:00.303Z",
+    "ts": 1784780580826,
+    "ip": "10.48.14.92"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T04:23:00.266Z",
+    "ts": 1784780580823,
+    "ip": "10.48.7.164"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T02:40:03.225Z",
+    "ts": 1784774403907,
+    "ip": "10.48.14.92"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T02:40:03.189Z",
+    "ts": 1784774403892,
+    "ip": "10.48.7.164"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T01:32:02.144Z",
+    "ts": 1784770322674,
+    "ip": "10.48.8.143"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T01:32:02.127Z",
+    "ts": 1784770322671,
+    "ip": "10.48.8.143"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T01:28:10.042Z",
+    "ts": 1784770090894,
+    "ip": "10.48.1.115"
+  },
+  {
+    "type": "pageview",
+    "page": "/",
+    "device": "mobile",
+    "referrer": "https://0f1d4580-d5d0-40c2-9d1e-54f814b28626-00-gbzjmxm0v107.riker.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=default-start-application",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+    "timestamp": "2026-07-23T01:28:09.987Z",
+    "ts": 1784770090488,
+    "ip": "10.48.9.63"
+  }
+]
