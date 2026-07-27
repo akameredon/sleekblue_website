@@ -6,7 +6,7 @@ import TermsModal from '../components/TermsModal'
 
 const PAYMENT_METHODS = [
   { id: 'bank', label: 'Bank Transfer' },
-  { id: 'paystack', label: 'Pay with Card (Paystack)' },
+  { id: 'paystack', label: 'Pay Online (Card, OPay, Bank Transfer)' },
   { id: 'whatsapp', label: 'WhatsApp Order' },
 ]
 
@@ -330,7 +330,7 @@ export default function CheckoutPage() {
                     <div>
                       <div className="text-sm font-semibold text-slate-900">{method.label}</div>
                       <p className="text-sm text-slate-500">
-                        {method.id === 'bank' ? 'Use bank transfer instructions set in admin settings.' : method.id === 'paystack' ? 'Pay securely with Visa, Mastercard, or local cards.' : 'Send your order details to WhatsApp for confirmation.'}
+                        {method.id === 'bank' ? 'Use bank transfer instructions set in admin settings.' : method.id === 'paystack' ? 'Pay securely using your debit card, OPay account, USSD, or direct bank transfer via Paystack.' : 'Send your order details to WhatsApp for confirmation.'}
                       </p>
                     </div>
                     <input
@@ -396,7 +396,7 @@ export default function CheckoutPage() {
                   disabled={submitting}
                   className="inline-flex items-center justify-center rounded-3xl bg-violet-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {paymentMethod === 'paystack' ? 'Pay with Paystack' : paymentMethod === 'bank' ? 'Confirm Bank Transfer' : 'Send Order via WhatsApp'}
+                  {paymentMethod === 'paystack' ? 'Pay Securely Online' : paymentMethod === 'bank' ? 'Confirm Bank Transfer' : 'Send Order via WhatsApp'}
                 </button>
                 {message && <p className="text-sm text-slate-600">{message}</p>}
               </div>

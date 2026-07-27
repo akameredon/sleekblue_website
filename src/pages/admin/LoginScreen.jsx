@@ -21,12 +21,20 @@ export function LoginScreen({ onLogin }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       })
+      const contentType = res.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Server returned ${res.status} (${res.statusText || 'Bad Gateway'}). The Node.js backend might be down.`)
+      }
+
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Login failed'); setLoading(false); return }
       localStorage.setItem('sbm_admin_token', data.token)
       onLogin(data.token)
-    } catch {
-      setError(import.meta.env.DEV ? 'Cannot connect to the local API. Ensure the backend server is running.' : 'Network error: Unable to reach the server. Please check your internet connection or try again later.')
+    } catch (err) {
+      const is502 = err.message && err.message.includes('Node.js backend might be down')
+      const devMsg = 'Cannot connect to the local API. Ensure the backend server is running.'
+      const prodMsg = is502 ? '502 Bad Gateway: The Node.js backend server is offline or restarting.' : 'Network error: Unable to reach the server. Please check your internet connection.'
+      setError(import.meta.env.DEV ? devMsg : prodMsg)
       setLoading(false)
     }
   }
