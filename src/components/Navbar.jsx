@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { FaPhoneAlt, FaSearch, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa'
 import { useCart } from '../context/CartContext'
 import { NAV_MENUS, ALL_PRODUCTS } from '../data/products'
-import sleekblueLogo from '@assets/SLEEKBLUE_LOGO_1779927359068.jpg'
+import sleekblueLogo from '@assets/SLEEKBLUE_LOGO_1779927359068.webp'
 
 export default function Navbar() {
   const { totalItems } = useCart()

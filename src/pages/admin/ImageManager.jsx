@@ -3,7 +3,7 @@ import { PRI, PRI_LIGHT, ACC, SIDEBAR_W, authH, fmt, Card, Btn, Input, Badge, Sa
 import { ALL_PRODUCTS, STICKER_SIZE_PRICES, getProductDetails } from '../../data/products';
 import { AnalyticsView, ReportsView } from '../../components/AdminAnalytics';
 import TiptapEditor from '../../components/TiptapEditor';
-import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.jpg';
+import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.webp';
 
 const DEFAULT_SLIDE_LABELS = ['Hero Slide 1', 'Hero Slide 2', 'Hero Slide 3', 'Hero Slide 4']
 

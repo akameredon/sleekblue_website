@@ -25,11 +25,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ASSETS_DIR = path.join(__dirname, '..', 'attached_assets')
 
 // Thresholds
-const MAX_WIDTH  = 1920   // px — wider images are resized
-const MAX_HEIGHT = 1920   // px
+const MAX_WIDTH  = 1200   // px — wider images are resized
+const MAX_HEIGHT = 1200   // px
 const JPEG_QUALITY = 82   // 80-85 is visually lossless for print previews
 const PNG_QUALITY  = 85
-const SKIP_BELOW_KB = 200 // files already < 200 KB are left untouched
+const SKIP_BELOW_KB = -1 // process everything to convert to webp // files already < 200 KB are left untouched
 
 const EXT_MAP = {
   '.jpg':  'jpeg',
@@ -40,13 +40,13 @@ const EXT_MAP = {
 
 async function optimise(filePath) {
   const ext    = path.extname(filePath).toLowerCase()
-  const format = EXT_MAP[ext]
-  if (!format) return { skipped: true, reason: 'unsupported extension' }
+  if (!EXT_MAP[ext] || ext === '.webp') return { skipped: true, reason: 'unsupported or already webp' }
 
   const { size } = await stat(filePath)
-  if (size < SKIP_BELOW_KB * 1024) return { skipped: true, reason: `${Math.round(size / 1024)} KB — already small` }
 
-  const tmp = filePath + '.opt.tmp'
+  const newPath = filePath.substring(0, filePath.length - ext.length) + '.webp'
+  const tmp = newPath + '.tmp'
+  
   try {
     const pipeline = sharp(filePath).rotate() // auto-rotate from EXIF
 
@@ -55,9 +55,7 @@ async function optimise(filePath) {
       pipeline.resize(MAX_WIDTH, MAX_HEIGHT, { fit: 'inside', withoutEnlargement: true })
     }
 
-    if (format === 'jpeg') pipeline.jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
-    else if (format === 'png')  pipeline.png({ quality: PNG_QUALITY, compressionLevel: 9 })
-    else if (format === 'webp') pipeline.webp({ quality: JPEG_QUALITY })
+    pipeline.webp({ quality: 80 })
 
     await pipeline.toFile(tmp)
 
@@ -65,14 +63,20 @@ async function optimise(filePath) {
     const saved = size - newSize
     const pct   = ((saved / size) * 100).toFixed(1)
 
-    if (saved > 0) {
-      await rename(tmp, filePath) // atomic replace
-      return { optimised: true, before: size, after: newSize, savedKB: Math.round(saved / 1024), pct }
-    } else {
-      // Sharp output was larger (rare for already-compressed files) — keep original
-      await rename(tmp, filePath + '.sharp-larger') // keep for inspection
-      return { skipped: true, reason: 'Sharp output was larger — original kept' }
+    // Replace original with WebP
+    await rename(tmp, newPath)
+    
+    // Delete original file since we changed the extension
+    try {
+      if (filePath !== newPath) {
+        const fs = await import('node:fs/promises');
+        await fs.unlink(filePath)
+      }
+    } catch (e) {
+      console.error(`Failed to delete original file ${filePath}`, e)
     }
+
+    return { optimised: true, before: size, after: newSize, savedKB: Math.round(saved / 1024), pct }
   } catch (err) {
     // Clean up temp file if it exists
     if (existsSync(tmp)) {

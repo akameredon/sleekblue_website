@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { FaStar } from 'react-icons/fa'
-import ubaLogo        from '@assets/UBA_LOGO_1779921080597.jpg'
-import mtnLogo        from '@assets/MTN_LOGO_1779921080594.jpg'
-import heroLogo       from '@assets/HERO_LOGO_1779921080592.jpg'
-import imoDigitalLogo from '@assets/IMO_DIGITAL_CITY_LIMITED_LOGO_1779921080594.jpg'
-import nnpcLogo       from '@assets/NNPC_LOGO_1779922059067.jpg'
-import seplatLogo     from '@assets/SEPLAT_LOGO_1779921080595.jpg'
+import ubaLogo        from '@assets/UBA_LOGO_1779921080597.webp'
+import mtnLogo        from '@assets/MTN_LOGO_1779921080594.webp'
+import heroLogo       from '@assets/HERO_LOGO_1779921080592.webp'
+import imoDigitalLogo from '@assets/IMO_DIGITAL_CITY_LIMITED_LOGO_1779921080594.webp'
+import nnpcLogo       from '@assets/NNPC_LOGO_1779922059067.webp'
+import seplatLogo     from '@assets/SEPLAT_LOGO_1779921080595.webp'
 
 const LOGO_MAP = {
   UBA:         ubaLogo,

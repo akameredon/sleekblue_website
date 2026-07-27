@@ -30,18 +30,7 @@ export default defineConfig({
   },
   build: {
     target: 'es2020',
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          // Tiptap editor — only used in the admin panel, split into its own chunk.
-          // IMPORTANT: Do NOT manually split React, react-dom, react-router, or scheduler.
-          // Doing so causes initialization-order errors (TDZ / 'unstable_now' crashes)
-          // because Rollup cannot guarantee the correct evaluation order across chunks
-          // when React internals are spread across multiple files.
-          if (id.includes('@tiptap')) return 'editor'
-        },
-      },
-    },
+    chunkSizeWarningLimit: 800,
   },
   server: {
     host: '0.0.0.0',

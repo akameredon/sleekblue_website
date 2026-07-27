@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect, no-unused-vars, no-empty, no-dupe-keys */
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react'
-import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.jpg'
+import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.webp'
 import { ALL_PRODUCTS } from '../data/products'
 
 // Heavy components — lazy-loaded so they don't inflate the main AdminPage chunk

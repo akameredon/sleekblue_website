@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.jpg'
+import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.webp'
 
 const TERMS_VERSION = 'June 2026'
 const LS_KEY = 'sbm_terms_v2026'

@@ -1,39 +1,106 @@
-# Deployment Guide (Hostinger / Node.js)
+# Deployment Guide (Hostinger / Node.js VPS)
 
-This project has been hardened for production deployment on Hostinger or any standard Node.js/Express environment.
+This project serves the React frontend and Express API from a single Node.js process. Follow every step in order.
+
+---
 
 ## 1. Prerequisites
-- A Node.js environment (v18+)
-- Your site files uploaded via FTP or File Manager (make sure to include `.env`, `package.json`, and all files except `node_modules`).
 
-## 2. Environment Configuration
-1. Open the `.env` file on your server.
-2. Ensure `NODE_ENV=production`.
-3. Set `JWT_SECRET` to a long, secure random string.
-4. Set your `ADMIN_USERNAME` and `ADMIN_PASSWORD`.
-*(Never commit `.env` to source control!)*
+- Node.js v18 or later (v20 recommended)
+- SSH access to your server
+- Your Paystack **Live** secret key (Paystack Dashboard → Settings → API Keys)
 
-## 3. Installation & Build
-Connect to your server via SSH and run:
+---
+
+## 2. Upload Files
+
+Upload everything **except** `node_modules/` and `.env` to your server (FTP / File Manager / `rsync`).
+
+---
+
+## 3. Environment Configuration
+
+```bash
+# On the server, copy the example file and open it for editing
+cp .env.example .env
+nano .env        # or vi .env
+```
+
+Fill in **every** value:
+
+| Variable | Required | Notes |
+|---|---|---|
+| `PORT` | No | Leave blank — Hostinger sets this automatically |
+| `NODE_ENV` | Yes | Must be `production` |
+| `JWT_SECRET` | **Yes** | Min 32 chars — generate with the command below |
+| `ADMIN_USERNAME` | No | Defaults to `admin` |
+| `ADMIN_PASSWORD` | **Yes** | Use a strong password |
+| `PAYSTACK_SECRET_KEY` | **Yes** | Your Paystack live secret key |
+
+**Generate a secure JWT_SECRET:**
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
+
+> **Never commit your `.env` file to version control.** It is already in `.gitignore`.
+
+The server **refuses to start** in production if `JWT_SECRET`, `ADMIN_PASSWORD`, or `PAYSTACK_SECRET_KEY` are missing or if `JWT_SECRET` is shorter than 32 characters. All errors are reported together so you can fix them in one pass.
+
+---
+
+## 4. Install Dependencies & Build
+
 ```bash
 npm install
 npm run build
 ```
-*Note: If `npm install` fails due to optional dependency errors with Vite/Rolldown, remove `package-lock.json` and `node_modules` and try `npm install` again.*
 
-## 4. Starting the Server
-The application is configured to serve both the Express API and the Vite React frontend from a single server.
+> If `npm install` fails due to optional dependency errors (Vite/Rolldown), delete `package-lock.json` and `node_modules/` then retry.
 
-Start the server using PM2 (recommended for Hostinger):
+---
+
+## 5. Create Required Directories
+
+The `runtime/`, `uploads/`, and `logs/` directories must be writable by the Node.js process:
+
 ```bash
-pm2 start server.js --name sleekblue
-pm2 save
+mkdir -p logs runtime uploads
 ```
 
-Or run it normally (if testing):
+---
+
+## 6. Start the Server
+
+**Recommended — PM2 (persistent across reboots):**
+```bash
+pm2 start ecosystem.config.cjs
+pm2 save          # persist across server reboots
+pm2 startup       # print the command to run on boot (follow its instructions)
+```
+
+**Simple (for testing only):**
 ```bash
 npm start
 ```
 
-## 5. File Permissions
-The `runtime/` and `uploads/` directories must be writable by the Node.js process, as the site uses a file-based JSON storage system for content and settings.
+---
+
+## 7. Verify the Deployment
+
+```bash
+# Check the server is running and secrets were accepted
+pm2 logs sleekblue --lines 30
+
+# Confirm the API responds
+curl http://localhost:3000/api/site-data
+```
+
+---
+
+## 8. File Permissions
+
+`runtime/` and `uploads/` must be writable by the Node.js process (the server uses file-based JSON storage):
+
+```bash
+chmod -R 755 runtime uploads
+```

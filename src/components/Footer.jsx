@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FaWhatsapp, FaInstagram, FaFacebook } from 'react-icons/fa'
-import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.jpg'
+import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.webp'
 
 const DEFAULT_TAGLINE = 'Premium print, branding & design solutions for businesses across Nigeria. Fast turnaround, zero stress.'
 const DEFAULT_SERVICES = ['Die Cut Stickers', 'Flex Banners', 'Business Cards', 'Vehicle Branding', 'Logo & Branding', 'T-Shirts & Caps', 'Rollup Stands', 'Burial Brochures']

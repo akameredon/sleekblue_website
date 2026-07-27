@@ -61,7 +61,7 @@ export default function HomePage() {
           url: 'https://sleekbluemediahouz.com',
           telephone: '+2348065275264',
           priceRange: '₦₦',
-          image: 'https://sleekbluemediahouz.com/sleekblue-logo.jpg',
+          image: 'https://sleekbluemediahouz.com/sleekblue-logo.webp',
           address: {
             '@type': 'PostalAddress',
             streetAddress: 'Owerri',

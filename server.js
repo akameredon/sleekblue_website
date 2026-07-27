@@ -42,23 +42,39 @@ const __dirname = path.dirname(__filename)
 const PORT = parseInt(process.env.PORT || '3000', 10)
 const IS_PROD = process.env.NODE_ENV === 'production'
 
-if (IS_PROD && !process.env.JWT_SECRET) {
-  console.error('[FATAL] JWT_SECRET is missing in production. Refusing to start.')
-  process.exit(1)
-}
-if (IS_PROD && !process.env.ADMIN_PASSWORD) {
-  console.error('[FATAL] ADMIN_PASSWORD is missing in production. Refusing to start.')
-  process.exit(1)
-}
-if (IS_PROD && !process.env.PAYSTACK_SECRET_KEY) {
-  console.error('[FATAL] PAYSTACK_SECRET_KEY is missing in production. Refusing to start.')
-  process.exit(1)
+// ── Production startup guard ─────────────────────────────────────────────────
+// Collect ALL missing / weak secrets before exiting so operators can fix
+// everything in one deploy cycle rather than discovering issues one by one.
+if (IS_PROD) {
+  const fatal = []
+
+  if (!process.env.JWT_SECRET) {
+    fatal.push('  ✗ JWT_SECRET       — required; generate with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"')
+  } else if (process.env.JWT_SECRET.length < 32) {
+    fatal.push('  ✗ JWT_SECRET       — too short (minimum 32 characters); generate a new value with the command above')
+  }
+
+  if (!process.env.ADMIN_PASSWORD) {
+    fatal.push('  ✗ ADMIN_PASSWORD   — required; set a strong password in your .env file')
+  }
+
+  if (!process.env.PAYSTACK_SECRET_KEY) {
+    fatal.push('  ✗ PAYSTACK_SECRET_KEY — required; find it in Paystack Dashboard → Settings → API Keys')
+  }
+
+  if (fatal.length > 0) {
+    console.error('\n[FATAL] Server cannot start — the following required environment variables are missing or invalid:\n')
+    fatal.forEach(msg => console.error(msg))
+    console.error('\nCopy .env.example → .env, fill in every value, then restart.\n')
+    process.exit(1)
+  }
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_only_fallback_do_not_use_in_prod'
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'dev_only_change_me'
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || ''
+
 
 // ─── Paths ───────────────────────────────────────────────────────────────────
 const DATA_FILE = path.join(__dirname, 'site-data.json')

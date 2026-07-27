@@ -2,10 +2,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HeroCanvas from './HeroCanvas'
-import heroSlide0 from '@assets/HERO_IMAGE_1_1779922059063.jpg'
-import heroSlide1 from '@assets/HERO_SLIDE_1_1779922059065.jpg'
-import heroSlide2 from '@assets/HERO_SLIDE_2_1779922059065.jpg'
-import heroSlide3 from '@assets/HERO_SLIDE_3_1779922059066.jpg'
+import heroSlide0 from '@assets/HERO_IMAGE_1_1779922059063.webp'
+import heroSlide1 from '@assets/HERO_SLIDE_1_1779922059065.webp'
+import heroSlide2 from '@assets/HERO_SLIDE_2_1779922059065.webp'
+import heroSlide3 from '@assets/HERO_SLIDE_3_1779922059066.webp'
 
 const ALL_DEFAULT_SLIDES = [heroSlide0, heroSlide1, heroSlide2, heroSlide3]
 const SLIDE_INTERVAL = 5000
