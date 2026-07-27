@@ -465,6 +465,161 @@ app.post('/api/referral/generate', (req, res) => {
   res.json({ ok: true, code })
 })
 
+// ─── Server-Side Pricing ──────────────────────────────────────────────────────
+const STICKER_SIZE_PRICES = {
+  '1.5x1.5"': { p100: 3000, p500: 12500, p1000: 20000 },
+  '2x2"':     { p100: 3000, p500: 12500, p1000: 20000 },
+  '2.5x2.5"': { p100: 4500, p500: 20000, p1000: 35000 },
+  '3x3"':     { p100: 5000, p500: 22500, p1000: 40000 },
+  '3x4"':     { p100: 6500, p500: 30000, p1000: 55000 },
+  '4x4"':     { p100: 9000, p500: 42500, p1000: 80000 },
+  '2x8" Water Label': { p100: 9000, p500: 42500, p1000: 80000 },
+}
+
+function calcStickerUnitPrice(size, qty) {
+  const s = STICKER_SIZE_PRICES[size] || STICKER_SIZE_PRICES['3x3"']
+  const unitAt100  = s.p100  / 100
+  const unitAt500  = s.p500  / 500
+  const unitAt1000 = s.p1000 / 1000
+  if (qty >= 3000) return unitAt100 * 0.75
+  if (qty >= 2000) return unitAt100 * 0.775
+  if (qty >= 1000) return unitAt1000
+  if (qty >= 500)  return unitAt500
+  return unitAt100
+}
+
+function serverGetDiscount(subtotal) {
+  if (subtotal >= 100000) return 0.15
+  if (subtotal >= 50000)  return 0.10
+  if (subtotal >= 20000)  return 0.05
+  return 0
+}
+
+function computeServerTotal(items) {
+  const d = getSiteData()
+  const overrides = d.productOverrides || {}
+  const lineItems = []
+  let subtotal = 0
+
+  for (const item of items) {
+    const qty = Math.max(1, Math.floor(Number(item.quantity) || 1))
+    let unitPrice
+    if (item.size && STICKER_SIZE_PRICES[item.size]) {
+      unitPrice = calcStickerUnitPrice(item.size, qty)
+    } else {
+      const override = overrides[item.slug || item.id]
+      const adminPrice = override && override.basePrice ? Number(override.basePrice) : null
+      unitPrice = adminPrice !== null ? adminPrice : (Number(item.price) || 0)
+    }
+    const lineTotal = Math.round(unitPrice * qty)
+    subtotal += lineTotal
+    lineItems.push({ id: item.id, slug: item.slug, name: str(item.name || '', 200), size: item.size || null, quantity: qty, unitPrice: Math.round(unitPrice), lineTotal })
+  }
+
+  const discount = serverGetDiscount(subtotal)
+  const discountAmount = Math.round(subtotal * discount)
+  const total = subtotal - discountAmount
+  return { subtotal, discount, discountAmount, total, lineItems }
+}
+
+// ─── Orders ────────────────────────────────────────────────────────────────────
+app.post('/api/orders/create', writeLimiter, (req, res) => {
+  const { items, customer, paymentMethod } = req.body
+  if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ ok: false, error: 'Cart is empty' })
+  
+  const name    = str(customer?.name || '', 100)
+  const phone   = str(customer?.phone || '', 30)
+  const email   = str(customer?.email || '', 254)
+  const address = str(customer?.address || '', 300)
+  const city    = str(customer?.city || '', 100)
+  const notes   = str(customer?.notes || '', 1000)
+  const method  = ['bank', 'paystack', 'whatsapp'].includes(paymentMethod) ? paymentMethod : 'bank'
+
+  if (!name || !phone || !address || !city) return res.status(400).json({ ok: false, error: 'Missing required customer fields' })
+
+  const { subtotal, discount, discountAmount, total, lineItems } = computeServerTotal(items)
+  const ref = `SBM-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`
+  
+  const order = {
+    id: `ORD-${Date.now()}`,
+    ref,
+    status: 'pending',
+    paymentMethod: method,
+    customer: { name, phone, email, address, city, notes },
+    lineItems,
+    subtotal,
+    discount,
+    discountAmount,
+    total,
+    amountKobo: total * 100,
+    createdAt: new Date().toISOString(),
+    paidAt: null,
+    paystackData: null,
+  }
+
+  const orders = getRuntimeData('orders', [])
+  orders.unshift(order)
+  if (orders.length > 5000) orders.splice(5000)
+  setRuntimeData('orders', orders)
+  logActivity('order_created', `${ref} — ₦${total}`)
+
+  res.json({ ok: true, orderId: order.id, ref, total, amountKobo: order.amountKobo })
+})
+
+app.patch('/api/orders/:ref/status', requireAuth, (req, res) => {
+  const { status } = req.body
+  if (!['pending', 'paid', 'cancelled', 'refunded'].includes(status)) return res.status(400).json({ error: 'Invalid status' })
+  const orders = getRuntimeData('orders', [])
+  const idx = orders.findIndex(o => o.ref === req.params.ref)
+  if (idx < 0) return res.status(404).json({ error: 'Order not found' })
+  orders[idx].status = status
+  if (status === 'paid') orders[idx].paidAt = new Date().toISOString()
+  setRuntimeData('orders', orders)
+  logActivity('order_status_updated', `${req.params.ref} → ${status}`)
+  res.json({ ok: true })
+})
+
+// ─── Paystack Webhook ─────────────────────────────────────────────────────────
+app.post('/api/webhooks/paystack', (req, res) => {
+  const sig = req.headers['x-paystack-signature']
+  if (!PAYSTACK_SECRET_KEY || !sig || !req.rawBody) return res.status(400).json({ error: 'Webhook unconfigured or invalid' })
+
+  const expected = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY).update(req.rawBody).digest('hex')
+  if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return res.status(401).json({ error: 'Invalid signature' })
+
+  const event = req.body
+  res.json({ ok: true }) // Acknowledge early
+
+  if (event.event !== 'charge.success') return
+
+  const ref = event.data?.reference
+  if (!ref) return
+
+  const orders = getRuntimeData('orders', [])
+  const idx = orders.findIndex(o => o.ref === ref)
+  if (idx < 0 || orders[idx].status === 'paid') return
+
+  const chargedKobo = event.data?.amount
+  if (chargedKobo !== orders[idx].amountKobo) {
+    orders[idx].status = 'amount_mismatch'
+    orders[idx].paystackData = event.data
+    setRuntimeData('orders', orders)
+    logActivity('order_amount_mismatch', `${ref}`)
+    return
+  }
+
+  orders[idx].status = 'paid'
+  orders[idx].paidAt = new Date().toISOString()
+  orders[idx].paystackData = {
+    id: event.data?.id,
+    channel: event.data?.channel,
+    currency: event.data?.currency,
+    paidAt: event.data?.paid_at,
+  }
+  setRuntimeData('orders', orders)
+  logActivity('order_paid', `${ref}`)
+})
+
 // ─── Admin Auth ────────────────────────────────────────────────────────────────
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body
@@ -923,6 +1078,11 @@ app.get('/api/admin/growth', requireAuth, (_, res) => {
   })
 
   res.json({ daily: Object.entries(daily).sort((a, b) => a[0].localeCompare(b[0])).map(([date, views]) => ({ date, views })), topPages, topProducts, devices })
+})
+
+// ─── Admin — Orders ────────────────────────────────────────────────────────────
+app.get('/api/admin/orders', requireAuth, (_, res) => {
+  res.json(getRuntimeData('orders', []))
 })
 
 // ─── Admin — Activity Log ─────────────────────────────────────────────────────

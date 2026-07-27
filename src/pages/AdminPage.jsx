@@ -79,6 +79,14 @@ export default function AdminPage() {
         fetch('/api/hero'),
         fetch('/api/admin/leads', { headers: { Authorization: `Bearer ${tok}` } }),
       ])
+      
+      if (dataRes.status === 401 || accRes.status === 401) {
+        setToken('')
+        localStorage.removeItem('sbm_admin_token')
+        setLoading(false)
+        return
+      }
+
       const data = dataRes.ok ? await dataRes.json() : {}
       const acceptances = accRes.ok ? await accRes.json() : []
       const content = contentRes.ok ? await contentRes.json() : {}
