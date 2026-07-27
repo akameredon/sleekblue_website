@@ -25,11 +25,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ASSETS_DIR = path.join(__dirname, '..', 'attached_assets')
 
 // Thresholds
-const MAX_WIDTH  = 1200   // px — wider images are resized
-const MAX_HEIGHT = 1200   // px
+const MAX_WIDTH  = 800    // px — wider images are resized
+const MAX_HEIGHT = 800    // px
 const JPEG_QUALITY = 82   // 80-85 is visually lossless for print previews
 const PNG_QUALITY  = 85
-const SKIP_BELOW_KB = -1 // process everything to convert to webp // files already < 200 KB are left untouched
+const SKIP_BELOW_KB = 100 // Skip files under 100KB to prevent over-compressing
 
 const EXT_MAP = {
   '.jpg':  'jpeg',
@@ -40,22 +40,25 @@ const EXT_MAP = {
 
 async function optimise(filePath) {
   const ext    = path.extname(filePath).toLowerCase()
-  if (!EXT_MAP[ext] || ext === '.webp') return { skipped: true, reason: 'unsupported or already webp' }
+  if (!EXT_MAP[ext]) return { skipped: true, reason: 'unsupported extension' }
 
   const { size } = await stat(filePath)
+  if (size < SKIP_BELOW_KB * 1024) return { skipped: true, reason: `under ${SKIP_BELOW_KB}KB` }
 
   const newPath = filePath.substring(0, filePath.length - ext.length) + '.webp'
   const tmp = newPath + '.tmp'
   
   try {
-    const pipeline = sharp(filePath).rotate() // auto-rotate from EXIF
+    const fs = await import('node:fs/promises');
+    const inputBuffer = await fs.readFile(filePath);
+    const pipeline = sharp(inputBuffer).rotate() // auto-rotate from EXIF
 
-    const meta = await sharp(filePath).metadata()
+    const meta = await sharp(inputBuffer).metadata()
     if ((meta.width || 0) > MAX_WIDTH || (meta.height || 0) > MAX_HEIGHT) {
       pipeline.resize(MAX_WIDTH, MAX_HEIGHT, { fit: 'inside', withoutEnlargement: true })
     }
 
-    pipeline.webp({ quality: 80 })
+    pipeline.webp({ quality: 75, effort: 6, smartSubsample: true })
 
     await pipeline.toFile(tmp)
 

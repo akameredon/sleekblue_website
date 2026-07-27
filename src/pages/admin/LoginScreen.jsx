@@ -26,7 +26,7 @@ export function LoginScreen({ onLogin }) {
       localStorage.setItem('sbm_admin_token', data.token)
       onLogin(data.token)
     } catch {
-      setError('Cannot connect to server. Make sure the app is running.')
+      setError(import.meta.env.DEV ? 'Cannot connect to the local API. Ensure the backend server is running.' : 'Network error: Unable to reach the server. Please check your internet connection or try again later.')
       setLoading(false)
     }
   }
@@ -70,4 +70,3 @@ export function LoginScreen({ onLogin }) {
     </div>
   )
 }
-

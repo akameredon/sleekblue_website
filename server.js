@@ -34,6 +34,10 @@ import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
 import crypto from 'crypto'
+import { ALL_PRODUCTS, STICKER_SIZE_PRICES, findNearestSize } from './src/data/products.js'
+
+const PRODUCTS_BY_SLUG = new Map(ALL_PRODUCTS.map(p => [p.slug, p]))
+const PRODUCTS_BY_ID   = new Map(ALL_PRODUCTS.map(p => [p.id, p]))
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -70,7 +74,8 @@ if (IS_PROD) {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_only_fallback_do_not_use_in_prod'
+const DEV_FALLBACK_SECRET = crypto.randomBytes(32).toString('hex')
+const JWT_SECRET = process.env.JWT_SECRET || DEV_FALLBACK_SECRET
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'dev_only_change_me'
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || ''
@@ -186,10 +191,13 @@ app.use(compression())
 app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false }))
 // Tighter limit on public write endpoints to reduce abuse
 const writeLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many requests, please try again later' } })
+const passwordLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { ok: false, error: 'Too many password change attempts, please try again later' } })
+
 app.use('/api/newsletter', writeLimiter)
 app.use('/api/subscribe-whatsapp', writeLimiter)
 app.use('/api/reviews/submit', writeLimiter)
 app.use('/api/referral/generate', writeLimiter)
+app.use('/api/upload/artwork', writeLimiter)
 app.use('/api/admin/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Too many login attempts' } }))
 
 // The `verify` callback captures the raw Buffer before JSON parsing — required
@@ -207,12 +215,17 @@ app.use('/assets', express.static(path.join(__dirname, 'attached_assets')))
 
 // ─── JWT Auth Middleware ───────────────────────────────────────────────────────
 function requireAuth(req, res, next) {
-  if (!JWT_SECRET) return res.status(503).json({ error: 'Admin auth is not configured (JWT_SECRET missing)' })
+  if (!JWT_SECRET) return res.status(503).json({ error: 'Admin auth is not configured' })
   const header = req.headers['authorization'] || ''
   const token = header.startsWith('Bearer ') ? header.slice(7) : null
   if (!token) return res.status(401).json({ error: 'Unauthorized' })
   try {
-    req.admin = jwt.verify(token, JWT_SECRET)
+    const decoded = jwt.verify(token, JWT_SECRET)
+    const cfg = getAdminConfig()
+    if (decoded.sig && decoded.sig !== cfg.passwordHash.slice(-10)) {
+      return res.status(401).json({ error: 'Password changed. Please log in again.' })
+    }
+    req.admin = decoded
     next()
   } catch {
     res.status(401).json({ error: 'Invalid or expired token' })
@@ -239,7 +252,9 @@ const ALLOWED_IMAGE_EXT = {
   '.svg': 'image/svg+xml',
 }
 
-function makeUploader(subdir, { fieldName = 'file', allowAudio = false, maxMB = 10 } = {}) {
+const ALLOWED_ARTWORK_EXT = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.pdf', '.ai', '.psd', '.eps', '.zip'])
+
+function makeUploader(subdir, { fieldName = 'file', allowAudio = false, allowArtwork = false, maxMB = 10 } = {}) {
   const storage = multer.diskStorage({
     destination: path.join(UPLOADS_DIR, subdir),
     filename: (_, file, cb) => {
@@ -252,6 +267,10 @@ function makeUploader(subdir, { fieldName = 'file', allowAudio = false, maxMB = 
     limits: { fileSize: maxMB * 1024 * 1024, files: 1 },
     fileFilter: (_, file, cb) => {
       const ext = path.extname(file.originalname).toLowerCase()
+      if (allowArtwork) {
+        const ok = ALLOWED_ARTWORK_EXT.has(ext)
+        return cb(ok ? null : new Error(`Disallowed file extension: ${ext}`), ok)
+      }
       const expectedMime = ALLOWED_IMAGE_EXT[ext]
       const isImage = expectedMime && file.mimetype === expectedMime
       const isAudio = allowAudio && /^audio\/(mpeg|mp4|ogg|wav|webm)$/.test(file.mimetype) && /\.(mp3|mp4|ogg|wav|webm)$/i.test(file.originalname)
@@ -266,7 +285,7 @@ const productUploader = makeUploader('products')
 const variantUploader = makeUploader('variants')
 const stickerUploader = makeUploader('stickers')
 const blogUploader    = makeUploader('blog', { allowAudio: true, maxMB: 20 })
-const artworkUploader = makeUploader('artwork')
+const artworkUploader = makeUploader('artwork', { fieldName: 'artwork', allowArtwork: true, maxMB: 20 })
 const brandUploader   = makeUploader('brand')
 
 function uploadMiddleware(uploader) {
@@ -482,15 +501,7 @@ app.post('/api/referral/generate', (req, res) => {
 })
 
 // ─── Server-Side Pricing ──────────────────────────────────────────────────────
-const STICKER_SIZE_PRICES = {
-  '1.5x1.5"': { p100: 3000, p500: 12500, p1000: 20000 },
-  '2x2"':     { p100: 3000, p500: 12500, p1000: 20000 },
-  '2.5x2.5"': { p100: 4500, p500: 20000, p1000: 35000 },
-  '3x3"':     { p100: 5000, p500: 22500, p1000: 40000 },
-  '3x4"':     { p100: 6500, p500: 30000, p1000: 55000 },
-  '4x4"':     { p100: 9000, p500: 42500, p1000: 80000 },
-  '2x8" Water Label': { p100: 9000, p500: 42500, p1000: 80000 },
-}
+// Prices imported from src/data/products.js
 
 function calcStickerUnitPrice(size, qty) {
   const s = STICKER_SIZE_PRICES[size] || STICKER_SIZE_PRICES['3x3"']
@@ -519,17 +530,51 @@ function computeServerTotal(items) {
 
   for (const item of items) {
     const qty = Math.max(1, Math.floor(Number(item.quantity) || 1))
-    let unitPrice
-    if (item.size && STICKER_SIZE_PRICES[item.size]) {
-      unitPrice = calcStickerUnitPrice(item.size, qty)
-    } else {
-      const override = overrides[item.slug || item.id]
+    const prod = PRODUCTS_BY_SLUG.get(item.slug) || PRODUCTS_BY_ID.get(item.id)
+    let unitPrice = 0
+
+    if (prod && prod.isDieCut) {
+      let effectiveSize = item.size
+      if (!effectiveSize || !STICKER_SIZE_PRICES[effectiveSize]) {
+        const nums = String(item.size || '').match(/[\d.]+/g)
+        if (nums && nums.length >= 2) {
+          effectiveSize = findNearestSize(parseFloat(nums[0]), parseFloat(nums[1]))
+        } else {
+          effectiveSize = '3x3"'
+        }
+      }
+      unitPrice = calcStickerUnitPrice(effectiveSize, qty)
+    } else if (prod) {
+      const override = overrides[prod.slug || prod.id]
       const adminPrice = override && override.basePrice ? Number(override.basePrice) : null
-      unitPrice = adminPrice !== null ? adminPrice : (Number(item.price) || 0)
+      if (adminPrice !== null && !isNaN(adminPrice) && adminPrice > 0) {
+        unitPrice = adminPrice
+      } else {
+        const table = prod.priceTable || []
+        if (table.length > 0) {
+          unitPrice = table[0].unitPrice
+          for (const row of table) {
+            if (qty >= row.qty) unitPrice = row.unitPrice
+          }
+        } else {
+          unitPrice = prod.price || 0
+        }
+      }
+    } else {
+      unitPrice = Math.max(0, Number(item.price) || 0)
     }
+
     const lineTotal = Math.round(unitPrice * qty)
     subtotal += lineTotal
-    lineItems.push({ id: item.id, slug: item.slug, name: str(item.name || '', 200), size: item.size || null, quantity: qty, unitPrice: Math.round(unitPrice), lineTotal })
+    lineItems.push({
+      id: item.id || (prod ? prod.id : null),
+      slug: str(item.slug || (prod ? prod.slug : ''), 100),
+      name: str(item.name || (prod ? prod.name : ''), 200),
+      size: str(item.size || '', 50) || null,
+      quantity: qty,
+      unitPrice: Math.round(unitPrice * 100) / 100,
+      lineTotal
+    })
   }
 
   const discount = serverGetDiscount(subtotal)
@@ -601,12 +646,16 @@ app.post('/api/webhooks/paystack', (req, res) => {
   if (!PAYSTACK_SECRET_KEY || !sig || !req.rawBody) return res.status(400).json({ error: 'Webhook unconfigured or invalid' })
 
   const expected = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY).update(req.rawBody).digest('hex')
-  if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return res.status(401).json({ error: 'Invalid signature' })
+  const sigBuf = Buffer.from(sig)
+  const expBuf = Buffer.from(expected)
+  if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+    return res.status(401).json({ error: 'Invalid signature' })
+  }
 
   const event = req.body
   res.json({ ok: true }) // Acknowledge early
 
-  if (event.event !== 'charge.success') return
+  if (event.event !== 'charge.success' || event.data?.status !== 'success') return
 
   const ref = event.data?.reference
   if (!ref) return
@@ -649,12 +698,12 @@ app.post('/api/admin/login', (req, res) => {
     logActivity('login_failed', `username: ${username}`)
     return res.status(401).json({ ok: false, error: 'Invalid credentials' })
   }
-  const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '7d' })
+  const token = jwt.sign({ username, sig: cfg.passwordHash.slice(-10) }, JWT_SECRET, { expiresIn: '7d' })
   logActivity('login', `username: ${username}`)
   res.json({ ok: true, token })
 })
 
-app.put('/api/admin/password', requireAuth, (req, res) => {
+app.put('/api/admin/password', passwordLimiter, requireAuth, (req, res) => {
   const { currentPassword, newPassword } = req.body
   const cfg = getAdminConfig()
   if (!bcrypt.compareSync(currentPassword, cfg.passwordHash)) {

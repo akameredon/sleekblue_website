@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
-import { ALL_PRODUCTS, getProductDetails, calcStickerPrice, getStickerPriceTable, STICKER_SIZE_PRICES } from '../data/products'
+import { ALL_PRODUCTS, getProductDetails, calcStickerPrice, getStickerPriceTable, STICKER_SIZE_PRICES, findNearestSize } from '../data/products'
 import { PRODUCT_IMAGES, STICKER_SIZE_IMAGES } from '../data/productImages'
 import { useSEO } from '../hooks/useSEO'
 import { trackProductView } from '../hooks/useAnalytics'
@@ -17,22 +17,6 @@ function fmt(n) {
 function getYoutubeId(url) {
   const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/]+)/)
   return m ? m[1] : ''
-}
-
-// Return the nearest standard sticker size for a given area (w × h)
-function findNearestSize(w, h) {
-  const area = w * h
-  let nearest = '3x3"'
-  let minDiff = Infinity
-  Object.keys(STICKER_SIZE_PRICES).forEach(sizeKey => {
-    const nums = sizeKey.match(/[\d.]+/g)
-    if (nums && nums.length >= 2) {
-      const a = parseFloat(nums[0]) * parseFloat(nums[1])
-      const diff = Math.abs(a - area)
-      if (diff < minDiff) { minDiff = diff; nearest = sizeKey }
-    }
-  })
-  return nearest
 }
 
 export default function ProductPage() {
