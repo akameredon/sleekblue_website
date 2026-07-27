@@ -15,6 +15,9 @@
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.3.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.5.2",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.1",
     "express": "^5.2.1",
@@ -23,15 +26,18 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
     "nodemailer": "^9.0.3",
+    "postcss": "^8.5.16",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-icons": "^5.6.0",
     "react-router-dom": "^7.15.1",
-    "sharp": "^0.35.3"
+    "sharp": "^0.35.3",
+    "tailwindcss": "^4.3.2",
+    "vite": "^6.0.0",
+    "vite-plugin-compression": "^0.5.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@tailwindcss/postcss": "^4.3.2",
     "@tiptap/extension-image": "^3.27.1",
     "@tiptap/extension-link": "^3.27.1",
     "@tiptap/extension-placeholder": "^3.27.1",
@@ -40,16 +46,10 @@
     "@tiptap/starter-kit": "^3.27.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.5.2",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "eslint-plugin-security": "^4.0.1",
-    "globals": "^17.6.0",
-    "postcss": "^8.5.16",
-    "tailwindcss": "^4.3.2",
-    "vite": "^6.0.0",
-    "vite-plugin-compression": "^0.5.1"
+    "globals": "^17.6.0"
   }
 }
