@@ -1,5 +1,121 @@
 [
   {
+    "ts": 1785164479513,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "sav-printing",
+    "name": "SAV Printing"
+  },
+  {
+    "ts": 1785164477762,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164475508,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "sav-printing",
+    "name": "SAV Printing"
+  },
+  {
+    "ts": 1785164475359,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "sav-printing",
+    "name": "SAV Printing"
+  },
+  {
+    "ts": 1785164475353,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164472109,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164433748,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164412249,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164405459,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164405348,
+    "ip": "127.0.0.1",
+    "type": "cart_add",
+    "slug": "brochure",
+    "name": "Brochure"
+  },
+  {
+    "ts": 1785164397592,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "brochure",
+    "name": "Brochure"
+  },
+  {
+    "ts": 1785164397188,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "brochure",
+    "name": "Brochure"
+  },
+  {
+    "ts": 1785164397117,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164392220,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "flyers-posters",
+    "name": "Flyers & Posters"
+  },
+  {
+    "ts": 1785164390890,
+    "ip": "127.0.0.1",
+    "type": "product_view",
+    "slug": "flyers-posters",
+    "name": "Flyers & Posters"
+  },
+  {
+    "ts": 1785164390884,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164348578,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164311494,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164309139,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
+    "ts": 1785164296207,
+    "ip": "127.0.0.1",
+    "type": "pageview"
+  },
+  {
     "ts": 1785156549959,
     "ip": "127.0.0.1",
     "type": "pageview"
