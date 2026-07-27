@@ -1,10 +1,21 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 import { trackCartAdd } from '../hooks/useAnalytics'
+
+const CART_KEY = 'sbm_cart_v1'
+
+function loadCart() {
+  try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]') } catch { return [] }
+}
 
 const CartContext = createContext()
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([])
+  const [cartItems, setCartItems] = useState(loadCart)
+
+  // Persist cart to localStorage on every change
+  useEffect(() => {
+    try { localStorage.setItem(CART_KEY, JSON.stringify(cartItems)) } catch { /* quota exceeded — ignore */ }
+  }, [cartItems])
 
   function addToCart(item) {
     trackCartAdd(item.slug || item.id, item.name, item.quantity || 1, item.price)
@@ -37,6 +48,7 @@ export function CartProvider({ children }) {
 
   function clearCart() {
     setCartItems([])
+    try { localStorage.removeItem(CART_KEY) } catch { /* ignore */ }
   }
 
   function getUnitPrice(product, qty) {

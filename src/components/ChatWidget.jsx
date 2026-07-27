@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { FaComments, FaTimes, FaWhatsapp, FaPaperPlane } from 'react-icons/fa'
 
-const WHATSAPP_NUM = '2348065275264'
-const PHONE = '+234 806 527 5264'
+const DEFAULT_WA = '2348065275264'
 
-// ─── Knowledge base ───────────────────────────────────────────────────────────
+// ─── Knowledge base (static — does not reference WhatsApp number) ────────────
 const KB = [
   {
     patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'hii', 'helo'],
@@ -73,7 +72,7 @@ const KB = [
   },
   {
     patterns: ['contact', 'phone', 'call', 'reach', 'email', 'address', 'whatsapp', 'number'],
-    answer: `**Contact Sleekblue Media Houz:**\n\n📞 **Phone:** ${PHONE}\n💬 **WhatsApp:** ${PHONE} (fastest response)\n🌐 **Website:** sleekbluemediahouz.com\n\nWe're online and responsive — WhatsApp is the fastest way to reach us!`,
+    answer: `**Contact Sleekblue Media Houz:**\n\n📞 **Phone:** +234 806 527 5264\n💬 **WhatsApp:** +234 806 527 5264 (fastest response)\n🌐 **Website:** sleekbluemediahouz.com\n\nWe're online and responsive — WhatsApp is the fastest way to reach us!`,
     quick: ['Chat on WhatsApp', 'How to order'],
   },
   {
@@ -146,6 +145,14 @@ export default function ChatWidget() {
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [waNum, setWaNum] = useState(DEFAULT_WA)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.ok ? r.json() : {})
+      .then(s => { if (s.whatsapp) setWaNum(s.whatsapp.replace(/\D/g, '')) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (open) {
@@ -223,7 +230,7 @@ export default function ChatWidget() {
                 {msg.from === 'bot' && msg.quick && i === messages.length - 1 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: '6px', maxWidth: '100%' }}>
                     {msg.quick.map((q, qi) => q === 'Chat on WhatsApp' ? (
-                      <a key={qi} href={`https://wa.me/${WHATSAPP_NUM}?text=Hello Sleekblue, I need help with my order`} target="_blank" rel="noopener noreferrer"
+                      <a key={qi} href={`https://wa.me/${waNum}?text=Hello Sleekblue, I need help with my order`} target="_blank" rel="noopener noreferrer"
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#25D366', color: '#fff', border: 'none', borderRadius: '14px', padding: '5px 11px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', textDecoration: 'none', fontFamily: "'HubotSans', sans-serif" }}>
                         <FaWhatsapp size={10} /> WhatsApp
                       </a>
@@ -251,7 +258,7 @@ export default function ChatWidget() {
           <div style={{ padding: '8px 14px', background: '#e8faf0', borderTop: '1px solid #d4f0e0', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FaWhatsapp size={14} color="#25D366" />
             <span style={{ fontSize: '11px', color: '#555', flex: 1 }}>Need faster help?</span>
-            <a href={`https://wa.me/${WHATSAPP_NUM}?text=Hello Sleekblue, I need help`} target="_blank" rel="noopener noreferrer"
+            <a href={`https://wa.me/${waNum}?text=Hello Sleekblue, I need help`} target="_blank" rel="noopener noreferrer"
               style={{ background: '#25D366', color: '#fff', fontSize: '11px', fontWeight: 700, padding: '5px 12px', borderRadius: '12px', textDecoration: 'none', fontFamily: "'HubotSans', sans-serif" }}>
               WhatsApp Us
             </a>

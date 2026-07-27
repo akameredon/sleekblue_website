@@ -11,9 +11,24 @@ export default function QuotePage() {
   const [form, setForm] = useState({ name: '', phone: '', email: '', product: '', quantity: '', details: '' })
   const [submitted, setSubmitted] = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     trackQuoteRequest(form.product, { quantity: form.quantity, details: form.details })
+
+    // Persist quote to backend (non-blocking — UX continues regardless)
+    fetch('/api/quotes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: form.name,
+        phone: form.phone,
+        email: form.email || null,
+        product: form.product,
+        quantity: form.quantity,
+        details: form.details || null,
+      }),
+    }).catch(() => { /* network failure is non-fatal here */ })
+
     const msg = encodeURIComponent(
       `📋 *QUOTE REQUEST - Sleekblue Media Houz*\n\n` +
       `Name: ${form.name}\n` +

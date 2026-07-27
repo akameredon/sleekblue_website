@@ -135,19 +135,35 @@ const app = express()
 
 app.set('trust proxy', 1)
 
-// Security headers (relax CSP for dev; tighten for prod)
+// Security headers
+// CSP is intentionally disabled: GA4 and Meta Pixel are injected dynamically by the
+// frontend (TrackingInjector) using createElement, which cannot satisfy a strict CSP.
+// All other helmet defaults (HSTS, X-Frame-Options, X-Content-Type-Options, etc.) are active.
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }))
 app.use(compression())
 
 // Rate limiting
-app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }))
+// Global API limit
+app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false }))
+// Tighter limit on public write endpoints to reduce abuse
+const writeLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many requests, please try again later' } })
+app.use('/api/newsletter', writeLimiter)
+app.use('/api/subscribe-whatsapp', writeLimiter)
+app.use('/api/reviews/submit', writeLimiter)
+app.use('/api/referral/generate', writeLimiter)
 app.use('/api/admin/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Too many login attempts' } }))
 
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true }))
+// The `verify` callback captures the raw Buffer before JSON parsing — required
+// to compute the HMAC-SHA512 signature for the Paystack webhook.
+app.use(express.json({
+  limit: '1mb',
+  verify: (req, _res, buf) => { req.rawBody = buf },
+}))
+app.use(express.urlencoded({ extended: true, limit: '1mb' }))
 
 // Serve uploaded files
 app.use('/uploads', express.static(UPLOADS_DIR))
@@ -169,22 +185,43 @@ function requireAuth(req, res, next) {
 }
 
 // ─── Multer ───────────────────────────────────────────────────────────────────
+// ─── Input helpers ────────────────────────────────────────────────────────────
+function str(val, max = 500) {
+  if (typeof val !== 'string') return ''
+  return val.slice(0, max).trim()
+}
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254
+}
+
+// Allowed image extensions mapped to their MIME types — double-checks that the
+// file extension and the browser-reported MIME type agree, reducing spoofing risk.
+const ALLOWED_IMAGE_EXT = {
+  '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.svg': 'image/svg+xml',
+}
+
 function makeUploader(subdir, { fieldName = 'file', allowAudio = false, maxMB = 10 } = {}) {
   const storage = multer.diskStorage({
     destination: path.join(UPLOADS_DIR, subdir),
     filename: (_, file, cb) => {
-      const ext = path.extname(file.originalname) || '.bin'
+      const ext = path.extname(file.originalname).toLowerCase() || '.bin'
       cb(null, `${Date.now()}-${crypto.randomBytes(4).toString('hex')}${ext}`)
     },
   })
   return multer({
     storage,
-    limits: { fileSize: maxMB * 1024 * 1024 },
+    limits: { fileSize: maxMB * 1024 * 1024, files: 1 },
     fileFilter: (_, file, cb) => {
-      const isImage = /^image\/(jpeg|png|gif|webp|svg\+xml)$/.test(file.mimetype)
-      const isAudio = allowAudio && /^audio\//.test(file.mimetype)
+      const ext = path.extname(file.originalname).toLowerCase()
+      const expectedMime = ALLOWED_IMAGE_EXT[ext]
+      const isImage = expectedMime && file.mimetype === expectedMime
+      const isAudio = allowAudio && /^audio\/(mpeg|mp4|ogg|wav|webm)$/.test(file.mimetype) && /\.(mp3|mp4|ogg|wav|webm)$/i.test(file.originalname)
       const ok = isImage || isAudio
-      cb(ok ? null : new Error(`Unsupported file type: ${file.mimetype}`), ok)
+      cb(ok ? null : new Error(`Unsupported or mismatched file type: ${file.mimetype}`), ok)
     },
   }).single(fieldName)
 }
@@ -322,10 +359,12 @@ app.get('/api/blog/:slug/comments', (req, res) => {
 })
 
 app.post('/api/blog/:slug/comment', (req, res) => {
-  const { name, comment } = req.body
+  const name    = str(req.body.name, 100)
+  const comment = str(req.body.comment, 2000)
   if (!name || !comment) return res.status(400).json({ error: 'Name and comment required' })
+  const slug = str(req.params.slug, 200)
   const comments = getRuntimeData('comments', [])
-  const entry = { id: `CMT-${Date.now()}`, slug: req.params.slug, name, comment, ts: Date.now(), approved: false }
+  const entry = { id: `CMT-${Date.now()}`, slug, name, comment, ts: Date.now(), approved: false }
   comments.unshift(entry)
   setRuntimeData('comments', comments)
   res.json({ ok: true })
@@ -333,8 +372,8 @@ app.post('/api/blog/:slug/comment', (req, res) => {
 
 // Newsletter subscribe
 app.post('/api/newsletter', (req, res) => {
-  const { email } = req.body
-  if (!email) return res.status(400).json({ error: 'Email required' })
+  const email = str(req.body.email, 254)
+  if (!email || !isValidEmail(email)) return res.status(400).json({ error: 'Valid email required' })
   const subs = getRuntimeData('newsletter', [])
   if (!subs.find(s => s.email === email)) {
     subs.push({ id: `NL-${Date.now()}`, email, ts: Date.now() })
@@ -345,8 +384,10 @@ app.post('/api/newsletter', (req, res) => {
 
 // WhatsApp lead
 app.post('/api/subscribe-whatsapp', (req, res) => {
-  const { name, phone } = req.body
+  const name  = str(req.body.name, 100)
+  const phone = str(req.body.phone, 30)
   if (!name || !phone) return res.status(400).json({ error: 'Name and phone required' })
+  if (!/^[\d\s\+\-\(\)]{7,20}$/.test(phone)) return res.status(400).json({ error: 'Invalid phone number' })
   const leads = getRuntimeData('leads', [])
   leads.unshift({
     id: `LEAD-${Date.now()}`,
@@ -361,18 +402,25 @@ app.post('/api/subscribe-whatsapp', (req, res) => {
 
 // Review submit
 app.post('/api/reviews/submit', (req, res) => {
-  const { name, text, rating, date } = req.body
+  const name   = str(req.body.name, 100)
+  const text   = str(req.body.text, 2000)
+  const rating = Math.min(5, Math.max(1, parseInt(req.body.rating) || 5))
   if (!name || !text) return res.status(400).json({ error: 'Name and review required' })
   const reviews = getRuntimeData('pending-reviews', [])
-  reviews.unshift({ id: `REV-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`, name, text, rating: rating || 5, date: date || new Date().toISOString(), approved: false, visible: false })
+  reviews.unshift({ id: `REV-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`, name, text, rating, date: new Date().toISOString(), approved: false, visible: false })
   setRuntimeData('pending-reviews', reviews)
   res.json({ ok: true })
 })
 
-// Analytics track
+// Analytics track — whitelist fields to prevent arbitrary data injection
+const ANALYTICS_ALLOWED = ['type', 'slug', 'path', 'ref', 'name', 'value']
 app.post('/api/analytics/track', (req, res) => {
+  const entry = { ts: Date.now(), ip: req.ip }
+  for (const key of ANALYTICS_ALLOWED) {
+    if (req.body[key] !== undefined) entry[key] = str(req.body[key], 200)
+  }
   const analytics = getRuntimeData('analytics', [])
-  analytics.unshift({ ...req.body, ts: Date.now(), ip: req.ip })
+  analytics.unshift(entry)
   if (analytics.length > 10000) analytics.splice(10000)
   setRuntimeData('analytics', analytics)
   res.json({ ok: true })
@@ -386,7 +434,11 @@ app.post('/api/upload/artwork', uploadMiddleware(artworkUploader), (req, res) =>
 
 // Referral generate (public)
 app.post('/api/referral/generate', (req, res) => {
-  const { name, phone, email, source } = req.body
+  const name   = str(req.body.name, 100)
+  const phone  = str(req.body.phone, 30)
+  const email  = str(req.body.email, 254)
+  const source = str(req.body.source, 100)
+  if (!name) return res.status(400).json({ error: 'Name required' })
   const code = `SB-${crypto.randomBytes(3).toString('hex').toUpperCase()}`
   const referrals = getRuntimeData('referrals', [])
   referrals.unshift({ id: `REF-${Date.now()}`, code, name, phone, email, source, ts: Date.now() })

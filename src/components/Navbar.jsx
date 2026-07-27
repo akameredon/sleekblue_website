@@ -17,6 +17,21 @@ export default function Navbar() {
   const searchRef = useRef(null)
   const navRef = useRef(null)
   const closeTimeoutRef = useRef(null)
+  const [phoneHref, setPhoneHref] = useState('tel:+2348065275264')
+  const [phoneDisplay, setPhoneDisplay] = useState('+234 806 527 5264')
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.ok ? r.json() : {})
+      .then(s => {
+        if (s.phone) {
+          const first = s.phone.split(',')[0].trim()
+          setPhoneHref(`tel:${first.replace(/\s/g, '')}`)
+          setPhoneDisplay(first)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const allMenuItems = Object.values(NAV_MENUS).flat()
   const [blogResults, setBlogResults] = useState([])
@@ -136,10 +151,10 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center gap-4 md:flex">
-          <a href="tel:+2348065275264" className="flex items-center gap-2 text-[13px] text-slate-700 whitespace-nowrap transition hover:text-violet-700">
+          <a href={phoneHref} className="flex items-center gap-2 text-[13px] text-slate-700 whitespace-nowrap transition hover:text-violet-700">
             <FaPhoneAlt size={12} className="text-violet-700" />
             <span className="text-slate-500">Customer care:</span>
-            <span className="font-semibold text-slate-900">+234 806 527 5264</span>
+            <span className="font-semibold text-slate-900">{phoneDisplay}</span>
           </a>
           <button type="button" onClick={() => navigate('/store')} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition duration-200 hover:bg-gradient-to-r hover:from-violet-600 hover:to-fuchsia-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30">
             Store
@@ -295,8 +310,8 @@ export default function Navbar() {
             ))}
           </div>
 
-          <a href="tel:+2348065275264" className="mt-3 inline-flex w-full items-center justify-center gap-3 rounded-3xl bg-violet-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-800">
-            <FaPhoneAlt size={14} /> +234 806 527 5264
+          <a href={phoneHref} className="mt-3 inline-flex w-full items-center justify-center gap-3 rounded-3xl bg-violet-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-800">
+            <FaPhoneAlt size={14} /> {phoneDisplay}
           </a>
         </div>
       )}
