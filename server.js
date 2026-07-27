@@ -4,6 +4,25 @@
  * Uses file-based JSON storage (site-data.json + runtime/*.json).
  */
 
+// Load .env in development (Node 20.6+ supports --env-file flag, but this
+// covers older Node 18+ environments automatically)
+import { readFileSync } from 'fs'
+import { resolve, dirname } from 'path'
+import { fileURLToPath as _ftu } from 'url'
+try {
+  const __envDir = dirname(_ftu(import.meta.url))
+  const envText = readFileSync(resolve(__envDir, '.env'), 'utf8')
+  for (const line of envText.split('\n')) {
+    const clean = line.trim()
+    if (!clean || clean.startsWith('#')) continue
+    const eq = clean.indexOf('=')
+    if (eq === -1) continue
+    const key = clean.slice(0, eq).trim()
+    const val = clean.slice(eq + 1).trim()
+    if (key && !(key in process.env)) process.env[key] = val
+  }
+} catch { /* .env not found — rely on host-level env vars */ }
+
 import express from 'express'
 import helmet from 'helmet'
 import compression from 'compression'

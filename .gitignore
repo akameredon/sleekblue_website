@@ -10,15 +10,7 @@ node_modules/
 dist/
 
 # Runtime data files — generated automatically by the server; never commit these
-admin-config.json
-acceptance-log.json
-activity-log.json
-analytics-data.json
-comments.json
-leads.json
-newsletter.json
-referrals.json
-reviews-pending.json
+runtime/*.json
 uploads/
 
 # Replit internals — not relevant for Hostinger

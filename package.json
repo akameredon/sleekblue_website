@@ -38,7 +38,7 @@
     "@tiptap/starter-kit": "^3.27.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.5.2",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -47,6 +47,7 @@
     "globals": "^17.6.0",
     "postcss": "^8.5.16",
     "tailwindcss": "^4.3.2",
-    "vite": "^8.0.12"
+    "vite": "^6.0.0",
+    "vite-plugin-compression": "^0.5.1"
   }
 }
