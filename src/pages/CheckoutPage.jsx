@@ -6,7 +6,7 @@ import TermsModal from '../components/TermsModal'
 
 const PAYMENT_METHODS = [
   { id: 'bank', label: 'Bank Transfer' },
-  { id: 'paystack', label: 'Pay with Card (Paystack)' },
+  { id: 'paystack', label: 'Pay Online (Card, OPay, Bank Transfer)' },
   { id: 'whatsapp', label: 'WhatsApp Order' },
 ]
 
@@ -21,6 +21,7 @@ export default function CheckoutPage() {
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
+  const [orderConfirmed, setOrderConfirmed] = useState(null)
 
   useEffect(() => {
     fetch('/api/settings')
@@ -42,10 +43,10 @@ export default function CheckoutPage() {
   }, [settings.paystackPublicKey])
 
   useEffect(() => {
-    if (cartItems.length === 0) {
+    if (cartItems.length === 0 && !orderConfirmed) {
       navigate('/store')
     }
-  }, [cartItems.length, navigate])
+  }, [cartItems.length, navigate, orderConfirmed])
 
   useEffect(() => {
     if (!localStorage.getItem('sbm_terms_v2026')) {
@@ -68,11 +69,12 @@ export default function CheckoutPage() {
     return Object.keys(e).length === 0
   }
 
-  function buildWhatsAppMessage() {
+  function buildWhatsAppMessage(ref, orderTotal) {
     const items = cartItems.map(i => `• ${i.name} (${i.size || 'Standard'}) x${i.quantity} = ₦${(i.price * i.quantity).toLocaleString()}`).join('\n')
     const disc = discount > 0 ? `\nBulk Discount (${Math.round(discount * 100)}%): -₦${discountAmount.toLocaleString()}` : ''
     return encodeURIComponent(
-      `🛒 *NEW ORDER - Sleekblue Media Houz*\n\n` +
+      `🛒 *NEW ORDER - Sleekblue Media Houz*\n` +
+      `*Order Ref: ${ref}*\n\n` +
       `*Customer Details:*\n` +
       `Name: ${form.name}\n` +
       `Phone: ${form.phone}\n` +
@@ -80,13 +82,13 @@ export default function CheckoutPage() {
       `Delivery Address: ${form.address}, ${form.city}\n` +
       `${form.notes ? `Notes: ${form.notes}\n` : ''}` +
       `\n*Order Items:*\n${items}${disc}\n\n` +
-      `*ORDER TOTAL: ₦${Math.round(total).toLocaleString()}*\n\n` +
+      `*ORDER TOTAL: ₦${Math.round(orderTotal).toLocaleString()}*\n\n` +
       `Preferred payment: ${paymentMethod === 'bank' ? 'Bank Transfer' : paymentMethod === 'paystack' ? 'Card / Paystack' : 'WhatsApp Order'}\n\n` +
       `Please confirm and process this order. Thank you!`
     )
   }
 
-  async function startPaystackPayment(orderRef, amountKobo) {
+  async function startPaystackPayment(orderRef, amountKobo, serverTotal) {
     if (!settings.paystackPublicKey) {
       setMessage('Paystack is not configured. Please choose another payment option.')
       return
@@ -99,10 +101,8 @@ export default function CheckoutPage() {
     const handler = window.PaystackPop.setup({
       key: settings.paystackPublicKey,
       email: form.email || 'customer@example.com',
-      // Uses the server-authoritative amount in kobo, ignoring client cart state
       amount: amountKobo,
       currency: 'NGN',
-      // Uses the server-issued ref so the webhook can map payment to order
       ref: orderRef,
       metadata: {
         custom_fields: [
@@ -112,8 +112,12 @@ export default function CheckoutPage() {
       },
       callback() {
         clearCart()
-        setMessage('Payment completed successfully. Thank you!')
-        setTimeout(() => navigate('/'), 1400)
+        setOrderConfirmed({
+          ref: orderRef,
+          total: serverTotal,
+          paymentMethod: 'paystack',
+          isPaid: true
+        })
       },
       onClose() {
         setMessage('Paystack payment was not completed.')
@@ -128,7 +132,7 @@ export default function CheckoutPage() {
     if (!validate()) return
     setSubmitting(true)
 
-    let orderRef, amountKobo
+    let orderRef, amountKobo, serverTotal
     try {
       const res = await fetch('/api/orders/create', {
         method: 'POST',
@@ -147,6 +151,7 @@ export default function CheckoutPage() {
       }
       orderRef = data.ref
       amountKobo = data.amountKobo
+      serverTotal = data.total
     } catch {
       setMessage('Network error. Please check your connection and try again.')
       setSubmitting(false)
@@ -154,19 +159,91 @@ export default function CheckoutPage() {
     }
 
     if (paymentMethod === 'paystack') {
-      startPaystackPayment(orderRef, amountKobo)
+      startPaystackPayment(orderRef, amountKobo, serverTotal)
       setSubmitting(false)
       return
     }
 
-    const msg = buildWhatsAppMessage()
+    const msg = buildWhatsAppMessage(orderRef, serverTotal)
+    const waUrl = `https://wa.me/2348065275264?text=${msg}`
+    
+    // Attempt popup (if not blocked by browser)
+    try { window.open(waUrl, '_blank') } catch {}
+
     clearCart()
-    window.open(`https://wa.me/2348065275264?text=${msg}`, '_blank')
+    setOrderConfirmed({
+      ref: orderRef,
+      total: serverTotal,
+      paymentMethod,
+      waUrl,
+      isPaid: false
+    })
     setSubmitting(false)
-    navigate('/')
   }
 
   const handleInputChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
+
+  if (orderConfirmed) {
+    return (
+      <section className="bg-slate-50 py-12 min-h-screen">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6">
+          <div className="rounded-3xl bg-white p-8 shadow-sm text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-3xl font-bold">
+              ✓
+            </div>
+            <h1 className="mt-4 text-2xl font-black text-slate-900 sm:text-3xl">Order Placed Successfully!</h1>
+            <p className="mt-2 text-sm text-slate-600">
+              Reference: <span className="font-mono font-bold text-slate-900">{orderConfirmed.ref}</span>
+            </p>
+            <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-left space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Status</span>
+                <span className="font-semibold text-emerald-700">{orderConfirmed.isPaid ? 'Paid' : 'Pending Payment'}</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-200 pt-2 font-bold text-slate-900 text-base">
+                <span>Total Amount</span>
+                <span>₦{Math.round(orderConfirmed.total).toLocaleString()}</span>
+              </div>
+            </div>
+
+            {orderConfirmed.paymentMethod === 'bank' && (
+              <div className="mt-6 rounded-2xl border border-violet-200 bg-violet-50/50 p-5 text-left text-sm text-slate-800 space-y-2">
+                <p className="font-bold text-violet-950 text-base mb-2">Bank Transfer Details</p>
+                <p><span className="text-slate-500 font-medium">Bank:</span> <strong className="text-slate-900">{settings.bankName || 'Bank details not set'}</strong></p>
+                <p><span className="text-slate-500 font-medium">Account Name:</span> <strong className="text-slate-900">{settings.accountName || 'Account name not set'}</strong></p>
+                <p><span className="text-slate-500 font-medium">Account Number:</span> <strong className="text-slate-900 font-mono text-base">{settings.accountNumber || 'Account number not set'}</strong></p>
+                <p className="mt-3 text-xs text-slate-600 leading-relaxed">
+                  Please transfer ₦{Math.round(orderConfirmed.total).toLocaleString()} using your reference <strong className="font-mono">{orderConfirmed.ref}</strong>, then message us on WhatsApp with your payment proof.
+                </p>
+              </div>
+            )}
+
+            {orderConfirmed.waUrl && (
+              <div className="mt-6">
+                <a
+                  href={orderConfirmed.waUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex w-full items-center justify-center rounded-3xl bg-emerald-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700 shadow-md"
+                >
+                  Send Order / Payment Proof via WhatsApp
+                </a>
+              </div>
+            )}
+
+            <div className="mt-6">
+              <button
+                onClick={() => navigate('/store')}
+                className="inline-flex rounded-3xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Return to Store
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="bg-slate-50 py-10 min-h-screen">
@@ -253,7 +330,7 @@ export default function CheckoutPage() {
                     <div>
                       <div className="text-sm font-semibold text-slate-900">{method.label}</div>
                       <p className="text-sm text-slate-500">
-                        {method.id === 'bank' ? 'Use bank transfer instructions set in admin settings.' : method.id === 'paystack' ? 'Pay securely with Visa, Mastercard, or local cards.' : 'Send your order details to WhatsApp for confirmation.'}
+                        {method.id === 'bank' ? 'Use bank transfer instructions set in admin settings.' : method.id === 'paystack' ? 'Pay securely using your debit card, OPay account, USSD, or direct bank transfer via Paystack.' : 'Send your order details to WhatsApp for confirmation.'}
                       </p>
                     </div>
                     <input
@@ -319,7 +396,7 @@ export default function CheckoutPage() {
                   disabled={submitting}
                   className="inline-flex items-center justify-center rounded-3xl bg-violet-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {paymentMethod === 'paystack' ? 'Pay with Paystack' : paymentMethod === 'bank' ? 'Confirm Bank Transfer' : 'Send Order via WhatsApp'}
+                  {paymentMethod === 'paystack' ? 'Pay Securely Online' : paymentMethod === 'bank' ? 'Confirm Bank Transfer' : 'Send Order via WhatsApp'}
                 </button>
                 {message && <p className="text-sm text-slate-600">{message}</p>}
               </div>

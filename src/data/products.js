@@ -12,6 +12,21 @@ export const STICKER_SIZE_PRICES = {
   '2x8" Water Label': { p100: 9000, p500: 42500, p1000: 80000 },
 }
 
+export function findNearestSize(w, h) {
+  const area = (Number(w) || 0) * (Number(h) || 0)
+  let nearest = '3x3"'
+  let minDiff = Infinity
+  Object.keys(STICKER_SIZE_PRICES).forEach(sizeKey => {
+    const nums = sizeKey.match(/[\d.]+/g)
+    if (nums && nums.length >= 2) {
+      const a = parseFloat(nums[0]) * parseFloat(nums[1])
+      const diff = Math.abs(a - area)
+      if (diff < minDiff) { minDiff = diff; nearest = sizeKey }
+    }
+  })
+  return nearest
+}
+
 export function calcStickerPrice(size, qty) {
   const s = STICKER_SIZE_PRICES[size] || STICKER_SIZE_PRICES['3x3"']
   const unitAt100  = s.p100  / 100
