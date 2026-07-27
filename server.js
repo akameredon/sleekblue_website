@@ -970,10 +970,29 @@ function tryDeleteUpload(url) {
 // ─── Serve Frontend ────────────────────────────────────────────────────────────
 const distExists = fs.existsSync(DIST_DIR)
 if (distExists) {
-  app.use(express.static(DIST_DIR, { maxAge: '1d', etag: true }))
+  // Hashed assets (JS/CSS bundles with content-hash in filename) get long cache.
+  // Everything else (index.html, sw.js, manifest.json) must NEVER be cached so
+  // the browser always fetches the freshest shell and service worker.
+  app.use(express.static(DIST_DIR, {
+    maxAge: 0,
+    etag: true,
+    setHeaders(res, filePath) {
+      const isHashedAsset = /\/assets\/[^/]+-[a-zA-Z0-9]{8,}\.(js|css|woff2?|ttf|svg|png|jpg|jpeg|webp|ico)$/.test(filePath)
+      if (isHashedAsset) {
+        // Hashed filenames = content-addressed = safe to cache for a year
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+      } else {
+        // index.html, sw.js, manifest.json — MUST revalidate every request
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        res.setHeader('Pragma', 'no-cache')
+        res.setHeader('Expires', '0')
+      }
+    },
+  }))
   // SPA fallback (Express 5 compatible — use middleware, not a wildcard route)
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) return next()
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
     res.sendFile(path.join(DIST_DIR, 'index.html'))
   })
 } else {

@@ -144,6 +144,7 @@ export default function App() {
     <BrowserRouter>
       <Suspense fallback={<PageLoader />}>
         <Routes>
+          <Route path="/admin"  element={<Navigate to="/portal" replace />} />
           <Route path="/portal" element={<AdminPage />} />
           <Route path="/*"     element={<MainSite />} />
         </Routes>
