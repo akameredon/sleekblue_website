@@ -1,18 +1,10 @@
-<<<<<<< HEAD
-import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react'
-import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.jpg'
-import { ALL_PRODUCTS } from '../data/products'
-=======
 /* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect, no-unused-vars, no-empty, no-dupe-keys */
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.jpg'
 import { ALL_PRODUCTS, STICKER_SIZE_PRICES, getProductDetails } from '../data/products'
 
 // Heavy components — lazy-loaded so they don't inflate the main AdminPage chunk
-const AnalyticsView = lazy(() => import('../components/AdminAnalytics').then(m => ({ default: m.AnalyticsView })))
-const ReportsView   = lazy(() => import('../components/AdminAnalytics').then(m => ({ default: m.ReportsView })))
 const TiptapEditor  = lazy(() => import('../components/TiptapEditor'))
->>>>>>> 1eccb8f8e42bc35ec68702b1f5fd66215d5d5390
 
 const DashboardView = lazy(() => import('./admin/Dashboard').then(m => ({ default: m.DashboardView })))
 const PageEditorView = lazy(() => import('./admin/PageEditor').then(m => ({ default: m.PageEditorView })))
@@ -69,8 +61,6 @@ const NAV_ITEMS = [
   { id: 'activity-log',    icon: '📜', label: 'Activity Log' },
 ]
 
-<<<<<<< HEAD
-=======
 function SidebarInner({ view, setView, counts, onLogout, onClose }) {
   return (
     <div className="flex flex-col h-full" style={{ background: '#8A88DA' }}>
