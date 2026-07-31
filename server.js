@@ -86,13 +86,17 @@ const DATA_FILE = path.join(__dirname, 'site-data.json')
 const RUNTIME_DIR = path.join(__dirname, 'runtime')
 const UPLOADS_DIR = path.join(__dirname, 'uploads')
 
-// Robustly locate the built frontend — try each candidate until one contains
-// index.html. This handles Hostinger's deployment layout where __dirname may
-// differ from process.cwd() at runtime.
+// Robustly locate the built frontend — walk each candidate path until one
+// contains index.html. Covers Hostinger layouts where __dirname != cwd,
+// and builds that land in public/ or build/ instead of dist/.
 const DIST_CANDIDATES = [
   path.join(__dirname, 'dist'),
   path.join(process.cwd(), 'dist'),
   path.join(__dirname, '..', 'dist'),
+  path.join(__dirname, 'public'),
+  path.join(process.cwd(), 'public'),
+  path.join(__dirname, 'build'),
+  path.join(process.cwd(), 'build'),
 ]
 const DIST_DIR = DIST_CANDIDATES.find(d => fs.existsSync(path.join(d, 'index.html'))) || DIST_CANDIDATES[0]
 
@@ -1220,6 +1224,35 @@ function tryDeleteUpload(url) {
   } catch { /* ignore */ }
 }
 
+// ─── Health helper (shared by route + startup log) ───────────────────────────
+function getHealthInfo() {
+  const indexExists = fs.existsSync(path.join(DIST_DIR, 'index.html'))
+  const candidates = DIST_CANDIDATES.map(d => ({
+    path: d,
+    indexExists: fs.existsSync(path.join(d, 'index.html')),
+  }))
+  let filesInDist = []
+  try {
+    if (fs.existsSync(DIST_DIR)) {
+      filesInDist = fs.readdirSync(DIST_DIR).slice(0, 20)
+    }
+  } catch { /* ignore */ }
+  return {
+    ok: true,
+    cwd: process.cwd(),
+    dirname: __dirname,
+    distDir: DIST_DIR,
+    indexExists,
+    candidates,
+    filesInDist,
+  }
+}
+
+// GET /api/health — public diagnostic endpoint (no auth required)
+app.get('/api/health', (req, res) => {
+  res.json(getHealthInfo())
+})
+
 // ─── Serve Frontend ────────────────────────────────────────────────────────────
 const distExists = fs.existsSync(DIST_DIR)
 if (distExists) {
@@ -1269,9 +1302,15 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`[Sleekblue API] Running on http://0.0.0.0:${PORT}`)
   console.log(`[Sleekblue API] NODE_ENV=${process.env.NODE_ENV || 'development'}`)
   console.log(`[Sleekblue API] Admin username: ${ADMIN_USERNAME}`)
-  const indexExists = fs.existsSync(path.join(DIST_DIR, 'index.html'))
-  console.log(`[Sleekblue API] DIST_DIR: ${DIST_DIR} (index.html ${indexExists ? 'FOUND ✓' : 'NOT FOUND ✗'})`)
-  if (!indexExists) console.warn('[Sleekblue API] ⚠ Frontend not built or dist path is wrong — SPA routes will return 503')
+  const health = getHealthInfo()
+  console.log(`[Sleekblue API] DIST_DIR : ${health.distDir}`)
+  console.log(`[Sleekblue API] index.html: ${health.indexExists ? 'FOUND ✓' : 'NOT FOUND ✗'}`)
+  console.log(`[Sleekblue API] cwd       : ${health.cwd}`)
+  console.log(`[Sleekblue API] __dirname : ${health.dirname}`)
+  console.log('[Sleekblue API] Candidates:')
+  health.candidates.forEach(c => console.log(`  ${c.indexExists ? '✓' : '✗'}  ${c.path}`))
+  if (health.filesInDist.length) console.log(`[Sleekblue API] Files in dist: ${health.filesInDist.join(', ')}`)
+  if (!health.indexExists) console.warn('[Sleekblue API] ⚠ Frontend not built or dist path is wrong — SPA routes will return 503')
   if (!process.env.JWT_SECRET) console.warn('[Sleekblue API] ⚠ JWT_SECRET not set in environment!')
   if (!process.env.ADMIN_PASSWORD) console.warn('[Sleekblue API] ⚠ ADMIN_PASSWORD not set in environment!')
 })
