@@ -1275,9 +1275,13 @@ if (distExists) {
       }
     },
   }))
-  // SPA fallback (Express 5 compatible — use middleware, not a wildcard route)
+  // SPA fallback — only serve index.html for GET/HEAD requests that are not API calls.
+  // Uses sendFile with { root } (the safe form that avoids the send-module NotFoundError),
+  // with a readFileSync fallback in case sendFile still errors on this host.
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) return next()
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next()
+
     const indexHtml = path.join(DIST_DIR, 'index.html')
     if (!fs.existsSync(indexHtml)) {
       return res.status(503).json({
@@ -1286,8 +1290,24 @@ if (distExists) {
         distDir: DIST_DIR,
       })
     }
+
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-    res.sendFile(indexHtml)
+
+    // Primary: sendFile with { root } avoids the absolute-path NotFoundError bug
+    res.sendFile('index.html', { root: DIST_DIR }, (err) => {
+      if (!err) return // sent successfully
+      // Fallback: read and stream the file directly
+      try {
+        const html = fs.readFileSync(indexHtml, 'utf8')
+        res.status(200).type('html').send(html)
+      } catch (readErr) {
+        res.status(500).json({
+          error: 'Failed to serve frontend',
+          detail: readErr.message,
+          distDir: DIST_DIR,
+        })
+      }
+    })
   })
 } else {
   app.get('/', (_, res) => res.json({
