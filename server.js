@@ -85,7 +85,16 @@ const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || ''
 const DATA_FILE = path.join(__dirname, 'site-data.json')
 const RUNTIME_DIR = path.join(__dirname, 'runtime')
 const UPLOADS_DIR = path.join(__dirname, 'uploads')
-const DIST_DIR = path.join(__dirname, 'dist')
+
+// Robustly locate the built frontend — try each candidate until one contains
+// index.html. This handles Hostinger's deployment layout where __dirname may
+// differ from process.cwd() at runtime.
+const DIST_CANDIDATES = [
+  path.join(__dirname, 'dist'),
+  path.join(process.cwd(), 'dist'),
+  path.join(__dirname, '..', 'dist'),
+]
+const DIST_DIR = DIST_CANDIDATES.find(d => fs.existsSync(path.join(d, 'index.html'))) || DIST_CANDIDATES[0]
 
 // Ensure directories exist
 for (const dir of [RUNTIME_DIR, UPLOADS_DIR,
@@ -1236,8 +1245,16 @@ if (distExists) {
   // SPA fallback (Express 5 compatible — use middleware, not a wildcard route)
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) return next()
+    const indexHtml = path.join(DIST_DIR, 'index.html')
+    if (!fs.existsSync(indexHtml)) {
+      return res.status(503).json({
+        error: 'Frontend not available',
+        detail: `index.html not found at ${indexHtml}`,
+        distDir: DIST_DIR,
+      })
+    }
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-    res.sendFile(path.join(DIST_DIR, 'index.html'))
+    res.sendFile(indexHtml)
   })
 } else {
   app.get('/', (_, res) => res.json({
@@ -1252,6 +1269,9 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`[Sleekblue API] Running on http://0.0.0.0:${PORT}`)
   console.log(`[Sleekblue API] NODE_ENV=${process.env.NODE_ENV || 'development'}`)
   console.log(`[Sleekblue API] Admin username: ${ADMIN_USERNAME}`)
+  const indexExists = fs.existsSync(path.join(DIST_DIR, 'index.html'))
+  console.log(`[Sleekblue API] DIST_DIR: ${DIST_DIR} (index.html ${indexExists ? 'FOUND ✓' : 'NOT FOUND ✗'})`)
+  if (!indexExists) console.warn('[Sleekblue API] ⚠ Frontend not built or dist path is wrong — SPA routes will return 503')
   if (!process.env.JWT_SECRET) console.warn('[Sleekblue API] ⚠ JWT_SECRET not set in environment!')
   if (!process.env.ADMIN_PASSWORD) console.warn('[Sleekblue API] ⚠ ADMIN_PASSWORD not set in environment!')
 })
