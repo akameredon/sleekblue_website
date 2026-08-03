@@ -9,7 +9,7 @@ const PageEditorView = lazy(() => import('./admin/PageEditor').then(m => ({ defa
 const ImageManager = lazy(() => import('./admin/ImageManager').then(m => ({ default: m.ImageManager })))
 const ProductsView = lazy(() => import('./admin/ProductsList').then(m => ({ default: m.ProductsView })))
 const StickerPricesView = lazy(() => import('./admin/StickerPrices').then(m => ({ default: m.StickerPricesView })))
-const BlogView = lazy(() => import('./admin/BlogCMS').then(m => ({ default: m.BlogView })))
+const BlogView = lazy(() => import('./admin/BlogCMS'))
 const AboutView = lazy(() => import('./admin/AboutUsEditor').then(m => ({ default: m.AboutView })))
 const FaqView = lazy(() => import('./admin/FAQManager').then(m => ({ default: m.FaqView })))
 const SeoView = lazy(() => import('./admin/SEOManager').then(m => ({ default: m.SeoView })))

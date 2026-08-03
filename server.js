@@ -272,7 +272,9 @@ const ALLOWED_IMAGE_EXT = {
 
 const ALLOWED_ARTWORK_EXT = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.pdf', '.ai', '.psd', '.eps', '.zip'])
 
-function makeUploader(subdir, { fieldName = 'file', allowAudio = false, allowArtwork = false, maxMB = 10 } = {}) {
+// BUG 2 FIX: default fieldName changed from 'file' to 'image' to match
+// ImageManager.jsx / StickerPrices.jsx / ContentCMS.jsx which all append field 'image'.
+function makeUploader(subdir, { fieldName = 'image', allowAudio = false, allowArtwork = false, maxMB = 10 } = {}) {
   const storage = multer.diskStorage({
     destination: path.join(UPLOADS_DIR, subdir),
     filename: (_, file, cb) => {
@@ -302,7 +304,8 @@ const heroUploader    = makeUploader('hero')
 const productUploader = makeUploader('products')
 const variantUploader = makeUploader('variants')
 const stickerUploader = makeUploader('stickers')
-const blogUploader    = makeUploader('blog', { allowAudio: true, maxMB: 20 })
+// BUG 2 FIX: BlogCMS.jsx sends fd.append('file', ...) so must stay on 'file'
+const blogUploader    = makeUploader('blog', { fieldName: 'file', allowAudio: true, maxMB: 20 })
 const artworkUploader = makeUploader('artwork', { fieldName: 'artwork', allowArtwork: true, maxMB: 20 })
 const brandUploader   = makeUploader('brand')
 
