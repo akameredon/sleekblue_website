@@ -82,9 +82,14 @@ const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || ''
 
 
 // ─── Paths ───────────────────────────────────────────────────────────────────
-const DATA_FILE = path.join(__dirname, 'site-data.json')
-const RUNTIME_DIR = path.join(__dirname, 'runtime')
-const UPLOADS_DIR = path.join(__dirname, 'uploads')
+// DATA_ROOT and UPLOADS_DIR can be overridden via environment variables so that
+// persistent storage survives Hostinger redeploys (which wipe the .builds tree).
+// When env vars are absent the behaviour is identical to before: all paths are
+// resolved relative to __dirname, exactly as they were originally.
+const DATA_ROOT   = process.env.DATA_DIR    ? path.resolve(process.env.DATA_DIR)    : __dirname
+const UPLOADS_DIR = process.env.UPLOADS_DIR ? path.resolve(process.env.UPLOADS_DIR) : path.join(__dirname, 'uploads')
+const DATA_FILE   = path.join(DATA_ROOT, 'site-data.json')
+const RUNTIME_DIR = path.join(DATA_ROOT, 'runtime')
 
 // Robustly locate the built frontend — walk each candidate path until one
 // contains index.html. Covers Hostinger layouts where __dirname != cwd,
@@ -1219,7 +1224,10 @@ app.get('/api/admin/backup', requireAuth, (_, res) => {
 function tryDeleteUpload(url) {
   try {
     if (url && url.startsWith('/uploads/')) {
-      fs.unlinkSync(path.join(__dirname, url))
+      // Strip the leading "/uploads" prefix and resolve under UPLOADS_DIR so
+      // that the correct file is deleted even when UPLOADS_DIR != __dirname/uploads.
+      const rel = url.slice('/uploads'.length) // e.g. "/hero/file.png"
+      fs.unlinkSync(path.join(UPLOADS_DIR, rel))
     }
   } catch { /* ignore */ }
 }
@@ -1242,6 +1250,8 @@ function getHealthInfo() {
     cwd: process.cwd(),
     dirname: __dirname,
     distDir: DIST_DIR,
+    uploadsDir: UPLOADS_DIR,
+    dataDir: DATA_ROOT,
     indexExists,
     candidates,
     filesInDist,
