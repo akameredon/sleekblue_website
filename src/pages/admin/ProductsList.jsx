@@ -4,6 +4,7 @@ import { ALL_PRODUCTS, STICKER_SIZE_PRICES, getProductDetails } from '../../data
 import { AnalyticsView, ReportsView } from '../../components/AdminAnalytics';
 import TiptapEditor from '../../components/TiptapEditor';
 import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.webp';
+import { ProductEditor } from './ProductEditor';
 
 export function ProductsView({ token, productOverrides, onDataChanged }) {
   const [editingSlug, setEditingSlug] = useState(null)
