@@ -83,7 +83,6 @@ export default function AdminPage() {
       if (dataRes.status === 401 || accRes.status === 401) {
         setToken('')
         localStorage.removeItem('sbm_admin_token')
-        setLoading(false)
         return
       }
 
@@ -103,8 +102,9 @@ export default function AdminPage() {
         heroSlides:           (heroData.customSlides || []).length,
         leads:                Array.isArray(leads) ? leads : [],
       })
-    } catch {}
-    setLoading(false)
+    } catch {} finally {
+      setLoading(false)
+    }
   }, [token])
 
   useEffect(() => { if (token) fetchAll(token) }, [token, fetchAll])
@@ -168,12 +168,8 @@ export default function AdminPage() {
           >Out</button>
         </header>
         <main className="flex-1 bg-slate-100 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-        {loading && view === 'dashboard' && (
-          <div className="text-center py-16 text-slate-500">Loading...</div>
-        )}
-        {!loading && (
           <Suspense fallback={<div className="text-center py-16 text-slate-500 animate-pulse">Loading module...</div>}>
-            {view === 'dashboard'      && <DashboardView siteData={siteData} />}
+            {view === 'dashboard'      && (loading ? <div className="text-center py-16 text-slate-500">Loading...</div> : <DashboardView siteData={siteData} />)}
             {view === 'page-editor'    && <PageEditorView token={token} />}
             {view === 'image-manager'  && <ImageManager token={token} />}
             {view === 'products'       && <ProductsView token={token} productOverrides={siteData.productOverrides} onDataChanged={fetchAll} />}
@@ -198,7 +194,6 @@ export default function AdminPage() {
             {view === 'reviews-pending' && <ReviewsPendingView token={token} />}
             {view === 'referrals'       && <ReferralsView token={token} />}
           </Suspense>
-        )}
         </main>
       </div>
     </div>
