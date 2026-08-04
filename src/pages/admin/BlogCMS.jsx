@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { PRI, PRI_LIGHT, ACC, SIDEBAR_W, authH, fmt, Card, Btn, Input, Badge, SaveBar } from './AdminUI';
 import { ALL_PRODUCTS, STICKER_SIZE_PRICES, getProductDetails } from '../../data/products';
-import { AnalyticsView, ReportsView } from '../../components/AdminAnalytics';
 import TiptapEditor from '../../components/TiptapEditor';
 import logo from '@assets/SLEEKBLUE_LOGO_1779927359068.webp';
 
@@ -87,7 +86,7 @@ export function BlogPostEditor({ token, post, onSaved, onCancel }) {
   )
 }
 
-export default function BlogCMS({ token }) {
+export default function BlogCMS({ token, onDataChanged }) {
   const [posts, setPosts] = useState([])
   const [editingPost, setEditingPost] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -103,10 +102,11 @@ export default function BlogCMS({ token }) {
     if (!confirm('Are you sure you want to delete this post?')) return
     await fetch(`/api/admin/blog/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
     loadPosts()
+    onDataChanged?.()
   }
 
   if (isEditing) {
-    return <BlogPostEditor token={token} post={editingPost} onSaved={() => { setIsEditing(false); setEditingPost(null); loadPosts() }} onCancel={() => { setIsEditing(false); setEditingPost(null) }} />
+    return <BlogPostEditor token={token} post={editingPost} onSaved={() => { setIsEditing(false); setEditingPost(null); loadPosts(); onDataChanged?.() }} onCancel={() => { setIsEditing(false); setEditingPost(null) }} />
   }
 
   return (
