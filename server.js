@@ -225,18 +225,54 @@ app.use(helmet({
 }))
 app.use(compression())
 
+// ─── Concurrency guard (single-process Hostinger shield) ─────────────────────
+// Caps simultaneous in-flight HTTP requests so one traffic spike cannot exhaust
+// the 2 CPU / 3 GB shared plan. Excess clients get 503 + Retry-After instead of
+// hanging the process. Zero extra cost.
+const MAX_IN_FLIGHT = Number(process.env.MAX_IN_FLIGHT || 48)
+let inFlight = 0
+app.use((req, res, next) => {
+  if (req.path === '/api/health' || req.path === '/api/ready') return next()
+  if (inFlight >= MAX_IN_FLIGHT) {
+    res.setHeader('Retry-After', '2')
+    return res.status(503).json({
+      ok: false,
+      error: 'Server is busy. Please try again in a moment.',
+      code: 'OVERLOADED',
+    })
+  }
+  inFlight += 1
+  const done = () => { inFlight = Math.max(0, inFlight - 1) }
+  res.on('finish', done)
+  res.on('close', done)
+  next()
+})
+
 // Rate limiting
-// Global API limit
 app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false }))
-// Tighter limit on public write endpoints to reduce abuse
 const writeLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many requests, please try again later' } })
 const passwordLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { ok: false, error: 'Too many password change attempts, please try again later' } })
+const analyticsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: true, skipped: true },
+})
+const orderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, error: 'Too many order attempts, please try again later' },
+})
 
 app.use('/api/newsletter', writeLimiter)
 app.use('/api/subscribe-whatsapp', writeLimiter)
 app.use('/api/reviews/submit', writeLimiter)
 app.use('/api/referral/generate', writeLimiter)
 app.use('/api/upload/artwork', writeLimiter)
+app.use('/api/analytics/track', analyticsLimiter)
 app.use('/api/admin/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Too many login attempts' } }))
 
 // The `verify` callback captures the raw Buffer before JSON parsing — required
@@ -248,7 +284,13 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: true, limit: '1mb' }))
 
 // Serve uploaded files
-app.use('/uploads', express.static(UPLOADS_DIR))
+app.use('/uploads', express.static(UPLOADS_DIR, {
+  maxAge: '7d',
+  etag: true,
+  setHeaders(res) {
+    res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400')
+  },
+}))
 // Serve attached assets
 app.use('/assets', express.static(path.join(__dirname, 'attached_assets')))
 
@@ -438,14 +480,21 @@ app.get('/api/blog/:slug', (req, res) => {
 })
 
 app.post('/api/blog/:slug/view', (req, res) => {
-  const d = getSiteData()
-  const posts = d.blogPosts || []
-  const idx = posts.findIndex(p => p.slug === req.params.slug)
-  if (idx >= 0) {
-    posts[idx].views = (posts[idx].views || 0) + 1
-    patchSiteData({ blogPosts: posts })
-  }
+  // Under ad traffic, never block the response on a view-counter write
   res.json({ ok: true })
+  const mem = process.memoryUsage().heapUsed / (1024 * 1024)
+  if (mem > 380 || inFlight > Math.floor(MAX_IN_FLIGHT * 0.85)) return
+  try {
+    const d = getSiteData()
+    const posts = d.blogPosts || []
+    const idx = posts.findIndex(p => p.slug === req.params.slug)
+    if (idx >= 0) {
+      posts[idx].views = (posts[idx].views || 0) + 1
+      patchSiteData({ blogPosts: posts })
+    }
+  } catch (err) {
+    console.error('[blog view] persist skipped:', err && err.message)
+  }
 })
 
 app.get('/api/blog/:slug/comments', (req, res) => {
@@ -508,17 +557,25 @@ app.post('/api/reviews/submit', (req, res) => {
   res.json({ ok: true })
 })
 
-// Analytics track — whitelist fields to prevent arbitrary data injection
+// Analytics track — fail-soft under memory/concurrency pressure (orders always win)
 const ANALYTICS_ALLOWED = ['type', 'slug', 'path', 'ref', 'name', 'value']
 app.post('/api/analytics/track', (req, res) => {
   const entry = { ts: Date.now(), ip: req.ip }
   for (const key of ANALYTICS_ALLOWED) {
     if (req.body[key] !== undefined) entry[key] = str(req.body[key], 200)
   }
-  const analytics = getRuntimeData('analytics', [])
-  analytics.unshift(entry)
-  if (analytics.length > 10000) analytics.splice(10000)
-  setRuntimeData('analytics', analytics)
+  const heapMB = process.memoryUsage().heapUsed / (1024 * 1024)
+  if (heapMB > 380 || inFlight > Math.floor(MAX_IN_FLIGHT * 0.85)) {
+    return res.json({ ok: true, skipped: true })
+  }
+  try {
+    const analytics = getRuntimeData('analytics', [])
+    analytics.unshift(entry)
+    if (analytics.length > 5000) analytics.splice(5000)
+    setRuntimeData('analytics', analytics)
+  } catch (err) {
+    console.error('[analytics] persist failed:', err && err.message)
+  }
   res.json({ ok: true })
 })
 
@@ -626,7 +683,7 @@ function computeServerTotal(items) {
 }
 
 // ─── Orders ────────────────────────────────────────────────────────────────────
-app.post('/api/orders/create', writeLimiter, async (req, res) => {
+app.post('/api/orders/create', orderLimiter, async (req, res) => {
   const { items, customer, paymentMethod } = req.body
   if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ ok: false, error: 'Cart is empty' })
   
@@ -1312,7 +1369,19 @@ function getHealthInfo() {
 // Used by Hostinger / uptime monitors / operators. Keep it fast and allocation-light.
 app.get('/api/health', (req, res) => {
   res.setHeader('Cache-Control', 'no-store')
-  res.json(getHealthInfo())
+  const info = getHealthInfo()
+  info.inFlight = inFlight
+  info.maxInFlight = MAX_IN_FLIGHT
+  res.json(info)
+})
+
+// Ultra-light liveness for uptime pings under ad traffic
+app.get('/api/ready', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store')
+  if (inFlight >= MAX_IN_FLIGHT) {
+    return res.status(503).json({ ok: false, ready: false, inFlight })
+  }
+  res.json({ ok: true, ready: true, inFlight, uptimeSeconds: Math.floor(process.uptime()) })
 })
 
 // ─── Serve Frontend ────────────────────────────────────────────────────────────
