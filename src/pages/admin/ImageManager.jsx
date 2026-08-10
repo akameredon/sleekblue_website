@@ -207,12 +207,12 @@ export function ImageManager({ token }) {
               <div>
                 <h3 className="text-sm font-bold text-[#7B2FBE] mb-1">Default Built-in Slides</h3>
                 <p className="text-xs text-slate-500 leading-5">
-                  {heroSlides.length > 0 ? 'Custom slides are active — defaults are hidden behind them.' : 'Shown when no custom slides are uploaded. Hide, restore, or add more below.'}
+                  {heroSlides.length > 0 ? 'Custom slides are active - defaults are hidden behind them.' : 'Shown when no custom slides are uploaded. Hide, restore, or add more below.'}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {defaultSlidesMsg && <span className="text-sm text-emerald-600">{defaultSlidesMsg}</span>}
-                <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-2 text-sm font-semibold text-white ${extraDefaultUploading ? 'opacity-60' : 'cursor-pointer'`}>
+                <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-2 text-sm font-semibold text-white ${extraDefaultUploading ? 'opacity-60' : 'cursor-pointer'}`}>
                   {extraDefaultUploading ? 'Adding...' : 'Add More slides'}
                   <input type="file" accept="image/*" className="hidden" onChange={uploadExtraDefaultSlide} disabled={extraDefaultUploading} />
                 </label>
@@ -333,7 +333,7 @@ export function ImageManager({ token }) {
                   <option key={p.slug} value={p.slug}>{p.name}</option>
                 ))}
               </select>
-              <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-3 text-sm font-semibold text-white ${prodUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'`}>
+              <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-3 text-sm font-semibold text-white ${prodUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
                 {prodUploading ? 'Uploading...' : 'Upload Image'}
                 <input type="file" accept="image/*" className="hidden" onChange={uploadProductImage} disabled={prodUploading} />
               </label>
@@ -388,7 +388,7 @@ export function ImageManager({ token }) {
                       <option key={v} value={v}>{v} {(variantImages[`${selectedSlug}::${v}`] || []).length > 0 ? 'yes' : ''}</option>
                     ))}
                   </select>
-                  <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-3 text-sm font-semibold text-white ${variantUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'`}>
+                  <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-3 text-sm font-semibold text-white ${variantUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
                     {variantUploading ? 'Uploading...' : `Upload for "${activeVariant}"`}
                     <input type="file" accept="image/*" className="hidden" onChange={e => { setSelectedVariant(activeVariant); uploadVariantImage(e) }} disabled={variantUploading} />
                   </label>
@@ -396,7 +396,7 @@ export function ImageManager({ token }) {
                 {variantMsg && <p className={`text-sm ${variantMsg.includes('failed') ? 'text-rose-600' : 'text-emerald-600'}`}>{variantMsg}</p>}
 
                 {variantImgsForVariant.length === 0
-                  ? <p className="text-sm text-slate-500">No images for "{activeVariant}" yet — falls back to general product image.</p>
+                  ? <p className="text-sm text-slate-500">No images for this variant yet - falls back to general product image.</p>
                   : (
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                       {variantImgsForVariant.map((url, i) => (
