@@ -23,9 +23,10 @@ if [ "${SKIP_BACKUP:-0}" != "1" ] && [ -f "$ROOT/scripts/backup.sh" ]; then
 fi
 
 # 2) Latest code
-echo "[deploy] git pull origin main…"
-git fetch origin main
-git pull --ff-only origin main
+BRANCH="${BRANCH:-main}"
+echo "[deploy] git pull origin ${BRANCH}…"
+git fetch origin "${BRANCH}"
+git pull --ff-only origin "${BRANCH}"
 
 # 3) Dependencies
 echo "[deploy] npm install…"
@@ -58,3 +59,25 @@ else
 fi
 
 echo "[deploy] $(date -Iseconds) finished OK"
+
+# ─── Post-deploy smoke test ─────────────────────────────────────────────────
+# Verify the app is responding on the configured port. If the smoke test fails
+# attempt an automatic rollback (if `scripts/rollback.sh` exists) and exit with
+# a non-zero status so remote deploys are marked as failed.
+PORT_TO_CHECK="${PORT:-3000}"
+HEALTH_URL="http://127.0.0.1:${PORT_TO_CHECK}/api/health"
+echo "[deploy] running post-deploy smoke test against ${HEALTH_URL}"
+sleep 2
+if curl -sSf --max-time 5 "${HEALTH_URL}" >/dev/null 2>&1; then
+  echo "[deploy] smoke test passed"
+else
+  echo "[deploy] smoke test FAILED"
+  if [ -x "$ROOT/scripts/rollback.sh" ] || [ -f "$ROOT/scripts/rollback.sh" ]; then
+    echo "[deploy] attempting rollback using scripts/rollback.sh"
+    bash "$ROOT/scripts/rollback.sh" || echo "[deploy] rollback script failed"
+  else
+    echo "[deploy] no rollback script found at $ROOT/scripts/rollback.sh"
+  fi
+  echo "[deploy] exiting with error due to failing smoke test"
+  exit 1
+fi
