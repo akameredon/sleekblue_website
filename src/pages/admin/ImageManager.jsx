@@ -45,7 +45,7 @@ export function ImageManager({ token }) {
       : [...hiddenDefaultSlides, idx]
     setHiddenDefaultSlides(next)
     await fetch('/api/admin/hero/default-slides', { method: 'PUT', headers: authH(token), body: JSON.stringify({ hiddenDefaultSlides: next }) })
-    setDefaultSlidesMsg('✓ Saved')
+    setDefaultSlidesMsg('Saved')
     setTimeout(() => setDefaultSlidesMsg(''), 2000)
   }
 
@@ -55,7 +55,7 @@ export function ImageManager({ token }) {
       : [...hiddenExtraDefaultSlides, url]
     setHiddenExtraDefaultSlides(next)
     await fetch('/api/admin/hero/extra-default-visibility', { method: 'PUT', headers: authH(token), body: JSON.stringify({ hiddenExtraDefaultSlides: next }) })
-    setDefaultSlidesMsg('✓ Saved')
+    setDefaultSlidesMsg('Saved')
     setTimeout(() => setDefaultSlidesMsg(''), 2000)
   }
 
@@ -67,7 +67,7 @@ export function ImageManager({ token }) {
     const data = await res.json()
     if (data.ok) {
       setExtraDefaultSlides(s => [...s, data.url])
-      setDefaultSlidesMsg('✓ Slide added!')
+      setDefaultSlidesMsg('Slide added!')
       setTimeout(() => setDefaultSlidesMsg(''), 2000)
     }
     setExtraDefaultUploading(false); e.target.value = ''
@@ -86,8 +86,8 @@ export function ImageManager({ token }) {
     const fd = new FormData(); fd.append('image', file)
     const res = await fetch('/api/admin/upload/hero', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd })
     const data = await res.json()
-    if (data.ok) { setHeroSlides(s => [...s, data.url]); setHeroMsg('✓ Slide uploaded!') }
-    else setHeroMsg('✗ Upload failed: ' + (data.error || ''))
+    if (data.ok) { setHeroSlides(s => [...s, data.url]); setHeroMsg('Slide uploaded!') }
+    else setHeroMsg('Upload failed: ' + (data.error || ''))
     setHeroUploading(false); e.target.value = ''
   }
 
@@ -126,8 +126,8 @@ export function ImageManager({ token }) {
     const data = await res.json()
     if (data.ok) {
       setProductImages(prev => ({ ...prev, [selectedSlug]: [...(prev[selectedSlug] || []), data.url] }))
-      setProdMsg('✓ Image uploaded!')
-    } else setProdMsg('✗ Upload failed: ' + (data.error || ''))
+      setProdMsg('Image uploaded!')
+    } else setProdMsg('Upload failed: ' + (data.error || ''))
     setProdUploading(false); e.target.value = ''
   }
 
@@ -149,8 +149,8 @@ export function ImageManager({ token }) {
         ...prev,
         [key]: [...(prev[key] || []), data.url]
       }))
-      setVariantMsg('✓ Variant image uploaded!')
-    } else setVariantMsg('✗ Upload failed: ' + (data.error || ''))
+      setVariantMsg('Variant image uploaded!')
+    } else setVariantMsg('Upload failed: ' + (data.error || ''))
     setVariantUploading(false); e.target.value = ''
   }
 
@@ -165,8 +165,8 @@ export function ImageManager({ token }) {
   }
 
   const tabs = [
-    { id: 'hero',    label: '🖼️ Hero Slides' },
-    { id: 'product', label: '🛍️ Product Images' },
+    { id: 'hero',    label: 'Hero Slides' },
+    { id: 'product', label: 'Product Images' },
   ]
 
   return (
@@ -193,27 +193,27 @@ export function ImageManager({ token }) {
           <Card className="space-y-4">
             <div>
               <h3 className="text-sm font-bold text-[#7B2FBE] mb-2">Hero Slideshow Images</h3>
-              <p className="text-sm text-slate-500">Upload new hero slide images. They will replace the default slides on the homepage. Drag or use ▲▼ to reorder. Recommended: landscape images (1920×600px or similar).</p>
+              <p className="text-sm text-slate-500">Upload new hero slide images. They will replace the default slides on the homepage. Drag or use arrows to reorder. Recommended: landscape images (1920x600px or similar).</p>
             </div>
             <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-3 text-sm font-semibold text-white transition ${heroUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
-              {heroUploading ? '⏳ Uploading…' : '⬆️ Upload Slide Image'}
+              {heroUploading ? 'Uploading...' : 'Upload Slide Image'}
               <input type="file" accept="image/*" className="hidden" onChange={uploadHeroSlide} disabled={heroUploading} />
             </label>
-            {heroMsg && <p className={`text-sm mt-2 ${heroMsg.startsWith('✓') ? 'text-emerald-600' : 'text-rose-600'}`}>{heroMsg}</p>}
+            {heroMsg && <p className={`text-sm mt-2 ${heroMsg.includes('failed') ? 'text-rose-600' : 'text-emerald-600'}`}>{heroMsg}</p>}
           </Card>
 
           <Card className="space-y-4 border border-[#e0d6f5] bg-[#f8f8ff]">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 className="text-sm font-bold text-[#7B2FBE] mb-1">🖼️ Default Built-in Slides</h3>
+                <h3 className="text-sm font-bold text-[#7B2FBE] mb-1">Default Built-in Slides</h3>
                 <p className="text-xs text-slate-500 leading-5">
                   {heroSlides.length > 0 ? 'Custom slides are active — defaults are hidden behind them.' : 'Shown when no custom slides are uploaded. Hide, restore, or add more below.'}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {defaultSlidesMsg && <span className="text-sm text-emerald-600">{defaultSlidesMsg}</span>}
-                <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-2 text-sm font-semibold text-white ${extraDefaultUploading ? 'opacity-60' : 'cursor-pointer'}`}>
-                  {extraDefaultUploading ? '⏳ Adding…' : '➕ Add More Slides'}
+                <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-2 text-sm font-semibold text-white ${extraDefaultUploading ? 'opacity-60' : 'cursor-pointer'`}>
+                  {extraDefaultUploading ? 'Adding...' : 'Add More slides'}
                   <input type="file" accept="image/*" className="hidden" onChange={uploadExtraDefaultSlide} disabled={extraDefaultUploading} />
                 </label>
               </div>
@@ -225,7 +225,7 @@ export function ImageManager({ token }) {
                 return (
                   <div key={i} className={`rounded-2xl overflow-hidden border transition ${isHidden ? 'border-slate-200 opacity-50' : 'border-[#7B2FBE]/40'}`}>
                     <div className={`p-4 text-center ${isHidden ? 'bg-slate-100' : 'bg-[#f0e8ff]'}`}>
-                      <div className="text-3xl mb-1">🖼️</div>
+                      <div className="text-3xl mb-1">#</div>
                       <p className="text-xs font-semibold text-[#7B2FBE] mb-1">{label}</p>
                       <p className="text-[10px] text-slate-400">Built-in slide</p>
                     </div>
@@ -233,7 +233,7 @@ export function ImageManager({ token }) {
                       <button
                         onClick={() => toggleDefaultSlide(i)}
                         className={`w-full rounded-xl px-3 py-2 text-[11px] font-semibold ${isHidden ? 'bg-emerald-600 text-white' : 'bg-rose-100 text-rose-700'}`}>
-                        {isHidden ? '✓ Restore' : '✗ Hide'}
+                        {isHidden ? 'Restore' : 'Hide'}
                       </button>
                     </div>
                   </div>
@@ -254,12 +254,12 @@ export function ImageManager({ token }) {
                         <button
                           onClick={() => toggleExtraDefaultSlide(url)}
                           className={`flex-1 rounded-xl px-3 py-2 text-[10px] font-semibold ${isHidden ? 'bg-emerald-600 text-white' : 'bg-rose-100 text-rose-700'}`}>
-                          {isHidden ? '✓ Restore' : '✗ Hide'}
+                          {isHidden ? 'Restore' : 'Hide'}
                         </button>
                         <button
                           onClick={() => deleteExtraDefaultSlide(url)}
                           className="rounded-xl bg-rose-600 px-3 py-2 text-[10px] font-semibold text-white">
-                          🗑
+                          Delete
                         </button>
                       </div>
                     </div>
@@ -268,7 +268,7 @@ export function ImageManager({ token }) {
               })}
 
               <label className={`rounded-2xl border-2 border-dashed border-[#7B2FBE]/60 flex min-h-[150px] flex-col items-center justify-center gap-2 p-6 text-center transition ${extraDefaultUploading ? 'opacity-60' : 'hover:bg-slate-50'}`}>
-                <span className="text-3xl">➕</span>
+                <span className="text-3xl">+</span>
                 <span className="text-[11px] font-semibold text-[#7B2FBE]">Add More Default Slides</span>
                 <input type="file" accept="image/*" className="hidden" onChange={uploadExtraDefaultSlide} disabled={extraDefaultUploading} />
               </label>
@@ -291,23 +291,23 @@ export function ImageManager({ token }) {
                     <div className="absolute left-2 top-2 rounded-xl bg-black/60 px-2 py-1 text-[11px] font-semibold text-white">Slide {i + 1}</div>
                   </div>
                   <div className="flex items-center gap-2 p-3">
-                    <span className="flex-1 text-[11px] text-slate-500">⠿ drag to reorder</span>
+                    <span className="flex-1 text-[11px] text-slate-500">drag to reorder</span>
                     <button
                       onClick={() => moveHero(i, -1)}
                       disabled={i === 0}
                       className="rounded-xl bg-[#f0e8ff] px-2 py-1 text-[11px] font-semibold text-[#7B2FBE] disabled:opacity-40">
-                      ▲
+                      Up
                     </button>
                     <button
                       onClick={() => moveHero(i, 1)}
                       disabled={i === heroSlides.length - 1}
                       className="rounded-xl bg-[#f0e8ff] px-2 py-1 text-[11px] font-semibold text-[#7B2FBE] disabled:opacity-40">
-                      ▼
+                      Down
                     </button>
                     <button
                       onClick={() => deleteHeroSlide(url)}
                       className="rounded-xl bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">
-                      🗑
+                      Delete
                     </button>
                   </div>
                 </div>
@@ -333,12 +333,12 @@ export function ImageManager({ token }) {
                   <option key={p.slug} value={p.slug}>{p.name}</option>
                 ))}
               </select>
-              <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-3 text-sm font-semibold text-white ${prodUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
-                {prodUploading ? '⏳ Uploading…' : '⬆️ Upload Image'}
+              <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-3 text-sm font-semibold text-white ${prodUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'`}>
+                {prodUploading ? 'Uploading...' : 'Upload Image'}
                 <input type="file" accept="image/*" className="hidden" onChange={uploadProductImage} disabled={prodUploading} />
               </label>
             </div>
-            {prodMsg && <p className={`text-sm mt-2 ${prodMsg.startsWith('✓') ? 'text-emerald-600' : 'text-rose-600'}`}>{prodMsg}</p>}
+            {prodMsg && <p className={`text-sm mt-2 ${prodMsg.includes('failed') ? 'text-rose-600' : 'text-emerald-600'}`}>{prodMsg}</p>}
           </Card>
 
           {selectedSlug && (
@@ -357,7 +357,7 @@ export function ImageManager({ token }) {
                         <button
                           onClick={() => deleteProductImage(selectedSlug, url)}
                           className="absolute right-2 top-2 rounded-xl bg-rose-600 px-3 py-1 text-xs font-semibold text-white">
-                          🗑
+                          Delete
                         </button>
                         {i === 0 && <div className="absolute left-2 bottom-2 rounded-xl bg-emerald-600 px-2 py-1 text-[10px] font-semibold text-white">Main</div>}
                       </div>
@@ -376,7 +376,7 @@ export function ImageManager({ token }) {
             return (
               <Card className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-bold text-[#7B2FBE] mb-1">📐 Variant / Type Images</h3>
+                  <h3 className="text-sm font-bold text-[#7B2FBE] mb-1">Variant / Type Images</h3>
                   <p className="text-sm text-slate-500">Upload a specific image for each size or type. These override the general product image when that variant is selected by the customer.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -385,15 +385,15 @@ export function ImageManager({ token }) {
                     onChange={e => { setSelectedVariant(e.target.value); setVariantMsg('') }}
                     className="min-w-[200px] rounded-2xl border border-[#7B2FBE]/30 bg-[#f0e8ff] px-4 py-3 text-sm outline-none focus:border-[#7B2FBE] focus:ring-2 focus:ring-[#7B2FBE]/20">
                     {slugVariants.map(v => (
-                      <option key={v} value={v}>{v} {(variantImages[`${selectedSlug}::${v}`] || []).length > 0 ? '✓' : ''}</option>
+                      <option key={v} value={v}>{v} {(variantImages[`${selectedSlug}::${v}`] || []).length > 0 ? 'yes' : ''}</option>
                     ))}
                   </select>
                   <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-3 text-sm font-semibold text-white ${variantUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'`}>
-                    {variantUploading ? '⏳ Uploading…' : `⬆️ Upload for "${activeVariant}"`}
+                    {variantUploading ? 'Uploading...' : `Upload for "${activeVariant}"`}
                     <input type="file" accept="image/*" className="hidden" onChange={e => { setSelectedVariant(activeVariant); uploadVariantImage(e) }} disabled={variantUploading} />
                   </label>
                 </div>
-                {variantMsg && <p className={`text-sm ${variantMsg.startsWith('✓') ? 'text-emerald-600' : 'text-rose-600'}`}>{variantMsg}</p>}
+                {variantMsg && <p className={`text-sm ${variantMsg.includes('failed') ? 'text-rose-600' : 'text-emerald-600'}`}>{variantMsg}</p>}
 
                 {variantImgsForVariant.length === 0
                   ? <p className="text-sm text-slate-500">No images for "{activeVariant}" yet — falls back to general product image.</p>
@@ -405,7 +405,7 @@ export function ImageManager({ token }) {
                           <button
                             onClick={() => deleteVariantImage(selectedSlug, activeVariant, url)}
                             className="absolute right-2 top-2 rounded-xl bg-rose-600 px-3 py-1 text-xs font-semibold text-white">
-                            🗑
+                            Delete
                           </button>
                           {i === 0 && <div className="absolute left-2 bottom-2 rounded-xl bg-[#7B2FBE] px-2 py-1 text-[10px] font-semibold text-white">Main</div>}
                         </div>
@@ -424,7 +424,7 @@ export function ImageManager({ token }) {
                           type="button"
                           onClick={() => setSelectedVariant(v)}
                           className={`rounded-2xl border px-3 py-2 text-xs font-semibold transition ${count > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-100 text-slate-500'}`}>
-                          {v} {count > 0 ? `(${count})` : '—'}
+                          {v} {count > 0 ? `(${count})` : '-'}
                         </button>
                       )
                     })}
