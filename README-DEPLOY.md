@@ -95,9 +95,33 @@ pm2 logs sleekblue --lines 30
 curl http://localhost:3000/api/site-data
 ```
 
+## 8. Post-deploy smoke test
+
+The GitHub deploy workflow now runs a remote smoke test after SSH deploy completes. It checks the live site with `/api/health` and fails the deployment if the health endpoint does not respond successfully.
+
+If you need to override the site URL used by the smoke test, set the `SITE_URL` repository secret in GitHub Actions.
+
+```text
+SITE_URL=https://sleekbluemedia.com
+```
+
+## 9. Dependabot
+
+Dependabot is configured to run weekly for npm dependencies. When updates are available, it opens automated pull requests labeled `dependencies` and `automated`.
+
+Review these PRs carefully before merging, especially for major package updates that may affect production behavior.
+
+## 10. Production health monitoring
+
+A GitHub workflow now checks the production `/api/health` endpoint every 4 hours. It uses the `SITE_URL` repository secret when available and fails if the service is not healthy.
+
+```text
+SITE_URL=https://sleekbluemedia.com
+```
+
 ---
 
-## 8. File Permissions
+## 11. File Permissions
 
 `runtime/` and `uploads/` must be writable by the Node.js process (the server uses file-based JSON storage):
 

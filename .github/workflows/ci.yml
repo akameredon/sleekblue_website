@@ -23,8 +23,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+
       - name: Run Build
         run: npm run build
+
+      - name: Run Cypress E2E
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm start
+          wait-on: http://localhost:3000
+          wait-on-timeout: 60
+          browser: chrome
+          config-file: cypress.config.js
 
       - name: Run Tests
         run: npm test

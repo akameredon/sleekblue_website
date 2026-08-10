@@ -108,6 +108,14 @@ Test coverage includes:
 - Order minimum quantity constraint validation.
 - Input validation and email sanitization helpers.
 
+The repository also includes Cypress E2E scaffolding for end-to-end smoke tests. Create or extend tests under `cypress/e2e/` and run:
+
+```bash
+npm run cy:run
+```
+
+The GitHub CI workflow now builds the app, starts the server, and runs Cypress headless before the native Node tests.
+
 ---
 
 ## 📄 License

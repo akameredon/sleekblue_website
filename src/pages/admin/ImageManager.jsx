@@ -388,8 +388,8 @@ export function ImageManager({ token }) {
                       <option key={v} value={v}>{v} {(variantImages[`${selectedSlug}::${v}`] || []).length > 0 ? '✓' : ''}</option>
                     ))}
                   </select>
-                  <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-3 text-sm font-semibold text-white ${variantUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'`}>
-                    {variantUploading ? '⏳ Uploading…' : `⬆️ Upload for "${activeVariant}"`}
+                  <label className={`inline-flex items-center gap-2 rounded-2xl bg-[#7B2FBE] px-4 py-3 text-sm font-semibold text-white ${variantUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
+                    {variantUploading ? '⏳ Uploading…' : 'Upload for "' + activeVariant + '"'}
                     <input type="file" accept="image/*" className="hidden" onChange={e => { setSelectedVariant(activeVariant); uploadVariantImage(e) }} disabled={variantUploading} />
                   </label>
                 </div>

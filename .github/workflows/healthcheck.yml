@@ -1,0 +1,17 @@
+name: Production Healthcheck
+
+on:
+  schedule:
+    - cron: '0 */4 * * *' # Every 4 hours
+  workflow_dispatch: []
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check production health endpoint
+        run: |
+          set -e
+          URL="${{ secrets.SITE_URL || 'https://sleekbluemedia.com' }}"
+          echo "Checking production health at $URL/api/health"
+          curl -fsS "$URL/api/health" | python3 -c "import sys, json; data=json.load(sys.stdin); assert data.get('status') == 'alive'"
