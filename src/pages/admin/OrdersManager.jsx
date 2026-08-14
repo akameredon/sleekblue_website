@@ -40,6 +40,7 @@ export function OrdersView({ token }) {
   const [q, setQ] = useState('')
   const [selected, setSelected] = useState(null)
   const [updating, setUpdating] = useState(false)
+  const [verifying, setVerifying] = useState(false)
   const [toast, setToast] = useState('')
 
   const load = useCallback(async () => {
@@ -87,6 +88,50 @@ export function OrdersView({ token }) {
     }
   }
 
+  async function verifyPaystack(ref) {
+    if (!ref) return
+    setVerifying(true)
+    try {
+      const res = await fetch(`/api/admin/orders/${encodeURIComponent(ref)}/verify-paystack`, {
+        method: 'POST',
+        headers: authH(token),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Verify failed')
+      if (data.order) {
+        setOrders(prev => prev.map(o => o.ref === ref ? data.order : o))
+        setSelected(prev => prev && prev.ref === ref ? data.order : prev)
+      }
+      setToast(data.message || (data.paid ? 'Marked paid' : `Paystack: ${data.status}`))
+      setTimeout(() => setToast(''), 3500)
+    } catch (e) {
+      setToast(e.message || 'Paystack verify failed')
+      setTimeout(() => setToast(''), 3500)
+    } finally {
+      setVerifying(false)
+    }
+  }
+
+  async function verifyAllPendingPaystack() {
+    setVerifying(true)
+    try {
+      const res = await fetch('/api/admin/orders/verify-paystack-pending', {
+        method: 'POST',
+        headers: authH(token),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Bulk verify failed')
+      await load()
+      setToast(`Checked ${data.checked || 0} pending Paystack order(s); ${data.paidCount || 0} marked paid`)
+      setTimeout(() => setToast(''), 4000)
+    } catch (e) {
+      setToast(e.message || 'Bulk verify failed')
+      setTimeout(() => setToast(''), 3500)
+    } finally {
+      setVerifying(false)
+    }
+  }
+
   const filtered = orders.filter(o => {
     if (filter !== 'all' && o.status !== filter) return false
     if (!q.trim()) return true
@@ -110,7 +155,12 @@ export function OrdersView({ token }) {
             Real storefront orders (Paystack, bank, WhatsApp). Update payment status here.
           </p>
         </div>
-        <Btn onClick={load} disabled={loading}>{loading ? 'Refreshing…' : 'Refresh'}</Btn>
+        <div className="flex flex-wrap gap-2">
+          <Btn onClick={load} disabled={loading || verifying}>{loading ? 'Refreshing…' : 'Refresh'}</Btn>
+          <Btn onClick={verifyAllPendingPaystack} disabled={loading || verifying}>
+            {verifying ? 'Verifying…' : 'Verify pending Paystack'}
+          </Btn>
+        </div>
       </div>
 
       {toast && (
@@ -274,13 +324,25 @@ export function OrdersView({ token }) {
                   </div>
                 </div>
 
+                {selected.paymentMethod === 'paystack' && selected.status !== 'paid' && (
+                  <div>
+                    <p className="mb-2 text-[11px] uppercase tracking-wide text-slate-500">Paystack</p>
+                    <Btn disabled={verifying || updating} onClick={() => verifyPaystack(selected.ref)}>
+                      {verifying ? 'Checking Paystack…' : 'Verify payment with Paystack'}
+                    </Btn>
+                    <p className="mt-1 text-[11px] text-slate-500">
+                      Asks Paystack if this reference was paid. If yes, marks the order paid automatically.
+                    </p>
+                  </div>
+                )}
+
                 <div>
                   <p className="mb-2 text-[11px] uppercase tracking-wide text-slate-500">Update status</p>
                   <div className="flex flex-wrap gap-2">
                     {STATUS_OPTIONS.map(s => (
                       <Btn
                         key={s}
-                        disabled={updating || selected.status === s}
+                        disabled={updating || verifying || selected.status === s}
                         onClick={() => setStatus(selected.ref, s)}
                         className="capitalize"
                       >
