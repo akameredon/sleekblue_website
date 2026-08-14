@@ -1,1 +1,4 @@
-PLACEHOLDER_WILL_FAIL
+/**
+ * TEMP - see artifacts
+ */
+console.error('REPLACE_WITH_FULL_SERVER')
