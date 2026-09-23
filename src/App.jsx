@@ -27,6 +27,7 @@ const PriceListPage    = lazy(() => import('./pages/PriceListPage'))
 const AdminPage        = lazy(() => import('./pages/AdminPage'))
 const ComparisonPage   = lazy(() => import('./pages/ComparisonPage'))
 const NotFoundPage     = lazy(() => import('./pages/NotFoundPage'))
+const StickerBalancePage = lazy(() => import('./pages/StickerBalancePage'))
 
 function PageLoader() {
   return (
@@ -146,6 +147,7 @@ export default function App() {
         <Routes>
           <Route path="/admin"  element={<Navigate to="/portal" replace />} />
           <Route path="/portal" element={<AdminPage />} />
+          <Route path="/sticker-balance" element={<StickerBalancePage />} />
           <Route path="/*"     element={<MainSite />} />
         </Routes>
       </Suspense>
