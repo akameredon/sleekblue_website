@@ -25,20 +25,35 @@ export default function StickerBalancePage() {
   const [showAdd, setShowAdd] = useState(false)
   const [toast, setToast] = useState('')
   const [mobileNav, setMobileNav] = useState(false)
+  const [session, setSession] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+  const [authEmail, setAuthEmail] = useState('')
+  const [authPassword, setAuthPassword] = useState('')
+  const [authError, setAuthError] = useState('')
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession)
+      setAuthLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => setSession(currentSession))
+    return () => subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    if (!session) return undefined
     let active = true
     const loadCustomers = async () => {
       const { data, error } = await supabase.from('customer_summary').select('*').order('business_name')
       if (!active || error || !data?.length) return
       setCustomers(data.map((row) => {
-        const status = row.status === 'REORDER NOW' ? 'Reorder' : row.status === 'APPROACHING' ? 'Watch' : 'Healthy'
+        const status = (row.status_label || row.status) === 'REORDER NOW' || (row.status_label || row.status) === 'OUT OF STOCK' ? 'Reorder' : (row.status_label || row.status) === 'APPROACHING' ? 'Watch' : 'Healthy'
         return {
           initials: String(row.business_name || 'Customer').split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase(),
           name: row.business_name || 'Customer',
           contact: row.contact_name || 'Account owner',
           code: row.customer_code || '—',
           remaining: Number(row.remaining || 0),
-          delivered: Number(row.total_delivered || row.current_delivered || 0),
+          delivered: Number(row.current_delivered || row.total_delivered || 0),
           status,
           color: status === 'Reorder' ? '#d85757' : status === 'Watch' ? '#d4915b' : '#6c8f71',
         }
@@ -66,6 +81,15 @@ export default function StickerBalancePage() {
     notify('Customer report downloaded')
   }
 
+  const signIn = async (event) => {
+    event.preventDefault()
+    setAuthError('')
+    const { error } = await supabase.auth.signInWithPassword({ email: authEmail.trim(), password: authPassword })
+    if (error) setAuthError(error.message)
+  }
+
+  const signOut = async () => { await supabase.auth.signOut(); setCustomers(seedCustomers) }
+
   const addCustomer = (event) => {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
@@ -76,6 +100,8 @@ export default function StickerBalancePage() {
     notify(`${name} added to your workspace`)
   }
 
+  if (authLoading) return <div className="sb-auth-screen"><div className="sb-auth-card"><div className="sb-brand sb-auth-brand"><div className="sb-brand-mark"><FiBox /></div><div><strong>sticker<span>balance</span></strong><small>by Sleekblue</small></div></div><p>Loading your workspace…</p></div></div>
+  if (!session) return <div className="sb-auth-screen"><div className="sb-auth-card"><div className="sb-brand sb-auth-brand"><div className="sb-brand-mark"><FiBox /></div><div><strong>sticker<span>balance</span></strong><small>by Sleekblue</small></div></div><div className="sb-eyebrow">Private workspace</div><h1>Welcome back.</h1><p>Sign in to access live sticker inventory for Sleekblue Media.</p><form onSubmit={signIn} className="sb-auth-form"><label>Email<input type="email" value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} placeholder="you@company.com" required /></label><label>Password<input type="password" value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} placeholder="Your password" required /></label>{authError && <div className="sb-auth-error">{authError}</div>}<button className="sb-primary" type="submit">Sign in securely <FiArrowUpRight /></button></form><small className="sb-auth-note">Your Supabase session protects customer inventory and admin actions.</small></div></div>
   return <div className="sb-shell">
     <aside className={`sb-sidebar ${mobileNav ? 'sb-sidebar-open' : ''}`}>
       <div className="sb-brand"><div className="sb-brand-mark"><FiBox /></div><div><strong>sticker<span>balance</span></strong><small>by Sleekblue</small></div></div>
@@ -91,7 +117,7 @@ export default function StickerBalancePage() {
     </aside>
     {mobileNav && <button className="sb-scrim" onClick={() => setMobileNav(false)} aria-label="Close navigation" />}
     <main className="sb-main">
-      <header className="sb-topbar"><button className="sb-mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><FiMenu /></button><div className="sb-breadcrumb">Workspace <span>/</span> <b>Overview</b></div><div className="sb-top-actions"><button onClick={() => notify('You are all caught up')} aria-label="Notifications"><FiBell /><i /></button><div className="sb-divider" /><button className="sb-profile"><span>AO</span>Akadonye<FiChevronDown /></button></div></header>
+      <header className="sb-topbar"><button className="sb-mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><FiMenu /></button><div className="sb-breadcrumb">Workspace <span>/</span> <b>Overview</b></div><div className="sb-top-actions"><button onClick={() => notify('You are all caught up')} aria-label="Notifications"><FiBell /><i /></button><div className="sb-divider" /><button className="sb-profile" onClick={signOut}><span>AO</span>Sign out<FiChevronDown /></button></div></header>
       <div className="sb-content">
         <section className="sb-welcome"><div><div className="sb-eyebrow">✦ Wednesday, 23 September 2026</div><h1>Good morning, Akadonye<span>.</span></h1><p>Here’s the pulse of your sticker inventory today.</p></div><button className="sb-primary" onClick={() => setShowAdd(true)}><FiPlus />Add customer</button></section>
         <section className="sb-insight"><div className="sb-insight-icon"><FiShield /></div><div><b>Inventory is in good shape</b><span>You have <strong>{formatNumber(total)} stickers</strong> across {customers.length} active customer accounts.</span></div><button onClick={() => notify('Customer overview selected')}>View customers <FiArrowUpRight /></button></section>
