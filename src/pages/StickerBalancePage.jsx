@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { supabase } from '../lib/supabase'
 import { FiArrowUpRight, FiBell, FiBox, FiCheck, FiChevronDown, FiDownload, FiMenu, FiPlus, FiSearch, FiSettings, FiShield, FiUsers, FiX } from 'react-icons/fi'
 
 const seedCustomers = [
@@ -24,6 +25,28 @@ export default function StickerBalancePage() {
   const [showAdd, setShowAdd] = useState(false)
   const [toast, setToast] = useState('')
   const [mobileNav, setMobileNav] = useState(false)
+  useEffect(() => {
+    let active = true
+    const loadCustomers = async () => {
+      const { data, error } = await supabase.from('customer_summary').select('*').order('business_name')
+      if (!active || error || !data?.length) return
+      setCustomers(data.map((row) => {
+        const status = row.status === 'REORDER NOW' ? 'Reorder' : row.status === 'APPROACHING' ? 'Watch' : 'Healthy'
+        return {
+          initials: String(row.business_name || 'Customer').split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase(),
+          name: row.business_name || 'Customer',
+          contact: row.contact_name || 'Account owner',
+          code: row.customer_code || '—',
+          remaining: Number(row.remaining || 0),
+          delivered: Number(row.total_delivered || row.current_delivered || 0),
+          status,
+          color: status === 'Reorder' ? '#d85757' : status === 'Watch' ? '#d4915b' : '#6c8f71',
+        }
+      }))
+    }
+    loadCustomers()
+    return () => { active = false }
+  }, [])
   const total = customers.reduce((sum, customer) => sum + customer.remaining, 0)
   const attention = customers.filter((customer) => customer.status !== 'Healthy').length
   const filtered = useMemo(() => customers.filter((customer) => `${customer.name} ${customer.code} ${customer.contact}`.toLowerCase().includes(query.toLowerCase())), [customers, query])
