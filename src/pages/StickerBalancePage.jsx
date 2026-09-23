@@ -1,133 +1,107 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { FiArrowUpRight, FiBell, FiBox, FiCheck, FiChevronDown, FiDownload, FiMenu, FiPlus, FiSearch, FiSettings, FiUsers, FiX } from 'react-icons/fi'
 import { supabase } from '../lib/supabase'
-import { FiArrowUpRight, FiBell, FiBox, FiCheck, FiChevronDown, FiDownload, FiMenu, FiPlus, FiSearch, FiSettings, FiShield, FiUsers, FiX } from 'react-icons/fi'
 
-const seedCustomers = [
-  { initials: 'HC', name: 'Harbor Coffee Co.', contact: 'Maya Johnson', code: 'HBR-042', remaining: 8420, delivered: 12000, status: 'Healthy', color: '#3554d1' },
-  { initials: 'PL', name: 'Palm & Linen', contact: 'Theo Okafor', code: 'PML-118', remaining: 2140, delivered: 6000, status: 'Watch', color: '#d4915b' },
-  { initials: 'SL', name: 'Sage Lane Studio', contact: 'Nina Walker', code: 'SGL-207', remaining: 460, delivered: 5000, status: 'Reorder', color: '#d85757' },
-  { initials: 'MC', name: 'Morrow Candle Co.', contact: 'Ari Kim', code: 'MRW-331', remaining: 6750, delivered: 9000, status: 'Healthy', color: '#6c8f71' },
-  { initials: 'NV', name: 'North Vale Market', contact: 'Eden Clarke', code: 'NVM-284', remaining: 1180, delivered: 4800, status: 'Watch', color: '#8a68b7' },
-]
-
-const activity = [
-  ['Sage Lane Studio', 'Usage logged', '12 min ago', '−240', '#d85757'],
-  ['Harbor Coffee Co.', 'Delivery recorded', '48 min ago', '+4,000', '#3554d1'],
-  ['Palm & Linen', 'Usage logged', '2 hours ago', '−680', '#d4915b'],
-  ['Morrow Candle Co.', 'Customer added', 'Yesterday', 'New', '#6c8f71'],
-]
-
-const formatNumber = (value) => new Intl.NumberFormat('en-US').format(value)
+const fmt = (n) => new Intl.NumberFormat('en-NG').format(Number(n || 0))
+const status = (s) => s === 'REORDER NOW' || s === 'OUT OF STOCK' ? 'Reorder' : s === 'APPROACHING' ? 'Watch' : 'Healthy'
+const initials = (s) => String(s || 'Customer').split(' ').map(x => x[0]).join('').slice(0,2).toUpperCase()
 
 export default function StickerBalancePage() {
-  const [customers, setCustomers] = useState(seedCustomers)
-  const [query, setQuery] = useState('')
-  const [showAdd, setShowAdd] = useState(false)
-  const [toast, setToast] = useState('')
-  const [mobileNav, setMobileNav] = useState(false)
-  const [session, setSession] = useState(null)
-  const [authLoading, setAuthLoading] = useState(true)
-  const [authEmail, setAuthEmail] = useState('')
-  const [authPassword, setAuthPassword] = useState('')
-  const [authError, setAuthError] = useState('')
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession)
-      setAuthLoading(false)
-    })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => setSession(currentSession))
-    return () => subscription.unsubscribe()
-  }, [])
+  const [session,setSession] = useState(null), [profile,setProfile] = useState(null)
+  const [customers,setCustomers] = useState([]), [selected,setSelected] = useState(null)
+  const [usage,setUsage] = useState([]), [deliveries,setDeliveries] = useState([])
+  const [query,setQuery] = useState(''), [loading,setLoading] = useState(true), [busy,setBusy] = useState(false)
+  const [error,setError] = useState(''), [toast,setToast] = useState(''), [mobile,setMobile] = useState(false)
+  const [showAdd,setShowAdd] = useState(false), [showUsage,setShowUsage] = useState(false), [showDelivery,setShowDelivery] = useState(false)
+  const [email,setEmail] = useState(''), [password,setPassword] = useState(''), [authError,setAuthError] = useState('')
+  const [add,setAdd] = useState({business_name:'',contact_name:'',contact_email:'',current_delivered:0,reorder_level:500,warning_level:1000})
+  const [usageQty,setUsageQty] = useState(''), [delivery,setDelivery] = useState({quantity:'',notes:''})
 
-  useEffect(() => {
-    if (!session) return undefined
-    let active = true
-    const loadCustomers = async () => {
-      const { data, error } = await supabase.from('customer_summary').select('*').order('business_name')
-      if (!active || error || !data?.length) return
-      setCustomers(data.map((row) => {
-        const status = (row.status_label || row.status) === 'REORDER NOW' || (row.status_label || row.status) === 'OUT OF STOCK' ? 'Reorder' : (row.status_label || row.status) === 'APPROACHING' ? 'Watch' : 'Healthy'
-        return {
-          initials: String(row.business_name || 'Customer').split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase(),
-          name: row.business_name || 'Customer',
-          contact: row.contact_name || 'Account owner',
-          code: row.customer_code || '—',
-          remaining: Number(row.remaining || 0),
-          delivered: Number(row.current_delivered || row.total_delivered || 0),
-          status,
-          color: status === 'Reorder' ? '#d85757' : status === 'Watch' ? '#d4915b' : '#6c8f71',
-        }
-      }))
-    }
-    loadCustomers()
-    return () => { active = false }
-  }, [])
-  const total = customers.reduce((sum, customer) => sum + customer.remaining, 0)
-  const attention = customers.filter((customer) => customer.status !== 'Healthy').length
-  const filtered = useMemo(() => customers.filter((customer) => `${customer.name} ${customer.code} ${customer.contact}`.toLowerCase().includes(query.toLowerCase())), [customers, query])
+  const notify = (m) => { setToast(m); setTimeout(() => setToast(''), 3000) }
 
-  const notify = (message) => {
-    setToast(message)
-    window.setTimeout(() => setToast(''), 2600)
+  const load = useCallback(async () => {
+    if (!session) return
+    const results = await Promise.all([
+      supabase.from('customer_summary').select('*').order('business_name'),
+      supabase.from('customers').select('id,customer_code,business_name,contact_name,contact_email,current_delivered,reorder_level,warning_level,is_active').order('business_name'),
+      supabase.from('profiles').select('id,full_name,role,customer_code').eq('id',session.user.id).maybeSingle()
+    ])
+    const summary = results[0], raw = results[1], prof = results[2]
+    if(summary.error) throw summary.error; if(raw.error) throw raw.error; if(prof.error) throw prof.error
+    setProfile(prof.data)
+    const details = new Map((raw.data || []).map(c => [c.customer_code,c]))
+    const mapped = (summary.data || []).map(r => { const d = details.get(r.customer_code) || {}; return {...r,...d,remaining:Number(r.remaining_balance || 0),delivered:Number(r.total_delivered || 0),used:Number(r.total_used || 0),status:status(r.status)} })
+    setCustomers(mapped)
+    setSelected(cur => cur ? mapped.find(x => x.id === cur.id) || null : null)
+  },[session])
+
+  useEffect(() => { supabase.auth.getSession().then(({data:{session:s}}) => { setSession(s); setLoading(false) }); const {data:{subscription}} = supabase.auth.onAuthStateChange((_e,s) => setSession(s)); return () => subscription.unsubscribe() },[])
+  useEffect(() => { if(session) load().catch(e => setError(e.message || 'Unable to load inventory.')) },[session,load])
+
+  const loadHistory = useCallback(async c => {
+    if(!c || !c.id) return
+    const results = await Promise.all([
+      supabase.from('sticker_logs').select('id,quantity_used,remaining_after,logged_at,logged_by').eq('customer_id',c.id).order('logged_at',{ascending:false}).limit(100),
+      supabase.from('deliveries').select('id,quantity_delivered,delivered_at,delivered_by,notes').eq('customer_id',c.id).order('delivered_at',{ascending:false}).limit(100)
+    ])
+    if(results[0].error) throw results[0].error; if(results[1].error) throw results[1].error
+    setUsage(results[0].data || []); setDeliveries(results[1].data || [])
+  },[])
+  useEffect(() => { if(selected) loadHistory(selected).catch(e => setError(e.message || 'Unable to load history.')); else {setUsage([]);setDeliveries([])} },[selected,loadHistory])
+
+  const signIn = async e => { e.preventDefault(); setAuthError(''); const {error:e2}=await supabase.auth.signInWithPassword({email:email.trim(),password}); if(e2)setAuthError(e2.message) }
+  const signOut = async () => { await supabase.auth.signOut(); setCustomers([]); setSelected(null) }
+
+  const addCustomer = async e => {
+    e.preventDefault(); if(profile && profile.role !== 'admin') return setError('Only administrators can add customers.')
+    const payload={business_name:add.business_name.trim(),contact_name:add.contact_name.trim()||null,contact_email:add.contact_email.trim()||null,current_delivered:Math.max(0,Number(add.current_delivered||0)),reorder_level:Math.max(0,Number(add.reorder_level||0)),warning_level:Math.max(0,Number(add.warning_level||0)),is_active:true}
+    if(!payload.business_name) return setError('Business name is required.')
+    setBusy(true); setError('')
+    const base=payload.business_name.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,4)||'CUST'
+    const result=await supabase.from('customers').insert({...payload,customer_code:base+'-'+Date.now().toString().slice(-6)})
+    setBusy(false); if(result.error)return setError(result.error.message)
+    setShowAdd(false); setAdd({business_name:'',contact_name:'',contact_email:'',current_delivered:0,reorder_level:500,warning_level:1000}); await load(); notify('Customer added successfully.')
   }
 
-  const exportCsv = () => {
-    const rows = [['Customer', 'Code', 'Contact', 'Remaining', 'Status'], ...customers.map((c) => [c.name, c.code, c.contact, c.remaining, c.status])]
-    const csv = rows.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n')
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
-    link.download = 'sticker-balance-customers.csv'
-    link.click()
-    notify('Customer report downloaded')
+  const recordUsage = async e => {
+    e.preventDefault(); const qty=Number(usageQty)
+    if(!selected || !Number.isInteger(qty) || qty<=0) return setError('Enter a whole number greater than zero.')
+    setBusy(true); setError('')
+    const result=await supabase.rpc('record_sticker_usage',{p_customer_id:selected.id,p_quantity_used:qty})
+    setBusy(false); if(result.error)return setError(result.error.message)
+    setUsageQty(''); setShowUsage(false); await load(); const fresh=customers.find(c=>c.id===selected.id); if(fresh) await loadHistory(fresh); notify(fmt(qty)+' stickers recorded as used.')
   }
 
-  const signIn = async (event) => {
-    event.preventDefault()
-    setAuthError('')
-    const { error } = await supabase.auth.signInWithPassword({ email: authEmail.trim(), password: authPassword })
-    if (error) setAuthError(error.message)
+  const recordDelivery = async e => {
+    e.preventDefault(); const qty=Number(delivery.quantity)
+    if(!selected || !Number.isInteger(qty) || qty<=0) return setError('Enter a whole number greater than zero.')
+    setBusy(true); setError('')
+    const result=await supabase.rpc('add_delivery',{p_customer_id:selected.id,p_quantity_delivered:qty,p_notes:delivery.notes.trim()||null})
+    setBusy(false); if(result.error)return setError(result.error.message)
+    setDelivery({quantity:'',notes:''}); setShowDelivery(false); await load(); const fresh=customers.find(c=>c.id===selected.id); if(fresh) await loadHistory(fresh); notify(fmt(qty)+' stickers added to inventory.')
   }
 
-  const signOut = async () => { await supabase.auth.signOut(); setCustomers(seedCustomers) }
+  const filtered=useMemo(()=>{const q=query.toLowerCase().trim();return customers.filter(c=>!q||(c.business_name+' '+c.customer_code+' '+(c.contact_name||'')).toLowerCase().includes(q))},[customers,query])
+  const total=customers.reduce((s,c)=>s+c.remaining,0), attention=customers.filter(c=>c.status!=='Healthy').length
+  const exportCsv=()=>{const rows=[['Customer','Code','Contact','Delivered','Used','Remaining','Status'],...customers.map(c=>[c.business_name,c.customer_code,c.contact_name||'',c.delivered,c.used,c.remaining,c.status])];const csv=rows.map(r=>r.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='sticker-balance-customers.csv';a.click()}
 
-  const addCustomer = (event) => {
-    event.preventDefault()
-    const form = new FormData(event.currentTarget)
-    const name = String(form.get('name') || 'New customer')
-    const contact = String(form.get('contact') || 'Account owner')
-    setCustomers((current) => [{ initials: name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase(), name, contact, code: `NEW-${Math.floor(100 + Math.random() * 899)}`, remaining: 0, delivered: 0, status: 'Reorder', color: '#3554d1' }, ...current])
-    setShowAdd(false)
-    notify(`${name} added to your workspace`)
-  }
+  if(loading)return <div className="sb-auth-screen"><div className="sb-auth-card"><h1>Sticker<span>Balance</span></h1><p>Loading your workspace…</p></div></div>
+  if(!session)return <div className="sb-auth-screen"><div className="sb-auth-card"><h1>Sticker<span>Balance</span></h1><small>by Sleekblue</small><div className="sb-eyebrow">Private workspace</div><h2>Welcome back.</h2><p>Sign in to manage live sticker inventory.</p><form onSubmit={signIn} className="sb-auth-form"><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required/></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} required/></label>{authError&&<div className="sb-error">{authError}</div>}<button className="sb-primary" type="submit">Sign in securely <FiArrowUpRight/></button></form></div></div>
 
-  if (authLoading) return <div className="sb-auth-screen"><div className="sb-auth-card"><div className="sb-brand sb-auth-brand"><div className="sb-brand-mark"><FiBox /></div><div><strong>sticker<span>balance</span></strong><small>by Sleekblue</small></div></div><p>Loading your workspace…</p></div></div>
-  if (!session) return <div className="sb-auth-screen"><div className="sb-auth-card"><div className="sb-brand sb-auth-brand"><div className="sb-brand-mark"><FiBox /></div><div><strong>sticker<span>balance</span></strong><small>by Sleekblue</small></div></div><div className="sb-eyebrow">Private workspace</div><h1>Welcome back.</h1><p>Sign in to access live sticker inventory for Sleekblue Media.</p><form onSubmit={signIn} className="sb-auth-form"><label>Email<input type="email" value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} placeholder="you@company.com" required /></label><label>Password<input type="password" value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} placeholder="Your password" required /></label>{authError && <div className="sb-auth-error">{authError}</div>}<button className="sb-primary" type="submit">Sign in securely <FiArrowUpRight /></button></form><small className="sb-auth-note">Your Supabase session protects customer inventory and admin actions.</small></div></div>
   return <div className="sb-shell">
-    <aside className={`sb-sidebar ${mobileNav ? 'sb-sidebar-open' : ''}`}>
-      <div className="sb-brand"><div className="sb-brand-mark"><FiBox /></div><div><strong>sticker<span>balance</span></strong><small>by Sleekblue</small></div></div>
-      <div className="sb-workspace"><div className="sb-workspace-avatar">SM</div><div><small>Workspace</small><b>Sleekblue Media</b></div><FiChevronDown /></div>
-      <p className="sb-nav-label">Workspace</p>
-      <button className="sb-nav-item sb-nav-active"><FiArrowUpRight />Overview</button>
-      <button className="sb-nav-item" onClick={() => notify('Customer management is ready for live Supabase data')}><FiUsers />Customers<span>{customers.length}</span></button>
-      <button className="sb-nav-item" onClick={() => notify('Delivery tracking is ready for live Supabase data')}><FiBox />Deliveries</button>
-      <p className="sb-nav-label sb-nav-spaced">Manage</p>
-      <button className="sb-nav-item" onClick={() => notify('Analytics view coming soon')}><FiArrowUpRight />Analytics</button>
-      <button className="sb-nav-item" onClick={() => notify('Settings view coming soon')}><FiSettings />Settings</button>
-      <div className="sb-sidebar-bottom"><div className="sb-help">Need a hand?<span>Visit the help centre <FiArrowUpRight /></span></div><div className="sb-user"><div>AO</div><span><b>Akadonye</b>Administrator</span><FiArrowUpRight /></div></div>
-    </aside>
-    {mobileNav && <button className="sb-scrim" onClick={() => setMobileNav(false)} aria-label="Close navigation" />}
-    <main className="sb-main">
-      <header className="sb-topbar"><button className="sb-mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><FiMenu /></button><div className="sb-breadcrumb">Workspace <span>/</span> <b>Overview</b></div><div className="sb-top-actions"><button onClick={() => notify('You are all caught up')} aria-label="Notifications"><FiBell /><i /></button><div className="sb-divider" /><button className="sb-profile" onClick={signOut}><span>AO</span>Sign out<FiChevronDown /></button></div></header>
-      <div className="sb-content">
-        <section className="sb-welcome"><div><div className="sb-eyebrow">✦ Wednesday, 23 September 2026</div><h1>Good morning, Akadonye<span>.</span></h1><p>Here’s the pulse of your sticker inventory today.</p></div><button className="sb-primary" onClick={() => setShowAdd(true)}><FiPlus />Add customer</button></section>
-        <section className="sb-insight"><div className="sb-insight-icon"><FiShield /></div><div><b>Inventory is in good shape</b><span>You have <strong>{formatNumber(total)} stickers</strong> across {customers.length} active customer accounts.</span></div><button onClick={() => notify('Customer overview selected')}>View customers <FiArrowUpRight /></button></section>
-        <section className="sb-stats"><div className="sb-stat"><span>Total remaining <em>↗ 8.4%</em></span><strong>{formatNumber(total)}</strong><small>vs. 13,880 last month</small><div className="sb-bars">▂▃▂▅▃▆▅▇▆</div></div><div className="sb-stat"><span>Needs attention <em className="sb-warn">↘ 2.1%</em></span><strong>{String(attention).padStart(2, '0')}</strong><small>1 critical · 2 approaching</small><div className="sb-progress"><i style={{ width: `${Math.max(15, attention / customers.length * 100)}%` }} /></div></div><div className="sb-stat sb-stat-dark"><span>Usage this month <em>↘ 4.6%</em></span><strong>5,260</strong><small>stickers logged across all accounts</small><div className="sb-bars">▂▃▂▅▃▆▅▇▆</div></div></section>
-        <section className="sb-section-heading"><div><h2>Customer inventory</h2><p>Monitor balances and keep every account moving.</p></div><button className="sb-secondary" onClick={exportCsv}><FiDownload />Export CSV</button></section>
-        <section className="sb-table-card"><div className="sb-toolbar"><div className="sb-search"><FiSearch /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search customers or codes" /></div><span className="sb-filter"><i /> All customers <FiChevronDown /></span></div><div className="sb-table"><div className="sb-table-head"><span>Customer</span><span>Remaining balance</span><span>Status</span><span /></div>{filtered.map((customer) => <div className="sb-row" key={customer.code}><div className="sb-customer"><div style={{ background: customer.color }}>{customer.initials}</div><span><b>{customer.name}</b><small>{customer.code} · {customer.contact}</small></span></div><div className="sb-balance"><b>{formatNumber(customer.remaining)}</b><div><i className={`sb-bar-${customer.status.toLowerCase()}`} style={{ width: `${Math.min(100, customer.remaining / Math.max(customer.delivered, 1) * 100)}%` }} /></div><small>of {formatNumber(customer.delivered)}</small></div><span className={`sb-status sb-status-${customer.status.toLowerCase()}`}><i />{customer.status}</span><button className="sb-row-action" onClick={() => notify(`${customer.name} selected`)} aria-label={`Open ${customer.name}`}><FiArrowUpRight /></button></div>)}{filtered.length === 0 && <div className="sb-empty">No customers match “{query}”.</div>}</div><div className="sb-table-footer">Showing {filtered.length} of {customers.length} customers <button onClick={() => notify('All customers view coming soon')}>View all customers <FiArrowUpRight /></button></div></section>
-        <section className="sb-bottom-grid"><div className="sb-activity"><div className="sb-card-heading"><div><h2>Recent activity</h2><p>The latest movement across your workspace.</p></div><button onClick={() => notify('Activity history coming soon')}>View all</button></div>{activity.map(([name, action, time, amount, color]) => <div className="sb-activity-row" key={`${name}-${time}`}><i style={{ background: color }} /><span><b>{name}</b><small>{action} · {time}</small></span><strong>{amount}</strong></div>)}</div><div className="sb-tip"><FiCheck /><div className="sb-eyebrow">A little tip</div><h3>Keep your reorder level visible.</h3><p>Customers with less than 1,000 stickers are more likely to need a top-up this week.</p><button onClick={() => notify('Reorder levels are managed in Settings')}>Review thresholds <FiArrowUpRight /></button></div></section>
-      </div><footer className="sb-footer">Sticker Balance <span>· Built for real businesses</span><span>Last synced just now <FiCheck /></span></footer>
-    </main>
-    {toast && <div className="sb-toast"><FiCheck />{toast}<button onClick={() => setToast('')}><FiX /></button></div>}
-    {showAdd && <div className="sb-modal-backdrop" onClick={() => setShowAdd(false)}><div className="sb-modal" onClick={(event) => event.stopPropagation()}><div className="sb-card-heading"><div><div className="sb-eyebrow">New account</div><h2>Add a customer</h2></div><button onClick={() => setShowAdd(false)}><FiX /></button></div><form onSubmit={addCustomer}><label>Business name<input name="name" required placeholder="e.g. Sunday Goods" autoFocus /></label><label>Contact person<input name="contact" required placeholder="e.g. Jamie Lee" /></label><div className="sb-modal-actions"><button type="button" className="sb-secondary" onClick={() => setShowAdd(false)}>Cancel</button><button type="submit" className="sb-primary"><FiPlus />Add customer</button></div></form></div></div>}
+    <aside className={'sb-sidebar '+(mobile?'sb-sidebar-open':'')}><div className="sb-brand"><div className="sb-brand-mark"><FiBox/></div><div><strong>sticker<span>balance</span></strong><small>by Sleekblue</small></div></div><div className="sb-workspace"><div className="sb-workspace-avatar">SM</div><div><small>Workspace</small><b>Sleekblue Media</b></div><FiChevronDown/></div><p className="sb-nav-label">Workspace</p><button className="sb-nav-item active"><FiArrowUpRight/>Overview</button><button className="sb-nav-item" onClick={()=>document.getElementById('customers')?.scrollIntoView({behavior:'smooth'})}><FiUsers/>Customers <span>{customers.length}</span></button><button className="sb-nav-item" onClick={()=>document.getElementById('history')?.scrollIntoView({behavior:'smooth'})}><FiBox/>Deliveries</button><p className="sb-nav-label">Manage</p><button className="sb-nav-item" onClick={()=>notify('Analytics will use live transaction data in a future release.')}><FiArrowUpRight/>Analytics</button><button className="sb-nav-item" onClick={()=>notify('Settings will manage thresholds in a future release.')}><FiSettings/>Settings</button><div className="sb-sidebar-bottom"><div className="sb-user"><div>AO</div><span><b>{profile?.full_name||session.user.email?.split('@')[0]}</b><small>{profile?.role||'customer'}</small></span></div></div></aside>
+    {mobile&&<button className="sb-scrim" onClick={()=>setMobile(false)} aria-label="Close navigation"/>}
+    <main className="sb-main"><header className="sb-topbar"><button className="sb-mobile-menu" onClick={()=>setMobile(true)}><FiMenu/></button><div className="sb-breadcrumb">Workspace <span>/</span> <b>Overview</b></div><div className="sb-top-actions"><button onClick={()=>notify('Notifications are clear.')}><FiBell/></button><button onClick={signOut}>Sign out <FiChevronDown/></button></div></header>
+      <div className="sb-content">{error&&<div className="sb-error sb-global-error"><FiX/>{error}<button onClick={()=>setError('')}><FiX/></button></div>}
+        <section className="sb-welcome"><div><div className="sb-eyebrow">Live inventory</div><h1>Good morning, {profile?.full_name?.split(' ')[0]||'Administrator'}<span>.</span></h1><p>Here’s the current pulse of your sticker inventory.</p></div>{profile?.role==='admin'&&<button className="sb-primary" onClick={()=>setShowAdd(true)}><FiPlus/>Add customer</button>}</section>
+        <section className="sb-stats"><div className="sb-stat"><span>Total remaining</span><strong>{fmt(total)}</strong><small>across {customers.length} customer accounts</small></div><div className="sb-stat"><span>Needs attention</span><strong>{attention}</strong><small>at or below warning level</small></div><div className="sb-stat sb-stat-dark"><span>Selected usage</span><strong>{selected?fmt(selected.used):'—'}</strong><small>{selected?selected.business_name:'select a customer below'}</small></div></section>
+        <section id="customers" className="sb-section-heading"><div><h2>Customer inventory</h2><p>Balances and status come from live Supabase data.</p></div><button className="sb-secondary" onClick={exportCsv}><FiDownload/>Export CSV</button></section>
+        <section className="sb-table-card"><div className="sb-toolbar"><div className="sb-search"><FiSearch/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search customers or codes"/></div><span>{filtered.length} of {customers.length}</span></div><div className="sb-table"><div className="sb-table-head"><span>Customer</span><span>Remaining balance</span><span>Status</span><span/></div>{filtered.map(c=><button className={'sb-row '+(selected?.id===c.id?'selected':'')} key={c.id} onClick={()=>setSelected(c)}><span className="sb-customer"><i>{initials(c.business_name)}</i><b>{c.business_name}<small>{c.customer_code} · {c.contact_name||'No contact'}</small></b></span><span className="sb-balance"><b>{fmt(c.remaining)}</b><small>of {fmt(c.delivered)} delivered</small></span><span className={'sb-status sb-status-'+c.status.toLowerCase()}>{c.status}</span><span className="sb-row-action"><FiArrowUpRight/></span></button>)}{!filtered.length&&<div className="sb-empty">No customers match “{query}”.</div>}</div></section>
+        {selected&&<section id="history" className="sb-detail"><div className="sb-detail-header"><div><div className="sb-eyebrow">Customer detail</div><h2>{selected.business_name}</h2><p>{selected.customer_code} · {selected.contact_name||'No contact'}{selected.contact_email?' · '+selected.contact_email:''}</p></div><div className="sb-detail-actions"><button className="sb-secondary" onClick={()=>setShowUsage(true)}>Record usage</button>{profile?.role==='admin'&&<button className="sb-primary" onClick={()=>setShowDelivery(true)}><FiPlus/>Add delivery</button>}</div></div><div className="sb-detail-stats"><div><small>Remaining</small><strong>{fmt(selected.remaining)}</strong></div><div><small>Total delivered</small><strong>{fmt(selected.delivered)}</strong></div><div><small>Total used</small><strong>{fmt(selected.used)}</strong></div><div><small>Status</small><strong>{selected.status}</strong></div></div><div className="sb-history-grid"><div className="sb-card"><h3>Usage history</h3>{usage.length?usage.map(x=><div className="sb-history-row" key={x.id}><span><b>{fmt(x.quantity_used)} used</b><small>{new Date(x.logged_at).toLocaleString()}</small></span><strong>{fmt(x.remaining_after)} left</strong></div>):<p className="sb-empty">No usage recorded yet.</p>}</div><div className="sb-card"><h3>Delivery history</h3>{deliveries.length?deliveries.map(x=><div className="sb-history-row" key={x.id}><span><b>+{fmt(x.quantity_delivered)} delivered</b><small>{new Date(x.delivered_at).toLocaleString()}{x.notes?' · '+x.notes:''}</small></span></div>):<p className="sb-empty">No deliveries recorded yet.</p>}</div></div></section>}
+      </div></main>
+    {toast&&<div className="sb-toast"><FiCheck/>{toast}</div>}
+    {showAdd&&<div className="sb-modal-backdrop"><div className="sb-modal"><div className="sb-modal-head"><div><div className="sb-eyebrow">New account</div><h2>Add a customer</h2></div><button onClick={()=>setShowAdd(false)}><FiX/></button></div><form onSubmit={addCustomer} className="sb-form-grid"><label>Business name<input value={add.business_name} onChange={e=>setAdd({...add,business_name:e.target.value})} required/></label><label>Contact person<input value={add.contact_name} onChange={e=>setAdd({...add,contact_name:e.target.value})}/></label><label>Contact email<input type="email" value={add.contact_email} onChange={e=>setAdd({...add,contact_email:e.target.value})}/></label><label>Initial delivery<input type="number" min="0" value={add.current_delivered} onChange={e=>setAdd({...add,current_delivered:e.target.value})}/></label><label>Reorder level<input type="number" min="0" value={add.reorder_level} onChange={e=>setAdd({...add,reorder_level:e.target.value})}/></label><label>Warning level<input type="number" min="0" value={add.warning_level} onChange={e=>setAdd({...add,warning_level:e.target.value})}/></label><div className="sb-modal-actions"><button type="button" className="sb-secondary" onClick={()=>setShowAdd(false)}>Cancel</button><button disabled={busy} className="sb-primary" type="submit">{busy?'Saving…':'Add customer'}</button></div></form></div></div>}
+    {showUsage&&selected&&<div className="sb-modal-backdrop"><div className="sb-modal"><div className="sb-modal-head"><div><div className="sb-eyebrow">Inventory movement</div><h2>Record usage</h2><p>{selected.business_name} · {fmt(selected.remaining)} available</p></div><button onClick={()=>setShowUsage(false)}><FiX/></button></div><form onSubmit={recordUsage}><label>Quantity used<input autoFocus type="number" min="1" step="1" value={usageQty} onChange={e=>setUsageQty(e.target.value)} required/></label><div className="sb-modal-actions"><button type="button" className="sb-secondary" onClick={()=>setShowUsage(false)}>Cancel</button><button disabled={busy} className="sb-primary" type="submit">{busy?'Recording…':'Record usage'}</button></div></form></div></div>}
+    {showDelivery&&selected&&<div className="sb-modal-backdrop"><div className="sb-modal"><div className="sb-modal-head"><div><div className="sb-eyebrow">Inventory movement</div><h2>Add delivery</h2><p>{selected.business_name}</p></div><button onClick={()=>setShowDelivery(false)}><FiX/></button></div><form onSubmit={recordDelivery}><label>Quantity delivered<input autoFocus type="number" min="1" step="1" value={delivery.quantity} onChange={e=>setDelivery({...delivery,quantity:e.target.value})} required/></label><label>Notes<textarea value={delivery.notes} onChange={e=>setDelivery({...delivery,notes:e.target.value})} rows="3" placeholder="Optional delivery note"/></label><div className="sb-modal-actions"><button type="button" className="sb-secondary" onClick={()=>setShowDelivery(false)}>Cancel</button><button disabled={busy} className="sb-primary" type="submit">{busy?'Saving…':'Add delivery'}</button></div></form></div></div>}
   </div>
 }
