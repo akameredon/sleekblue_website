@@ -350,3 +350,39 @@ grant execute on function public.sb_add_product(uuid,text,integer,integer) to au
 grant execute on function public.sb_record_movement(uuid,text,integer,text) to authenticated;
 grant execute on function public.sb_record_customer_sale(text,text,text,numeric,numeric) to anon, authenticated;
 grant execute on function public.sb_customer_snapshot(text,text) to anon, authenticated;
+
+
+create or replace function public.sb_record_customer_usage(
+  p_access_code text,
+  p_phone text,
+  p_product_id uuid,
+  p_quantity integer
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare cid uuid; normalized_phone text; result jsonb;
+begin
+  normalized_phone := regexp_replace(trim(p_phone),'[^0-9+]','','g');
+  select a.customer_id into cid
+  from public.sticker_customer_access a
+  join public.customers c on c.id=a.customer_id
+  where a.access_code=p_access_code and a.active and c.phone=normalized_phone and c.is_active is distinct from false;
+  if cid is null then raise exception 'Phone number is not correct'; end if;
+  if not exists(select 1 from public.sticker_products where id=p_product_id and customer_id=cid and active) then raise exception 'Sticker product not found'; end if;
+  if p_quantity < 1 then raise exception 'Quantity must be at least 1'; end if;
+  if p_quantity > greatest(0,
+    coalesce((select sum(quantity) from public.sticker_movements where product_id=p_product_id and movement_type='delivery'),0)
+    - coalesce((select sum(quantity) from public.sticker_movements where product_id=p_product_id and movement_type='usage'),0)
+  ) then raise exception 'Not enough stickers left'; end if;
+  insert into public.sticker_movements(customer_id,product_id,movement_type,quantity,note)
+  values(cid,p_product_id,'usage',p_quantity,'Customer recorded usage');
+  update public.sticker_customer_access set last_used_at=now() where access_code=p_access_code;
+  return jsonb_build_object('ok',true);
+end;
+$$;
+
+revoke all on function public.sb_record_customer_usage(text,text,uuid,integer) from public;
+grant execute on function public.sb_record_customer_usage(text,text,uuid,integer) to anon, authenticated;
