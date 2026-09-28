@@ -148,6 +148,7 @@ export default function App() {
           <Route path="/admin"  element={<Navigate to="/portal" replace />} />
           <Route path="/portal" element={<AdminPage />} />
           <Route path="/sticker-balance" element={<StickerBalancePage />} />
+          <Route path="/b/:customerCode" element={<StickerBalancePage />} />
           <Route path="/*"     element={<MainSite />} />
         </Routes>
       </Suspense>
