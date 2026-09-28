@@ -386,3 +386,33 @@ $$;
 
 revoke all on function public.sb_record_customer_usage(text,text,uuid,integer) from public;
 grant execute on function public.sb_record_customer_usage(text,text,uuid,integer) to anon, authenticated;
+
+-- Preserve existing V1 balances as a "General" sticker product where possible.
+insert into public.sticker_products(customer_id,name,reorder_level,warning_level)
+select c.id,'General',coalesce(c.reorder_level,500),coalesce(c.warning_level,1000)
+from public.customers c
+where not exists (
+  select 1 from public.sticker_products p
+  where p.customer_id=c.id and lower(p.name)='general'
+);
+
+insert into public.sticker_movements(customer_id,product_id,movement_type,quantity,note)
+select c.id,p.id,'delivery',greatest(0,coalesce(c.current_delivered,0)),'Legacy Sticker Balance import'
+from public.customers c
+join public.sticker_products p on p.customer_id=c.id and lower(p.name)='general'
+where coalesce(c.current_delivered,0)>0
+and not exists (
+  select 1 from public.sticker_movements m
+  where m.product_id=p.id and m.note='Legacy Sticker Balance import'
+);
+
+insert into public.sticker_movements(customer_id,product_id,movement_type,quantity,note)
+select l.customer_id,p.id,'usage',sum(l.quantity_used),'Legacy Sticker Balance usage import'
+from public.sticker_logs l
+join public.sticker_products p on p.customer_id=l.customer_id and lower(p.name)='general'
+where l.quantity_used>0
+group by l.customer_id,p.id
+having not exists (
+  select 1 from public.sticker_movements m
+  where m.product_id=p.id and m.note='Legacy Sticker Balance usage import'
+);
