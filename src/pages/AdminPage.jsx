@@ -39,6 +39,7 @@ const NAV_ITEMS = [
   { id: 'products',        icon: '🛍️', label: 'Products' },
   { id: 'orders',          icon: '🛒', label: 'Orders' },
   { id: 'sticker-prices',  icon: '🏷️', label: 'Sticker Prices' },
+  { id: 'business-book',   icon: '📒', label: 'Business Book' },
   { id: 'blog',            icon: '✍️', label: 'Blog' },
   { id: 'about',           icon: '📖', label: 'About Us' },
   { id: 'content',         icon: '🎨', label: 'Content CMS' },
@@ -194,6 +195,7 @@ export default function AdminPage() {
             {view === 'products'       && <ProductsView token={token} productOverrides={siteData.productOverrides} onDataChanged={fetchAll} />}
             {view === 'orders'         && <OrdersView token={token} />}
             {view === 'sticker-prices' && <StickerPricesView token={token} stickerPriceOverrides={siteData.stickerPriceOverrides} onDataChanged={fetchAll} />}
+            {view === 'business-book' && <div className="rounded-xl bg-white p-6 shadow-sm"><h2 className="text-lg font-semibold text-slate-800">Client business records</h2><p className="mt-1 text-sm text-slate-500">Onboard clients and manage their business books.</p><a className="mt-4 inline-flex items-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white" href="/business-admin">Open Business Book</a></div>}
             {view === 'blog'           && <BlogView token={token} onDataChanged={fetchAll} />}
             {view === 'about'          && <AboutView token={token} />}
             {view === 'faq'            && <FaqView token={token} />}

@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { id: 'products',        icon: '🛍️', label: 'Products' },
   { id: 'orders',          icon: '🛒', label: 'Orders' },
   { id: 'sticker-prices',  icon: '🏷️', label: 'Sticker Prices' },
+  { id: 'business-book',   icon: '📒', label: 'Business Book' },
   { id: 'blog',            icon: '✍️', label: 'Blog' },
   { id: 'about',           icon: '📖', label: 'About Us' },
   { id: 'content',         icon: '🎨', label: 'Content CMS' },
