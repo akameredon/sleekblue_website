@@ -14,7 +14,7 @@ Do not add customer-facing features yet. First establish a reproducible, testabl
 - The wider storefront is also documented as an Express/Vite application using JSON files for several existing business records. These are separate persistence paths; the presence of Supabase in the frontend does not mean the whole storefront has migrated to Supabase.
 - A Supabase migration exists for the newer Business Book system, but no dedicated Sticker Balance migration was found in `supabase/migrations` during this repository review.
 - CI runs `npm ci`, `npm run build`, and `npm test`. This proves only that those checks pass when the workflow completes; it does not prove production deployment or end-to-end behavior.
-- The repository has a Hostinger deployment workflow that expects GitHub secrets and a server-side `scripts/deploy.sh`. Repository access does not establish that those secrets are configured or that the workflow reaches the intended production host.
+- The repository has a Hostinger deployment workflow that expects GitHub secrets and a server-side `scripts/deploy.sh`. The latest inspected deployment run (29 September 2026) failed before connecting because `HOSTINGER_HOST` was empty; the log also showed empty username, SSH key and app path. CI passed, but deploy did not reach the server. The secrets must be configured by an authorized repository owner; I cannot retrieve or create those secret values from code.
 - Existing architecture documents refer to a separate upstream repository, `martinsobioha/sleekblue_website`. Therefore, this fork's `main` branch must not be treated as the live production source without confirmation from the site owner/operator.
 
 ## High-priority risks and gaps
@@ -47,6 +47,7 @@ Do not add customer-facing features yet. First establish a reproducible, testabl
 ## Fixes started in this branch
 
 - Clarify in the repository README that the storefront and Sticker Balance use distinct persistence paths.
+- Improve the deployment workflow so it checks for required Hostinger secrets before attempting SSH, and reports which secret names are missing without exposing their values.
 - Record the evidence, unknowns, and safe verification order here so future work does not mistake assumptions for facts.
 
 ## Next steps, in safe order
