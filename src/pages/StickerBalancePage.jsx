@@ -7,7 +7,7 @@ const PATH='/sticker-balance'
 const fmt=n=>new Intl.NumberFormat('en-NG').format(Number(n||0))
 const token=()=>new URLSearchParams(location.search).get('access')||''
 const link=t=>`${location.origin}${PATH}?access=${encodeURIComponent(t)}`
-const status=c=>{const r=Number(c?.remaining_balance||0),re=Number(c?.reorder_level||500),w=Number(c?.warning_level||1000);return r<=re?{text:'Buy more soon',tone:'danger'}:r<=w?{text:'Getting low',tone:'warning'}:{text:'Enough stickers',tone:'good'}}
+const status=c=>{const r=Number(c?.remaining_balance||0),a=Number(c?.reorder_level??500),b=Number(c?.warning_level??1000),re=Math.min(a,b),w=Math.max(a,b);return r<=re?{text:'Buy more soon',tone:'danger'}:r<=w?{text:'Getting low',tone:'warning'}:{text:'Enough stickers',tone:'good'}}
 
 function Logo({dark=false}){return <div className="sb-logo"><b className="sb-logo-mark">S</b><div><strong>Sticker Balance</strong><span>Sleekblue Media Houz</span></div></div>}
 function Btn({children,icon:I,secondary=false,...p}){return <button className={`sb-btn ${secondary?'secondary':''}`} {...p}>{I&&<I/>}{children}</button>}
